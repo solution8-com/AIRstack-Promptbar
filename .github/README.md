@@ -6,7 +6,7 @@
       <img height="60" alt="prompts.chat" src="https://prompts.chat/logo.svg">
     </picture>
     <br>
-    prompts.chat
+    Solution8 promptBar
   </a>
 </h1>
 
@@ -102,7 +102,7 @@ npm install && npm run setup
 
 The setup wizard configures branding, theme, authentication (GitHub/Google/Azure AD), and features.
 
-📖 **[Full Self-Hosting Guide](SELF-HOSTING.md)** • 🐳 **[Docker Guide](DOCKER.md)**
+📖 **[Full Self-Hosting Guide](../SELF-HOSTING.md)** • 🐳 **[Docker Guide](../DOCKER.md)**
 
 ---
 
@@ -118,7 +118,7 @@ npx prompts.chat
 /plugin marketplace add f/prompts.chat
 /plugin install prompts.chat@prompts.chat
 ```
-📖 [Plugin Documentation](CLAUDE-PLUGIN.md)
+📖 [Plugin Documentation](../CLAUDE-PLUGIN.md)
 
 ### MCP Server
 Use prompts.chat as an MCP server in your AI tools.
