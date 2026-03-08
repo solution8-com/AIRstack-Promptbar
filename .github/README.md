@@ -44,7 +44,7 @@
 
 ## What is this?
 
-A curated collection of **prompt examples** for AI chat models. Originally created for ChatGPT, these prompts work great with any modern AI assistant.
+A community-curated SOTA prompt, skill and workflow-sharing platform for use with LLMs.
 
 | Browse Prompts | Data Formats |
 |----------------|--------------|
@@ -52,14 +52,6 @@ A curated collection of **prompt examples** for AI chat models. Originally creat
 | [PROMPTS.md](https://raw.githubusercontent.com/f/prompts.chat/main/PROMPTS.md) | [Hugging Face Dataset](https://huggingface.co/datasets/fka/prompts.chat) |
 
 **Want to contribute?** Add prompts at [prompts.chat/prompts/new](https://prompts.chat/prompts/new) — they sync here automatically.
-
----
-
-## 📖 The Interactive Book of Prompting
-
-Learn prompt engineering with our **free, interactive guide** — 25+ chapters covering everything from basics to advanced techniques like chain-of-thought reasoning, few-shot learning, and AI agents.
-
-**[Start Reading →](https://fka.gumroad.com/l/art-of-chatgpt-prompting)**
 
 ---
 
@@ -102,7 +94,7 @@ npm install && npm run setup
 
 The setup wizard configures branding, theme, authentication (GitHub/Google/Azure AD), and features.
 
-📖 **[Full Self-Hosting Guide](../SELF-HOSTING.md)** • 🐳 **[Docker Guide](../DOCKER.md)**
+📖 **[Full Self-Hosting Guide](https://github.com/solution8-com/S8-Utility-Promptschat/blob/main/SELF-HOSTING.md)** • 🐳 **[Docker Guide](https://github.com/solution8-com/S8-Utility-Promptschat/blob/main/DOCKER.md)**
 
 ---
 
@@ -118,7 +110,7 @@ npx prompts.chat
 /plugin marketplace add f/prompts.chat
 /plugin install prompts.chat@prompts.chat
 ```
-📖 [Plugin Documentation](../CLAUDE-PLUGIN.md)
+📖 [Plugin Documentation](https://github.com/solution8-com/S8-Utility-Promptschat/blob/main/CLAUDE-PLUGIN.md)
 
 ### MCP Server
 Use prompts.chat as an MCP server in your AI tools.
