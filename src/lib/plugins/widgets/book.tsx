@@ -160,7 +160,11 @@ export const bookWidget: WidgetPlugin = {
         repeatEvery: 60,
         maxCount: 4,
       },
-      shouldInject: () => {
+      shouldInject: (context) => {
+        // Don't inject on the skills or tastes pages
+        if (context.filters?.type === "SKILL" || context.filters?.type === "TASTE") {
+          return false;
+        }
         return true;
       },
       render: () => <BookWidget />,
