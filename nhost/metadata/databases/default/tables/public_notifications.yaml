@@ -8,3 +8,9 @@ object_relationships:
   - name: actor
     using:
       foreign_key_constraint_on: actorId
+  - name: prompt
+    using:
+      foreign_key_constraint_on: promptId
+  - name: comment
+    using:
+      foreign_key_constraint_on: commentId
