@@ -116,7 +116,7 @@ npm install && npm run setup
 
 The setup wizard configures branding, theme, authentication (GitHub/Google/Azure AD), and features.
 
-📖 **[Full Self-Hosting Guide](SELF-HOSTING.md)** • 🐳 **[Docker Guide](DOCKER.md)**
+📖 **[Full Self-Hosting Guide](SELF-HOSTING.md)** • 🐳 **[Docker Guide](DOCKER.md)** • ☁️ **[Nhost Deployment](NHOST-DEPLOYMENT.md)**
 
 ---
 

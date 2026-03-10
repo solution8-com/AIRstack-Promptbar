@@ -1,0 +1,10 @@
+table:
+  name: prompt_reports
+  schema: public
+object_relationships:
+  - name: prompt
+    using:
+      foreign_key_constraint_on: promptId
+  - name: reporter
+    using:
+      foreign_key_constraint_on: reporterId

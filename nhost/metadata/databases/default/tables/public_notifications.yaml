@@ -1,0 +1,10 @@
+table:
+  name: notifications
+  schema: public
+object_relationships:
+  - name: recipient
+    using:
+      foreign_key_constraint_on: recipientId
+  - name: actor
+    using:
+      foreign_key_constraint_on: actorId

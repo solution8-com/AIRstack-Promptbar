@@ -1,0 +1,10 @@
+table:
+  name: user_prompt_examples
+  schema: public
+object_relationships:
+  - name: user
+    using:
+      foreign_key_constraint_on: userId
+  - name: prompt
+    using:
+      foreign_key_constraint_on: promptId

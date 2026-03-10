@@ -1,0 +1,74 @@
+table:
+  name: prompts
+  schema: public
+object_relationships:
+  - name: author
+    using:
+      foreign_key_constraint_on: authorId
+  - name: category
+    using:
+      foreign_key_constraint_on: categoryId
+array_relationships:
+  - name: versions
+    using:
+      foreign_key_constraint_on:
+        column: promptId
+        table:
+          name: prompt_versions
+          schema: public
+  - name: tags
+    using:
+      foreign_key_constraint_on:
+        column: promptId
+        table:
+          name: prompt_tags
+          schema: public
+  - name: votes
+    using:
+      foreign_key_constraint_on:
+        column: promptId
+        table:
+          name: prompt_votes
+          schema: public
+  - name: comments
+    using:
+      foreign_key_constraint_on:
+        column: promptId
+        table:
+          name: comments
+          schema: public
+  - name: collections
+    using:
+      foreign_key_constraint_on:
+        column: promptId
+        table:
+          name: collections
+          schema: public
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - title
+        - slug
+        - description
+        - content
+        - type
+        - isPrivate
+        - mediaUrl
+        - viewCount
+        - createdAt
+        - updatedAt
+        - authorId
+        - categoryId
+        - isFeatured
+        - isUnlisted
+        - bestWithModels
+        - bestWithMCP
+        - workflowLink
+      filter:
+        _or:
+          - isPrivate:
+              _eq: false
+          - authorId:
+              _eq: X-Hasura-User-Id

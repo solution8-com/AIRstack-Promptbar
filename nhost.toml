@@ -1,0 +1,109 @@
+[global]
+# Nhost configuration for prompts.chat deployment
+
+[hasura]
+version = "v2.38.0"
+adminSecret = "{{ secrets.HASURA_GRAPHQL_ADMIN_SECRET }}"
+webhookSecret = "{{ secrets.NHOST_WEBHOOK_SECRET }}"
+
+[hasura.settings]
+corsDomain = ["*"]
+devMode = false
+enableAllowList = false
+enableConsole = true
+enableRemoteSchemaPermissions = false
+enabledAPIs = ["metadata", "graphql", "pgdump", "config"]
+
+[hasura.logs]
+level = "warn"
+
+[hasura.events]
+httpPoolSize = 100
+
+[postgres]
+version = "14-20231113-1"
+
+[provider]
+# Nhost provider configuration
+
+[provider.smtp]
+# Email configuration for authentication
+user = "{{ secrets.SMTP_USER }}"
+password = "{{ secrets.SMTP_PASSWORD }}"
+sender = "{{ secrets.SMTP_SENDER }}"
+host = "{{ secrets.SMTP_HOST }}"
+port = 587
+secure = false
+method = "PLAIN"
+
+[provider.sms]
+# SMS provider configuration (optional)
+
+[auth]
+version = "0.30.0"
+
+[auth.redirections]
+clientUrl = "{{ secrets.AUTH_CLIENT_URL }}"
+allowedUrls = ["{{ secrets.AUTH_CLIENT_URL }}"]
+
+[auth.signUp]
+enabled = true
+disableNewUsers = false
+
+[auth.user]
+# User settings
+roles = {
+  default = "user",
+  allowed = ["user", "admin", "me"]
+}
+locale = {
+  default = "en",
+  allowed = ["en", "tr", "es", "zh", "ja", "ar", "pt", "fr", "de", "ko", "it"]
+}
+
+[auth.user.email]
+allowed = ["*"]
+
+[auth.session]
+accessToken = {
+  expiresIn = 900
+}
+refreshToken = {
+  expiresIn = 2592000
+}
+
+[auth.method.emailPassword]
+enabled = true
+emailVerificationRequired = false
+hibpEnabled = false
+passwordMinLength = 8
+
+[auth.method.oauth.github]
+enabled = true
+clientId = "{{ secrets.AUTH_GITHUB_ID }}"
+clientSecret = "{{ secrets.AUTH_GITHUB_SECRET }}"
+
+[auth.method.oauth.google]
+enabled = true
+clientId = "{{ secrets.AUTH_GOOGLE_ID }}"
+clientSecret = "{{ secrets.AUTH_GOOGLE_SECRET }}"
+
+[auth.method.oauth.azure]
+enabled = true
+tenant = "{{ secrets.AUTH_AZURE_AD_TENANT_ID }}"
+clientId = "{{ secrets.AUTH_AZURE_AD_CLIENT_ID }}"
+clientSecret = "{{ secrets.AUTH_AZURE_AD_CLIENT_SECRET }}"
+
+[storage]
+version = "0.6.0"
+
+[storage.antivirus]
+enabled = false
+
+[functions]
+# Node.js version for serverless functions
+node = { version = "20" }
+
+[observability]
+# Observability configuration for monitoring
+grafana = { adminPassword = "{{ secrets.GRAFANA_ADMIN_PASSWORD }}" }

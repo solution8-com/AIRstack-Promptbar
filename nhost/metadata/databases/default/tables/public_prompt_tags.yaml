@@ -1,0 +1,10 @@
+table:
+  name: prompt_tags
+  schema: public
+object_relationships:
+  - name: prompt
+    using:
+      foreign_key_constraint_on: promptId
+  - name: tag
+    using:
+      foreign_key_constraint_on: tagId

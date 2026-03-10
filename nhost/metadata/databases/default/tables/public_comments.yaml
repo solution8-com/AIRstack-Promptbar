@@ -1,0 +1,18 @@
+table:
+  name: comments
+  schema: public
+object_relationships:
+  - name: author
+    using:
+      foreign_key_constraint_on: userId
+  - name: prompt
+    using:
+      foreign_key_constraint_on: promptId
+array_relationships:
+  - name: votes
+    using:
+      foreign_key_constraint_on:
+        column: commentId
+        table:
+          name: comment_votes
+          schema: public

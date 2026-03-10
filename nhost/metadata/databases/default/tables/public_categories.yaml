@@ -1,0 +1,22 @@
+table:
+  name: categories
+  schema: public
+object_relationships:
+  - name: parent
+    using:
+      foreign_key_constraint_on: parentId
+array_relationships:
+  - name: children
+    using:
+      foreign_key_constraint_on:
+        column: parentId
+        table:
+          name: categories
+          schema: public
+  - name: prompts
+    using:
+      foreign_key_constraint_on:
+        column: categoryId
+        table:
+          name: prompts
+          schema: public

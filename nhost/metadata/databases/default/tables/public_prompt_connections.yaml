@@ -1,0 +1,10 @@
+table:
+  name: prompt_connections
+  schema: public
+object_relationships:
+  - name: source
+    using:
+      foreign_key_constraint_on: sourceId
+  - name: target
+    using:
+      foreign_key_constraint_on: targetId
