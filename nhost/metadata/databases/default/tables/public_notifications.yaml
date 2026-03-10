@@ -2,9 +2,9 @@ table:
   name: notifications
   schema: public
 object_relationships:
-  - name: recipient
+  - name: user
     using:
-      foreign_key_constraint_on: recipientId
+      foreign_key_constraint_on: userId
   - name: actor
     using:
       foreign_key_constraint_on: actorId
