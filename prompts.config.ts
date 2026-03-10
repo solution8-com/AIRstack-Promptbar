@@ -1,16 +1,16 @@
 import { defineConfig } from "@/lib/config";
 
 // Set to true to use clone branding (hide prompts.chat repo branding)
-const useCloneBranding = false;
+const useCloneBranding = true;
 
 export default defineConfig({
   // Branding - customize for white-label
   branding: {
-    name: "prompts.chat",
-    logo: "/logo.svg",
-    logoDark: "/logo-dark.svg",
-    favicon: "/logo.svg",
-    description: "Collect, organize, and share AI prompts",
+    name: "Solution8 promptBar",
+    logo: "/ffff.svg",
+    logoDark: "/ffff.svg",
+    favicon: "/ffff.svg",
+    description: "Collect, organize, and share AI prompts, skills and MCPs",
 
     // Delete this if useCloneBranding is true
     appStoreUrl: "https://apps.apple.com/tr/app/prompts-chat/id6756895736",
@@ -35,7 +35,7 @@ export default defineConfig({
   auth: {
     // Available: "credentials" | "google" | "azure" | "github" | "apple" | custom
     // Use `providers` array to enable multiple auth providers
-    providers: ["github", "google", "apple"],
+    providers: ["github"],
     // Allow public registration (only applies to credentials provider)
     allowRegistration: false,
   },
@@ -71,7 +71,7 @@ export default defineConfig({
     // Set to true to hide prompts.chat repo branding and use your own branding
     useCloneBranding,
     achievements: {
-      enabled: !useCloneBranding,
+      enabled: true,
     },
     sponsors: {
       enabled: !useCloneBranding,
