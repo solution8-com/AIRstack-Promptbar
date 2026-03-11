@@ -1,3 +1,4 @@
+import { NextRequest } from "next/server";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET, POST } from "@/app/api/prompts/[id]/versions/route";
 import { db } from "@/lib/db";
@@ -31,7 +32,7 @@ describe("GET /api/prompts/[id]/versions", () => {
   it("should return empty array for prompt with no versions", async () => {
     vi.mocked(db.promptVersion.findMany).mockResolvedValue([]);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/versions");
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/versions");
     const response = await GET(request, {
       params: Promise.resolve({ id: "123" }),
     });
@@ -69,7 +70,7 @@ describe("GET /api/prompts/[id]/versions", () => {
       },
     ] as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/versions");
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/versions");
     const response = await GET(request, {
       params: Promise.resolve({ id: "123" }),
     });
@@ -94,7 +95,7 @@ describe("GET /api/prompts/[id]/versions", () => {
       },
     ] as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/versions");
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/versions");
     const response = await GET(request, {
       params: Promise.resolve({ id: "123" }),
     });
@@ -108,7 +109,7 @@ describe("GET /api/prompts/[id]/versions", () => {
   it("should call findMany with correct parameters", async () => {
     vi.mocked(db.promptVersion.findMany).mockResolvedValue([]);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/versions");
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/versions");
     await GET(request, {
       params: Promise.resolve({ id: "123" }),
     });
@@ -134,9 +135,9 @@ describe("POST /api/prompts/[id]/versions", () => {
   });
 
   it("should return 401 if not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/versions", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/versions", {
       method: "POST",
       body: JSON.stringify({ content: "New content" }),
     });
@@ -151,9 +152,9 @@ describe("POST /api/prompts/[id]/versions", () => {
 
   it("should return 404 for non-existent prompt", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
-    vi.mocked(db.prompt.findUnique).mockResolvedValue(null);
+    vi.mocked(db.prompt.findUnique).mockResolvedValue(null as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/versions", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/versions", {
       method: "POST",
       body: JSON.stringify({ content: "New content" }),
     });
@@ -173,7 +174,7 @@ describe("POST /api/prompts/[id]/versions", () => {
       content: "Original content",
     } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/versions", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/versions", {
       method: "POST",
       body: JSON.stringify({ content: "New content" }),
     });
@@ -193,7 +194,7 @@ describe("POST /api/prompts/[id]/versions", () => {
       content: "Original content",
     } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/versions", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/versions", {
       method: "POST",
       body: JSON.stringify({ content: "" }),
     });
@@ -213,7 +214,7 @@ describe("POST /api/prompts/[id]/versions", () => {
       content: "Original content",
     } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/versions", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/versions", {
       method: "POST",
       body: JSON.stringify({}),
     });
@@ -233,7 +234,7 @@ describe("POST /api/prompts/[id]/versions", () => {
       content: "Same content",
     } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/versions", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/versions", {
       method: "POST",
       body: JSON.stringify({ content: "Same content" }),
     });
@@ -266,7 +267,7 @@ describe("POST /api/prompts/[id]/versions", () => {
       },
     ] as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/versions", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/versions", {
       method: "POST",
       body: JSON.stringify({ content: "New content" }),
     });
@@ -285,7 +286,7 @@ describe("POST /api/prompts/[id]/versions", () => {
       authorId: "user1",
       content: "Original content",
     } as never);
-    vi.mocked(db.promptVersion.findFirst).mockResolvedValue(null);
+    vi.mocked(db.promptVersion.findFirst).mockResolvedValue(null as never);
     vi.mocked(db.$transaction).mockImplementation(async (ops) => {
       // Capture the create call to verify changeNote
       return [
@@ -300,7 +301,7 @@ describe("POST /api/prompts/[id]/versions", () => {
       ];
     });
 
-    const request = new Request("http://localhost:3000/api/prompts/123/versions", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/versions", {
       method: "POST",
       body: JSON.stringify({ content: "New content" }),
     });
@@ -319,7 +320,7 @@ describe("POST /api/prompts/[id]/versions", () => {
       authorId: "user1",
       content: "Original content",
     } as never);
-    vi.mocked(db.promptVersion.findFirst).mockResolvedValue(null);
+    vi.mocked(db.promptVersion.findFirst).mockResolvedValue(null as never);
     vi.mocked(db.$transaction).mockResolvedValue([
       {
         id: "v1",
@@ -331,7 +332,7 @@ describe("POST /api/prompts/[id]/versions", () => {
       },
     ] as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/versions", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/versions", {
       method: "POST",
       body: JSON.stringify({
         content: "New content",
@@ -353,7 +354,7 @@ describe("POST /api/prompts/[id]/versions", () => {
       authorId: "user1",
       content: "Original content",
     } as never);
-    vi.mocked(db.promptVersion.findFirst).mockResolvedValue(null);
+    vi.mocked(db.promptVersion.findFirst).mockResolvedValue(null as never);
     vi.mocked(db.$transaction).mockResolvedValue([
       {
         id: "v1",
@@ -365,7 +366,7 @@ describe("POST /api/prompts/[id]/versions", () => {
       },
     ] as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/versions", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/versions", {
       method: "POST",
       body: JSON.stringify({ content: "New content" }),
     });
@@ -384,7 +385,7 @@ describe("POST /api/prompts/[id]/versions", () => {
       authorId: "user1",
       content: "Original content",
     } as never);
-    vi.mocked(db.promptVersion.findFirst).mockResolvedValue(null);
+    vi.mocked(db.promptVersion.findFirst).mockResolvedValue(null as never);
     vi.mocked(db.$transaction).mockResolvedValue([
       {
         id: "v1",
@@ -396,7 +397,7 @@ describe("POST /api/prompts/[id]/versions", () => {
       },
     ] as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/versions", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/versions", {
       method: "POST",
       body: JSON.stringify({ content: "New content" }),
     });

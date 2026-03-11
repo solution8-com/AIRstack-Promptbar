@@ -1,3 +1,4 @@
+import { NextRequest } from "next/server";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST } from "@/app/api/reports/route";
 import { db } from "@/lib/db";
@@ -26,9 +27,9 @@ describe("POST /api/reports", () => {
   });
 
   it("should return 401 if not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as never);
 
-    const request = new Request("http://localhost:3000/api/reports", {
+    const request = new NextRequest("http://localhost:3000/api/reports", {
       method: "POST",
       body: JSON.stringify({ promptId: "123", reason: "SPAM" }),
     });
@@ -43,7 +44,7 @@ describe("POST /api/reports", () => {
   it("should return 400 for invalid reason", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
 
-    const request = new Request("http://localhost:3000/api/reports", {
+    const request = new NextRequest("http://localhost:3000/api/reports", {
       method: "POST",
       body: JSON.stringify({ promptId: "123", reason: "INVALID_REASON" }),
     });
@@ -58,7 +59,7 @@ describe("POST /api/reports", () => {
   it("should return 400 for missing promptId", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
 
-    const request = new Request("http://localhost:3000/api/reports", {
+    const request = new NextRequest("http://localhost:3000/api/reports", {
       method: "POST",
       body: JSON.stringify({ reason: "SPAM" }),
     });
@@ -72,9 +73,9 @@ describe("POST /api/reports", () => {
 
   it("should return 404 if prompt not found", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
-    vi.mocked(db.prompt.findUnique).mockResolvedValue(null);
+    vi.mocked(db.prompt.findUnique).mockResolvedValue(null as never);
 
-    const request = new Request("http://localhost:3000/api/reports", {
+    const request = new NextRequest("http://localhost:3000/api/reports", {
       method: "POST",
       body: JSON.stringify({ promptId: "nonexistent", reason: "SPAM" }),
     });
@@ -93,7 +94,7 @@ describe("POST /api/reports", () => {
       authorId: "user1", // Same as reporter
     } as never);
 
-    const request = new Request("http://localhost:3000/api/reports", {
+    const request = new NextRequest("http://localhost:3000/api/reports", {
       method: "POST",
       body: JSON.stringify({ promptId: "123", reason: "SPAM" }),
     });
@@ -111,10 +112,10 @@ describe("POST /api/reports", () => {
       id: "123",
       authorId: "user1", // Same as reporter
     } as never);
-    vi.mocked(db.promptReport.findFirst).mockResolvedValue(null);
+    vi.mocked(db.promptReport.findFirst).mockResolvedValue(null as never);
     vi.mocked(db.promptReport.create).mockResolvedValue({} as never);
 
-    const request = new Request("http://localhost:3000/api/reports", {
+    const request = new NextRequest("http://localhost:3000/api/reports", {
       method: "POST",
       body: JSON.stringify({ promptId: "123", reason: "RELIST_REQUEST" }),
     });
@@ -136,7 +137,7 @@ describe("POST /api/reports", () => {
       id: "existing-report",
     } as never);
 
-    const request = new Request("http://localhost:3000/api/reports", {
+    const request = new NextRequest("http://localhost:3000/api/reports", {
       method: "POST",
       body: JSON.stringify({ promptId: "123", reason: "SPAM" }),
     });
@@ -154,10 +155,10 @@ describe("POST /api/reports", () => {
       id: "123",
       authorId: "other-user",
     } as never);
-    vi.mocked(db.promptReport.findFirst).mockResolvedValue(null);
+    vi.mocked(db.promptReport.findFirst).mockResolvedValue(null as never);
     vi.mocked(db.promptReport.create).mockResolvedValue({} as never);
 
-    const request = new Request("http://localhost:3000/api/reports", {
+    const request = new NextRequest("http://localhost:3000/api/reports", {
       method: "POST",
       body: JSON.stringify({
         promptId: "123",
@@ -191,10 +192,10 @@ describe("POST /api/reports", () => {
         id: "123",
         authorId: reason === "RELIST_REQUEST" ? "user1" : "other-user",
       } as never);
-      vi.mocked(db.promptReport.findFirst).mockResolvedValue(null);
+      vi.mocked(db.promptReport.findFirst).mockResolvedValue(null as never);
       vi.mocked(db.promptReport.create).mockResolvedValue({} as never);
 
-      const request = new Request("http://localhost:3000/api/reports", {
+      const request = new NextRequest("http://localhost:3000/api/reports", {
         method: "POST",
         body: JSON.stringify({ promptId: "123", reason }),
       });
@@ -211,10 +212,10 @@ describe("POST /api/reports", () => {
       id: "123",
       authorId: "other-user",
     } as never);
-    vi.mocked(db.promptReport.findFirst).mockResolvedValue(null);
+    vi.mocked(db.promptReport.findFirst).mockResolvedValue(null as never);
     vi.mocked(db.promptReport.create).mockResolvedValue({} as never);
 
-    const request = new Request("http://localhost:3000/api/reports", {
+    const request = new NextRequest("http://localhost:3000/api/reports", {
       method: "POST",
       body: JSON.stringify({ promptId: "123", reason: "SPAM" }),
     });
@@ -234,10 +235,10 @@ describe("POST /api/reports", () => {
       id: "123",
       authorId: "other-user",
     } as never);
-    vi.mocked(db.promptReport.findFirst).mockResolvedValue(null);
+    vi.mocked(db.promptReport.findFirst).mockResolvedValue(null as never);
     vi.mocked(db.promptReport.create).mockResolvedValue({} as never);
 
-    const request = new Request("http://localhost:3000/api/reports", {
+    const request = new NextRequest("http://localhost:3000/api/reports", {
       method: "POST",
       body: JSON.stringify({ promptId: "123", reason: "SPAM" }),
     });
@@ -257,7 +258,7 @@ describe("POST /api/reports", () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
     vi.mocked(db.prompt.findUnique).mockRejectedValue(new Error("Database error"));
 
-    const request = new Request("http://localhost:3000/api/reports", {
+    const request = new NextRequest("http://localhost:3000/api/reports", {
       method: "POST",
       body: JSON.stringify({ promptId: "123", reason: "SPAM" }),
     });

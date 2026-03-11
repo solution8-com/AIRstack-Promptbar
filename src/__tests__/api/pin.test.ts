@@ -1,3 +1,4 @@
+import { NextRequest } from "next/server";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST, DELETE } from "@/app/api/prompts/[id]/pin/route";
 import { db } from "@/lib/db";
@@ -29,9 +30,9 @@ describe("POST /api/prompts/[id]/pin", () => {
   });
 
   it("should return 401 if not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/pin", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/pin", {
       method: "POST",
     });
     const response = await POST(request, {
@@ -46,7 +47,7 @@ describe("POST /api/prompts/[id]/pin", () => {
   it("should return 401 if session has no user id", async () => {
     vi.mocked(auth).mockResolvedValue({ user: {} } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/pin", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/pin", {
       method: "POST",
     });
     const response = await POST(request, {
@@ -60,9 +61,9 @@ describe("POST /api/prompts/[id]/pin", () => {
 
   it("should return 404 for non-existent prompt", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
-    vi.mocked(db.prompt.findUnique).mockResolvedValue(null);
+    vi.mocked(db.prompt.findUnique).mockResolvedValue(null as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/pin", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/pin", {
       method: "POST",
     });
     const response = await POST(request, {
@@ -81,7 +82,7 @@ describe("POST /api/prompts/[id]/pin", () => {
       isPrivate: false,
     } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/pin", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/pin", {
       method: "POST",
     });
     const response = await POST(request, {
@@ -104,7 +105,7 @@ describe("POST /api/prompts/[id]/pin", () => {
       promptId: "123",
     } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/pin", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/pin", {
       method: "POST",
     });
     const response = await POST(request, {
@@ -122,10 +123,10 @@ describe("POST /api/prompts/[id]/pin", () => {
       authorId: "user1",
       isPrivate: false,
     } as never);
-    vi.mocked(db.pinnedPrompt.findUnique).mockResolvedValue(null);
+    vi.mocked(db.pinnedPrompt.findUnique).mockResolvedValue(null as never);
     vi.mocked(db.pinnedPrompt.count).mockResolvedValue(3);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/pin", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/pin", {
       method: "POST",
     });
     const response = await POST(request, {
@@ -143,14 +144,14 @@ describe("POST /api/prompts/[id]/pin", () => {
       authorId: "user1",
       isPrivate: false,
     } as never);
-    vi.mocked(db.pinnedPrompt.findUnique).mockResolvedValue(null);
+    vi.mocked(db.pinnedPrompt.findUnique).mockResolvedValue(null as never);
     vi.mocked(db.pinnedPrompt.count).mockResolvedValue(0);
     vi.mocked(db.pinnedPrompt.aggregate).mockResolvedValue({
       _max: { order: null },
     } as never);
     vi.mocked(db.pinnedPrompt.create).mockResolvedValue({} as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/pin", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/pin", {
       method: "POST",
     });
     const response = await POST(request, {
@@ -176,14 +177,14 @@ describe("POST /api/prompts/[id]/pin", () => {
       authorId: "user1",
       isPrivate: false,
     } as never);
-    vi.mocked(db.pinnedPrompt.findUnique).mockResolvedValue(null);
+    vi.mocked(db.pinnedPrompt.findUnique).mockResolvedValue(null as never);
     vi.mocked(db.pinnedPrompt.count).mockResolvedValue(2);
     vi.mocked(db.pinnedPrompt.aggregate).mockResolvedValue({
       _max: { order: 1 },
     } as never);
     vi.mocked(db.pinnedPrompt.create).mockResolvedValue({} as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/pin", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/pin", {
       method: "POST",
     });
     await POST(request, {
@@ -205,14 +206,14 @@ describe("POST /api/prompts/[id]/pin", () => {
       authorId: "user1",
       isPrivate: false,
     } as never);
-    vi.mocked(db.pinnedPrompt.findUnique).mockResolvedValue(null);
+    vi.mocked(db.pinnedPrompt.findUnique).mockResolvedValue(null as never);
     vi.mocked(db.pinnedPrompt.count).mockResolvedValue(0);
     vi.mocked(db.pinnedPrompt.aggregate).mockResolvedValue({
       _max: { order: null },
     } as never);
     vi.mocked(db.pinnedPrompt.create).mockResolvedValue({} as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/pin", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/pin", {
       method: "POST",
     });
     const response = await POST(request, {
@@ -231,9 +232,9 @@ describe("DELETE /api/prompts/[id]/pin", () => {
   });
 
   it("should return 401 if not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/pin", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/pin", {
       method: "DELETE",
     });
     const response = await DELETE(request, {
@@ -249,7 +250,7 @@ describe("DELETE /api/prompts/[id]/pin", () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
     vi.mocked(db.pinnedPrompt.deleteMany).mockResolvedValue({ count: 1 } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/pin", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/pin", {
       method: "DELETE",
     });
     const response = await DELETE(request, {
@@ -266,7 +267,7 @@ describe("DELETE /api/prompts/[id]/pin", () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
     vi.mocked(db.pinnedPrompt.deleteMany).mockResolvedValue({ count: 1 } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/pin", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/pin", {
       method: "DELETE",
     });
     await DELETE(request, {
@@ -285,7 +286,7 @@ describe("DELETE /api/prompts/[id]/pin", () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
     vi.mocked(db.pinnedPrompt.deleteMany).mockResolvedValue({ count: 0 } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/pin", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/pin", {
       method: "DELETE",
     });
     const response = await DELETE(request, {
@@ -301,7 +302,7 @@ describe("DELETE /api/prompts/[id]/pin", () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
     vi.mocked(db.pinnedPrompt.deleteMany).mockResolvedValue({ count: 1 } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123/pin", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123/pin", {
       method: "DELETE",
     });
     const response = await DELETE(request, {
