@@ -121,6 +121,29 @@ function getConfiguredProviders(config: Awaited<ReturnType<typeof getConfig>>): 
   return ["credentials"];
 }
 
+// Helper to check if a username is in the admin list
+function isAdminUser(username: string | null | undefined): boolean {
+  if (!username) return false;
+  
+  const adminList = process.env.S8_ADMINS;
+  if (!adminList) {
+    // If S8_ADMINS is not set, allow all users (backwards compatible)
+    return true;
+  }
+  
+  // Parse the admin list (comma-separated or JSON array)
+  let admins: string[] = [];
+  try {
+    // Try to parse as JSON array first
+    admins = JSON.parse(adminList);
+  } catch {
+    // Fall back to comma-separated list
+    admins = adminList.split(',').map(u => u.trim()).filter(Boolean);
+  }
+  
+  return admins.includes(username);
+}
+
 // Build auth config dynamically based on prompts.config.ts
 async function buildAuthConfig() {
   const config = await getConfig();
@@ -163,6 +186,12 @@ async function buildAuthConfig() {
           });
 
           if (dbUser) {
+            // Check if user is in admin list (if S8_ADMINS is configured)
+            if (!isAdminUser(dbUser.username)) {
+              // User not in admin list - deny access
+              throw new Error("Access denied: You are not authorized to access this platform.");
+            }
+            
             token.id = dbUser.id;
             token.role = dbUser.role;
             token.username = dbUser.username;
@@ -181,6 +210,12 @@ async function buildAuthConfig() {
 
           // User no longer exists - invalidate token
           if (!dbUser) {
+            return null;
+          }
+          
+          // Check if user is still in admin list
+          if (!isAdminUser(dbUser.username)) {
+            // User no longer in admin list - invalidate token
             return null;
           }
 
@@ -220,6 +255,21 @@ async function buildAuthConfig() {
 const authConfig = await buildAuthConfig();
 
 export const { handlers, signIn, signOut, auth } = NextAuth(authConfig);
+
+// Export admin helper for use in other components
+export { isAdminUser };
+
+// Helper to get all admin usernames from environment
+export function getAdminUsernames(): string[] {
+  const adminList = process.env.S8_ADMINS;
+  if (!adminList) return [];
+  
+  try {
+    return JSON.parse(adminList);
+  } catch {
+    return adminList.split(',').map(u => u.trim()).filter(Boolean);
+  }
+}
 
 // Extended session type
 declare module "next-auth" {
