@@ -4,8 +4,9 @@ import { getTranslations } from "next-intl/server";
 import { unstable_cache } from "next/cache";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { InfinitePromptList } from "@/components/prompts/infinite-prompt-list";
+import { SkillsFilteredList } from "@/components/prompts/skills-filtered-list";
 import { db } from "@/lib/db";
+import { getAdminUsernames } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Skills",
@@ -13,14 +14,7 @@ export const metadata: Metadata = {
 };
 
 // Query for skills list (cached)
-function getCachedSkills(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  orderBy: any,
-  perPage: number,
-  searchQuery?: string
-) {
-  const cacheKey = JSON.stringify({ orderBy, perPage, searchQuery });
-  
+function getCachedSkills(perPage: number) {
   return unstable_cache(
     async () => {
       const where: Record<string, unknown> = {
@@ -30,18 +24,10 @@ function getCachedSkills(
         deletedAt: null,
       };
 
-      if (searchQuery) {
-        where.OR = [
-          { title: { contains: searchQuery, mode: "insensitive" } },
-          { content: { contains: searchQuery, mode: "insensitive" } },
-          { description: { contains: searchQuery, mode: "insensitive" } },
-        ];
-      }
-
       const [skillsRaw, totalCount] = await Promise.all([
         db.prompt.findMany({
           where,
-          orderBy,
+          orderBy: { createdAt: "desc" },
           skip: 0,
           take: perPage,
           include: {
@@ -98,38 +84,29 @@ function getCachedSkills(
         total: totalCount,
       };
     },
-    ["skills", cacheKey],
+    ["skills"],
     { tags: ["prompts"] }
   )();
 }
 
-interface SkillsPageProps {
-  searchParams: Promise<{
-    q?: string;
-    sort?: string;
-  }>;
-}
-
-export default async function SkillsPage({ searchParams }: SkillsPageProps) {
+export default async function SkillsPage() {
   const t = await getTranslations("prompts");
   const tNav = await getTranslations("nav");
   const tSearch = await getTranslations("search");
-  const params = await searchParams;
   
-  const perPage = 24;
+  const perPage = 100; // Fetch more since we're doing client-side filtering
 
-  // Build order by clause
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let orderBy: any = { createdAt: "desc" };
-  if (params.sort === "oldest") {
-    orderBy = { createdAt: "asc" };
-  } else if (params.sort === "upvotes") {
-    orderBy = { votes: { _count: "desc" } };
-  }
-
-  const result = await getCachedSkills(orderBy, perPage, params.q);
+  const result = await getCachedSkills(perPage);
   const skills = result.skills;
   const total = result.total;
+
+  // Fetch all usernames for autocomplete
+  const allUsernames = await db.user.findMany({
+    select: { username: true },
+    distinct: ['username'],
+  });
+
+  const adminUsernames = getAdminUsernames();
 
   return (
     <div className="container py-6">
@@ -150,14 +127,10 @@ export default async function SkillsPage({ searchParams }: SkillsPageProps) {
         {t("skillsDescription")}
       </p>
 
-      <InfinitePromptList
-        initialPrompts={skills}
-        initialTotal={total}
-        filters={{
-          q: params.q,
-          type: "SKILL",
-          sort: params.sort,
-        }}
+      <SkillsFilteredList
+        skills={skills}
+        allUsernames={allUsernames.map(u => u.username)}
+        adminUsernames={adminUsernames}
       />
     </div>
   );
