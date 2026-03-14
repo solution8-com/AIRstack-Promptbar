@@ -435,6 +435,13 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
   // Get builder data on first render
   const [builderData] = useState(() => getBuilderData());
 
+  // Helper function to get page heading based on mode
+  const getPageHeading = () => {
+    if (mode === "edit") return t("edit");
+    if (isInternalHackMode) return t("createInternalHack");
+    return t("create");
+  };
+
   const promptSchema = createPromptSchema(t);
   const form = useForm<PromptFormValues>({
     resolver: zodResolver(promptSchema) as never,
@@ -716,7 +723,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
           {/* Header: Page title + Private Switch */}
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-lg font-semibold">
-              {mode === "edit" ? t("edit") : (isInternalHackMode ? t("createInternalHack") : t("create"))}
+              {getPageHeading()}
             </h1>
             <div className="flex items-center gap-3">
               {aiGenerationEnabled && (

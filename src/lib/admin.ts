@@ -8,17 +8,37 @@
 
 import { db } from "@/lib/db";
 
+// Cache admin usernames at module level to avoid repeated parsing
+let cachedAdminUsernames: string[] | null = null;
+
+/**
+ * Clear the cached admin usernames (useful for testing)
+ */
+export function clearAdminUsernamesCache(): void {
+  cachedAdminUsernames = null;
+}
+
 /**
  * Get list of admin usernames from environment variable
  */
 export function getAdminUsernamesFromEnv(): string[] {
+  // Return cached value if available
+  if (cachedAdminUsernames !== null) {
+    return cachedAdminUsernames;
+  }
+
   const adminUsernames = process.env.ADMIN_USERNAMES;
-  if (!adminUsernames) return [];
+  if (!adminUsernames) {
+    cachedAdminUsernames = [];
+    return cachedAdminUsernames;
+  }
   
-  return adminUsernames
+  cachedAdminUsernames = adminUsernames
     .split(",")
     .map(username => username.trim())
     .filter(username => username.length > 0);
+  
+  return cachedAdminUsernames;
 }
 
 /**

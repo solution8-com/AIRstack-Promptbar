@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getAdminUsernamesFromEnv, isAdminUsername, isUserAdmin, getAdminUserIds } from "@/lib/admin";
+import { getAdminUsernamesFromEnv, isAdminUsername, isUserAdmin, getAdminUserIds, clearAdminUsernamesCache } from "@/lib/admin";
 import { db } from "@/lib/db";
 
 // Mock the database
@@ -17,6 +17,8 @@ describe("Admin utilities", () => {
     vi.clearAllMocks();
     // Clear environment variable
     delete process.env.ADMIN_USERNAMES;
+    // Clear admin username cache
+    clearAdminUsernamesCache();
   });
 
   describe("getAdminUsernamesFromEnv", () => {

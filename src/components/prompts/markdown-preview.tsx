@@ -15,7 +15,7 @@ interface MarkdownPreviewProps {
 
 export function MarkdownPreview({ content, className = "" }: MarkdownPreviewProps) {
   const t = useTranslations("prompts");
-  const [mode, setMode] = useState<"edit" | "preview">("edit");
+  const [viewMode, setViewMode] = useState<"edit" | "preview">("edit");
 
   return (
     <div className={`space-y-2 ${className}`}>
@@ -23,7 +23,7 @@ export function MarkdownPreview({ content, className = "" }: MarkdownPreviewProp
         <label className="text-sm font-medium">
           {t("markdownPreview")}
         </label>
-        <Tabs value={mode} onValueChange={(v) => setMode(v as "edit" | "preview")}>
+        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "edit" | "preview")}>
           <TabsList className="h-8">
             <TabsTrigger value="edit" className="text-xs gap-1.5 px-2.5 h-6">
               <Pencil className="h-3 w-3" />
@@ -37,7 +37,7 @@ export function MarkdownPreview({ content, className = "" }: MarkdownPreviewProp
         </Tabs>
       </div>
       
-      {mode === "preview" && (
+      {viewMode === "preview" && (
         <div className="rounded-md border bg-muted/30 p-4 min-h-[200px] prose prose-sm dark:prose-invert max-w-none">
           {content ? (
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
