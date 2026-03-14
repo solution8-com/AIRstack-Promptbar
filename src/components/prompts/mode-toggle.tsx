@@ -35,8 +35,8 @@ export function ModeToggle({ currentMode }: ModeToggleProps) {
         </Label>
         <p className="text-sm text-muted-foreground">
           {currentMode === "internal-hack" 
-            ? "Create internal documentation for Solution8 team" 
-            : "Create a prompt for the community"}
+            ? t("createInternalHackDescription")
+            : t("createPromptDescription")}
         </p>
       </div>
       <Switch

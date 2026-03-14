@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getAdminUsernamesFromEnv } from "@/lib/admin";
@@ -22,8 +23,8 @@ export async function GET(request: Request) {
       return NextResponse.json([]);
     }
 
-    // Build where clause
-    const whereClause: any = {
+    // Build where clause with proper typing
+    const whereClause: Prisma.UserWhereInput = {
       OR: [
         { username: { contains: query, mode: "insensitive" } },
         { name: { contains: query, mode: "insensitive" } },

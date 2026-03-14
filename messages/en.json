@@ -108,6 +108,8 @@
     "title": "Prompts",
     "create": "Create Prompt",
     "createInternalHack": "Create Solution8 Internal Hack",
+    "createPromptDescription": "Create a prompt for the community",
+    "createInternalHackDescription": "Create internal documentation for Solution8 team",
     "createSkill": "Create Skill",
     "createTaste": "Create Taste",
     "skillsDescription": "Agent Skills are multi-file prompts that give AI agents specialized capabilities. They include instructions, configurations, and supporting files that can be used with Claude, Cursor, Windsurf, and other AI coding assistants.",
