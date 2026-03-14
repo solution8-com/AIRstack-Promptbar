@@ -195,19 +195,19 @@ export function DiscoverTabs({
   };
 
   const filteredFeatured = useMemo(() => filterAndSort(featuredPrompts), [
-    featuredPrompts, searchQuery, sortBy, filterType, filterAge, filterUsername, filterVersions, showAdminOnly
+    featuredPrompts, searchQuery, sortBy, filterType, filterAge, filterUsername, filterVersions, showAdminOnly, adminUsernames
   ]);
 
   const filteredMostContributed = useMemo(() => filterAndSort(mostContributed), [
-    mostContributed, searchQuery, sortBy, filterType, filterAge, filterUsername, filterVersions, showAdminOnly
+    mostContributed, searchQuery, sortBy, filterType, filterAge, filterUsername, filterVersions, showAdminOnly, adminUsernames
   ]);
 
   const filteredRecentlyUpdated = useMemo(() => filterAndSort(recentlyUpdated), [
-    recentlyUpdated, searchQuery, sortBy, filterType, filterAge, filterUsername, filterVersions, showAdminOnly
+    recentlyUpdated, searchQuery, sortBy, filterType, filterAge, filterUsername, filterVersions, showAdminOnly, adminUsernames
   ]);
 
   const filteredLatest = useMemo(() => filterAndSort(latestPrompts), [
-    latestPrompts, searchQuery, sortBy, filterType, filterAge, filterUsername, filterVersions, showAdminOnly
+    latestPrompts, searchQuery, sortBy, filterType, filterAge, filterUsername, filterVersions, showAdminOnly, adminUsernames
   ]);
 
   const hasActiveFilters = searchQuery || sortBy !== "votes" || filterType !== "all" || 

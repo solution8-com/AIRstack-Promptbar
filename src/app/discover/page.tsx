@@ -85,7 +85,7 @@ export default async function DiscoverPage() {
     // Fetch all unique usernames for autocomplete
     db.user.findMany({
       select: { username: true },
-      distinct: ['username'],
+      distinct: 'username',
     }),
   ]);
 

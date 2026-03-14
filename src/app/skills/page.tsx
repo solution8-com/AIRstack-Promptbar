@@ -103,7 +103,7 @@ export default async function SkillsPage() {
   // Fetch all usernames for autocomplete
   const allUsernames = await db.user.findMany({
     select: { username: true },
-    distinct: ['username'],
+    distinct: 'username',
   });
 
   const adminUsernames = getAdminUsernames();
