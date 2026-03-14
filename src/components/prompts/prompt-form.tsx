@@ -444,7 +444,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
       content: builderData?.content || (initialData?.content && initialData?.structuredFormat === "JSON" 
         ? prettifyJson(initialData.content) 
         : (initialData?.content || "")),
-      type: isInternalHackMode ? "STRUCTURED" : (builderData?.format ? "TEXT" : (builderData?.type as "TEXT" | "IMAGE" | "VIDEO" | "AUDIO" || initialData?.type || "TEXT")),
+      type: builderData?.format ? "TEXT" : (builderData?.type as "TEXT" | "IMAGE" | "VIDEO" | "AUDIO" || initialData?.type || "TEXT"),
       structuredFormat: isInternalHackMode ? "YAML" : ((builderData?.format as "JSON" | "YAML") || initialData?.structuredFormat || undefined),
       categoryId: initialData?.categoryId || "",
       tagIds: initialData?.tagIds || [],
