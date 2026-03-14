@@ -27,7 +27,6 @@
 
 <p align="center">
   <a href="https://prompts.chat/prompts">🌐 Browse Prompts</a> •
-  <a href="https://fka.gumroad.com/l/art-of-chatgpt-prompting">📖 Read the Book</a> •
   <a href="https://raw.githubusercontent.com/f/prompts.chat/main/PROMPTS.md">📄 View on GitHub</a> •
   <a href="#-self-hosting">🚀 Self-Host</a>
 </p>
@@ -73,7 +72,7 @@ A curated collection of **prompt examples** for AI chat models. Originally creat
 
 Learn prompt engineering with our **free, interactive guide** — 25+ chapters covering everything from basics to advanced techniques like chain-of-thought reasoning, few-shot learning, and AI agents.
 
-**[Start Reading →](https://fka.gumroad.com/l/art-of-chatgpt-prompting)**
+**[Start Reading →](https://prompts.chat/book)**
 
 ---
 
