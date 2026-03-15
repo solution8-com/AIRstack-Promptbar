@@ -392,7 +392,11 @@
     "learnHowToWritePrompts": "学习如何写出有效的提示词 →",
     "structuredFormatDetected": "检测到 {format} 格式",
     "structuredFormatWarningDescription": "您的提示词内容看起来像结构化数据。考虑切换到结构化模式以获得更好的语法高亮和验证。",
-    "switchToStructured": "切换到 {format}"
+    "switchToStructured": "切换到 {format}",
+    "titlePlaceholderHack": "Enter a title for your hack",
+    "descriptionPlaceholderHack": "Optional description of your hack",
+    "inputTypeHack": "Hack Implementation Guide",
+    "createButtonHack": "Publish Your Hack"
   },
   "changeRequests": {
     "title": "变更请求",

@@ -392,7 +392,11 @@
     "learnHowToWritePrompts": "Etkili promptlar nasıl yazılır öğrenin →",
     "structuredFormatDetected": "{format} formatı algılandı",
     "structuredFormatWarningDescription": "Prompt içeriğiniz yapılandırılmış veriye benziyor. Daha iyi sözdizimi vurgulama ve doğrulama için yapılandırılmış moda geçmeyi düşünün.",
-    "switchToStructured": "{format}'a geç"
+    "switchToStructured": "{format}'a geç",
+    "titlePlaceholderHack": "Enter a title for your hack",
+    "descriptionPlaceholderHack": "Optional description of your hack",
+    "inputTypeHack": "Hack Implementation Guide",
+    "createButtonHack": "Publish Your Hack"
   },
   "changeRequests": {
     "title": "Değişiklik İstekleri",

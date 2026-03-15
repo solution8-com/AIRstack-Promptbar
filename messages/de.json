@@ -392,7 +392,11 @@
     "learnHowToWritePrompts": "Lernen Sie, effektive Prompts zu schreiben →",
     "structuredFormatDetected": "{format}-Format erkannt",
     "structuredFormatWarningDescription": "Ihr Prompt-Inhalt sieht nach strukturierten Daten aus. Erwägen Sie den Wechsel in den strukturierten Modus für bessere Syntaxhervorhebung und Validierung.",
-    "switchToStructured": "Zu {format} wechseln"
+    "switchToStructured": "Zu {format} wechseln",
+    "titlePlaceholderHack": "Enter a title for your hack",
+    "descriptionPlaceholderHack": "Optional description of your hack",
+    "inputTypeHack": "Hack Implementation Guide",
+    "createButtonHack": "Publish Your Hack"
   },
   "changeRequests": {
     "title": "Änderungsanfragen",

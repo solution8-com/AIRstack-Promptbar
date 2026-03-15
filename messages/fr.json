@@ -392,7 +392,11 @@
     "learnHowToWritePrompts": "Apprenez à écrire des prompts efficaces →",
     "structuredFormatDetected": "Format {format} détecté",
     "structuredFormatWarningDescription": "Le contenu de votre prompt ressemble à des données structurées. Envisagez de passer en mode structuré pour une meilleure coloration syntaxique et validation.",
-    "switchToStructured": "Passer à {format}"
+    "switchToStructured": "Passer à {format}",
+    "titlePlaceholderHack": "Enter a title for your hack",
+    "descriptionPlaceholderHack": "Optional description of your hack",
+    "inputTypeHack": "Hack Implementation Guide",
+    "createButtonHack": "Publish Your Hack"
   },
   "changeRequests": {
     "title": "Demandes de Modification",
