@@ -146,6 +146,18 @@ Or directly visit: `/prompts/new?mode=internal-hack`
 - Preview button with caution styling
 - "Publish Your Hack" button
 
+## Translation Notes
+
+New translation keys have been added to all language files with English text as placeholders:
+- `titlePlaceholderHack`
+- `descriptionPlaceholderHack`
+- `inputTypeHack`
+- `createButtonHack`
+- `modeToggleTooltip`
+- `createButton` (updated to include "Prompt")
+
+**These should be translated by native speakers or professional translators.** The English placeholders ensure the UI works correctly while awaiting proper translations.
+
 ## Implementation Notes
 
 - All changes are backward compatible
