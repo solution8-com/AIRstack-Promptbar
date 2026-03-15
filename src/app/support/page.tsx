@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { ExternalLink, MessageCircleQuestion, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const GITHUB_ISSUE_BASE_URL = "https://github.com/f/prompts.chat/issues/new";
+const GITHUB_ISSUE_BASE_URL = "https://github.com/solution8-com/S8-Utility-promptschat/issues/new";
 
 interface FAQItemProps {
   question: string;
@@ -118,7 +118,7 @@ export default function SupportPage() {
   ];
 
   return (
-    <div className="container max-w-3xl py-10">
+    <div className="container max-w-6xl py-10">
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-2">{t("title")}</h1>
         <p className="text-muted-foreground">{t("description")}</p>
