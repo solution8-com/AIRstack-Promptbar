@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { PromptForm } from "@/components/prompts/prompt-form";
 import { db } from "@/lib/db";
@@ -24,7 +23,6 @@ interface PageProps {
 
 export default async function NewPromptPage({ searchParams }: PageProps) {
   const session = await auth();
-  const t = await getTranslations("prompts");
   const { prompt: initialPromptRequest, title, content, type, format, mode } = await searchParams;
   
   const isInternalHackMode = mode === "internal-hack";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,7 +26,6 @@ import {
   generateSkillContentWithFrontmatter,
   updateSkillFrontmatter,
   validateSkillFrontmatter,
-  DEFAULT_SKILL_FILE,
 } from "@/lib/skill-files";
 import {
   Form,
@@ -486,6 +485,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
   const promptContent = form.watch("content");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const codeEditorRef = useRef<CodeEditorHandle>(null);
+  const previewSectionRef = useRef<HTMLDivElement>(null);
 
   // Warn user before leaving page with unsaved changes
   const isDirty = form.formState.isDirty;
@@ -751,7 +751,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p className="max-w-xs text-xs">Click this toggle to switch to Solution8 Internal Hack mode</p>
+                      <p className="max-w-xs text-xs">{t("modeToggleTooltip")}</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -1335,7 +1335,9 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
 
           {/* Markdown Preview for Internal Hack Mode */}
           {isInternalHackMode && structuredFormat === "YAML" && (
-            <MarkdownPreview content={promptContent} />
+            <div ref={previewSectionRef}>
+              <MarkdownPreview content={promptContent} />
+            </div>
           )}
 
           {/* Structured format detection warning - hide for SKILL and TASTE types */}
@@ -1539,15 +1541,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
               type="button" 
               variant="outline"
               onClick={() => {
-                // Toggle preview mode
-                const contentElement = document.querySelector('[name="content"]');
-                if (contentElement) {
-                  // Find the markdown preview component and show it
-                  const previewSection = document.querySelector('.markdown-preview-section');
-                  if (previewSection) {
-                    previewSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  }
-                }
+                previewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
               }}
               className="bg-gradient-to-r from-amber-500/20 via-black to-amber-500/20 border-amber-500/50 hover:bg-amber-500/30 text-foreground"
             >

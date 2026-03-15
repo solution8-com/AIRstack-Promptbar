@@ -366,7 +366,7 @@
     "requiresVideo": "需要 {count} 个视频",
     "requiresDocument": "需要 {count} 个文档",
     "update": "更新",
-    "createButton": "创建",
+    "createButton": "Create Prompt",
     "pin": "置顶到个人资料",
     "unpin": "取消置顶",
     "pinned": "已置顶到个人资料",
@@ -396,7 +396,8 @@
     "titlePlaceholderHack": "Enter a title for your hack",
     "descriptionPlaceholderHack": "Optional description of your hack",
     "inputTypeHack": "Hack Implementation Guide",
-    "createButtonHack": "Publish Your Hack"
+    "createButtonHack": "Publish Your Hack",
+    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode"
   },
   "changeRequests": {
     "title": "变更请求",

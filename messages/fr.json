@@ -366,7 +366,7 @@
     "requiresVideo": "Nécessite {count} {count, plural, one {vidéo} other {vidéos}}",
     "requiresDocument": "Nécessite {count} {count, plural, one {document} other {documents}}",
     "update": "Mettre à jour",
-    "createButton": "Créer",
+    "createButton": "Create Prompt",
     "pin": "Épingler au Profil",
     "unpin": "Désépingler",
     "pinned": "Épinglé au profil",
@@ -396,7 +396,8 @@
     "titlePlaceholderHack": "Enter a title for your hack",
     "descriptionPlaceholderHack": "Optional description of your hack",
     "inputTypeHack": "Hack Implementation Guide",
-    "createButtonHack": "Publish Your Hack"
+    "createButtonHack": "Publish Your Hack",
+    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode"
   },
   "changeRequests": {
     "title": "Demandes de Modification",

@@ -366,7 +366,7 @@
       "errorProcessing": "Error de procesamiento..."
     },
     "update": "Actualizar",
-    "createButton": "Crear",
+    "createButton": "Create Prompt",
     "pin": "Fijar en Perfil",
     "unpin": "Desfijar",
     "pinned": "Fijado en el perfil",
@@ -396,7 +396,8 @@
     "titlePlaceholderHack": "Enter a title for your hack",
     "descriptionPlaceholderHack": "Optional description of your hack",
     "inputTypeHack": "Hack Implementation Guide",
-    "createButtonHack": "Publish Your Hack"
+    "createButtonHack": "Publish Your Hack",
+    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode"
   },
   "changeRequests": {
     "title": "Solicitudes de Cambio",
