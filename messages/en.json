@@ -107,11 +107,18 @@
   "prompts": {
     "title": "Prompts",
     "create": "Create Prompt",
+    "createInternalHack": "Create Solution8 Internal Hack",
+    "createPromptDescription": "Create a prompt for the community",
+    "createInternalHackDescription": "Create internal documentation for Solution8 team",
     "createSkill": "Create Skill",
     "createTaste": "Create Agent Basic Instructions",
     "skillsDescription": "Agent Skills are multi-file prompts that give AI agents specialized capabilities. They include instructions, configurations, and supporting files that can be used with Claude, Cursor, Windsurf, and other AI coding assistants.",
     "tastesDescription": "Agent Basic Instructions are single markdown files that define your coding style and preferences. They help AI coding agents learn how you write code, so they can match your conventions, patterns, and taste.",
     "createInfo": "This platform doesn't run or execute prompts — it's a community-driven library for sharing and discovering AI prompts. Create your prompt here, and others can copy and use it in their preferred AI tools like ChatGPT, Claude, Gemini, or any other LLM. The community can also comment on your prompts and suggest improvements through change requests.",
+    "markdownPreview": "Markdown Preview",
+    "edit": "Edit",
+    "preview": "Preview",
+    "noContentToPreview": "No content to preview",
     "hfDataStudio": {
       "button": "HF Data Studio",
       "openDataset": "Open Dataset",

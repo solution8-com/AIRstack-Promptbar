@@ -17,9 +17,10 @@ interface ContributorSearchProps {
   selectedUsers: User[];
   onSelect: (user: User) => void;
   onRemove: (userId: string) => void;
+  adminOnly?: boolean;
 }
 
-export function ContributorSearch({ selectedUsers, onSelect, onRemove }: ContributorSearchProps) {
+export function ContributorSearch({ selectedUsers, onSelect, onRemove, adminOnly = false }: ContributorSearchProps) {
   const t = useTranslations("prompts");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<User[]>([]);
@@ -58,7 +59,8 @@ export function ContributorSearch({ selectedUsers, onSelect, onRemove }: Contrib
 
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`);
+        const url = `/api/users/search?q=${encodeURIComponent(query)}${adminOnly ? "&adminOnly=true" : ""}`;
+        const res = await fetch(url);
         if (res.ok) {
           const data = await res.json();
           // Filter out already selected users
@@ -76,7 +78,7 @@ export function ContributorSearch({ selectedUsers, onSelect, onRemove }: Contrib
 
     const debounce = setTimeout(searchUsers, 300);
     return () => clearTimeout(debounce);
-  }, [query, selectedUsers]);
+  }, [query, selectedUsers, adminOnly]);
 
   const handleSelect = (user: User) => {
     onSelect(user);

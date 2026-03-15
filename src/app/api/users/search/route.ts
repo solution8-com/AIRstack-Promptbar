@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getAdminUsernamesFromEnv } from "@/lib/admin";
 
 export async function GET(request: Request) {
   try {
@@ -15,18 +17,33 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q")?.trim();
+    const adminOnly = searchParams.get("adminOnly") === "true";
 
     if (!query || query.length < 1) {
       return NextResponse.json([]);
     }
 
-    const users = await db.user.findMany({
-      where: {
+    // Build where clause with proper typing
+    const whereClause: Prisma.UserWhereInput = {
+      OR: [
+        { username: { contains: query, mode: "insensitive" } },
+        { name: { contains: query, mode: "insensitive" } },
+      ],
+    };
+
+    // Filter to admin users only if requested
+    if (adminOnly) {
+      const adminUsernames = getAdminUsernamesFromEnv();
+      whereClause.AND = {
         OR: [
-          { username: { contains: query, mode: "insensitive" } },
-          { name: { contains: query, mode: "insensitive" } },
+          { username: { in: adminUsernames } },
+          { role: "ADMIN" },
         ],
-      },
+      };
+    }
+
+    const users = await db.user.findMany({
+      where: whereClause,
       select: {
         id: true,
         username: true,

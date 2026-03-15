@@ -7,6 +7,7 @@ import { PromptForm } from "@/components/prompts/prompt-form";
 import { db } from "@/lib/db";
 import { isAIGenerationEnabled, getAIModelName } from "@/lib/ai/generation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ModeToggle } from "@/components/prompts/mode-toggle";
 
 export const metadata: Metadata = {
   title: "Create Prompt",
@@ -20,13 +21,16 @@ interface PageProps {
     content?: string;
     type?: "TEXT" | "IMAGE" | "VIDEO" | "AUDIO" | "SKILL" | "TASTE";
     format?: "JSON" | "YAML";
+    mode?: "prompt" | "internal-hack";
   }>;
 }
 
 export default async function NewPromptPage({ searchParams }: PageProps) {
   const session = await auth();
   const t = await getTranslations("prompts");
-  const { prompt: initialPromptRequest, title, content, type, format } = await searchParams;
+  const { prompt: initialPromptRequest, title, content, type, format, mode } = await searchParams;
+  
+  const isInternalHackMode = mode === "internal-hack";
 
   if (!session?.user) {
     redirect("/login");
@@ -60,12 +64,16 @@ export default async function NewPromptPage({ searchParams }: PageProps) {
           {t("createInfo")}
         </AlertDescription>
       </Alert>
+      
+      <ModeToggle currentMode={isInternalHackMode ? "internal-hack" : "prompt"} />
+      
       <PromptForm 
         categories={categories} 
         tags={tags} 
         aiGenerationEnabled={aiGenerationEnabled}
         aiModelName={aiModelName}
         initialPromptRequest={initialPromptRequest}
+        isInternalHackMode={isInternalHackMode}
         initialData={(title || content || type || format) ? { 
           title: title || "", 
           content: content || "",

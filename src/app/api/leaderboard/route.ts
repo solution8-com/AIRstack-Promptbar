@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
+import { getAdminUserIds } from "@/lib/admin";
 import { getAdminUsernames } from "@/lib/auth";
 
 // Cache leaderboard data for 1 hour (3600 seconds)
@@ -16,6 +17,9 @@ const getLeaderboard = unstable_cache(
       dateFilter = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     }
 
+    // Get admin user IDs for filtering
+    const adminUserIds = await getAdminUserIds();
+
     // Use database aggregation instead of loading all data into memory
     // Group votes by prompt author to get total upvotes per user
     const votesByAuthor = await db.promptVote.groupBy({
@@ -24,11 +28,12 @@ const getLeaderboard = unstable_cache(
       _count: { promptId: true },
     });
 
-    // Get prompt author mapping for voted prompts only
+    // Get prompt author mapping for voted prompts only (filter by admin authors)
     const votedPromptIds = votesByAuthor.map((v) => v.promptId);
     const promptAuthors = await db.prompt.findMany({
       where: {
         id: { in: votedPromptIds },
+        authorId: { in: adminUserIds },
         isPrivate: false,
         deletedAt: null,
       },

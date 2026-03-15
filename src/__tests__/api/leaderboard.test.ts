@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/leaderboard/route";
 import { db } from "@/lib/db";
+import { getAdminUserIds } from "@/lib/admin";
 
 // Mock dependencies
 vi.mock("@/lib/db", () => ({
@@ -17,6 +18,10 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
+vi.mock("@/lib/admin", () => ({
+  getAdminUserIds: vi.fn(),
+}));
+
 vi.mock("next/cache", () => ({
   unstable_cache: (fn: Function) => fn,
 }));
@@ -24,6 +29,8 @@ vi.mock("next/cache", () => ({
 describe("GET /api/leaderboard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default mock - return user1 and user2 as admins
+    vi.mocked(getAdminUserIds).mockResolvedValue(["user1", "user2"]);
   });
 
   it("should return leaderboard with default period (all)", async () => {
@@ -266,5 +273,61 @@ describe("GET /api/leaderboard", () => {
 
     expect(response.status).toBe(200);
     expect(data.leaderboard.length).toBeLessThanOrEqual(50);
+  });
+
+  it("should only include admin users in leaderboard", async () => {
+    // Mock getAdminUserIds to return only specific admin users
+    vi.mocked(getAdminUserIds).mockResolvedValue(["admin1", "admin2"]);
+
+    vi.mocked(db.promptVote.groupBy).mockResolvedValue([
+      { promptId: "prompt1", _count: { promptId: 10 } },
+      { promptId: "prompt2", _count: { promptId: 5 } },
+      { promptId: "prompt3", _count: { promptId: 3 } },
+    ] as never);
+
+    // Prompt1 and Prompt2 are by admins, Prompt3 is by a non-admin
+    vi.mocked(db.prompt.findMany).mockResolvedValue([
+      { id: "prompt1", authorId: "admin1" },
+      { id: "prompt2", authorId: "admin2" },
+      // prompt3 filtered out because author is not admin
+    ] as never);
+
+    vi.mocked(db.user.findMany).mockResolvedValue([
+      {
+        id: "admin1",
+        name: "Admin One",
+        username: "admin1",
+        avatar: null,
+        _count: { prompts: 5 },
+      },
+      {
+        id: "admin2",
+        name: "Admin Two",
+        username: "admin2",
+        avatar: null,
+        _count: { prompts: 3 },
+      },
+    ] as never);
+
+    const request = new Request("http://localhost:3000/api/leaderboard");
+
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+
+    // Verify that prompt.findMany was called with admin filter
+    expect(db.prompt.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          authorId: { in: ["admin1", "admin2"] },
+        }),
+      })
+    );
+
+    // Verify leaderboard only contains admin users
+    expect(data.leaderboard).toHaveLength(2);
+    expect(data.leaderboard[0].id).toBe("admin1");
+    expect(data.leaderboard[1].id).toBe("admin2");
   });
 });

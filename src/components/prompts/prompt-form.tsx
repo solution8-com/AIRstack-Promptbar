@@ -13,6 +13,7 @@ import { VariableWarning } from "./variable-warning";
 import { VariableHint } from "./variable-hint";
 import { StructuredFormatWarning } from "./structured-format-warning";
 import { ContributorSearch } from "./contributor-search";
+import { MarkdownPreview } from "./markdown-preview";
 import { PromptBuilder, type PromptBuilderHandle } from "./prompt-builder";
 import { MediaGenerator } from "./media-generator";
 import { SkillEditor } from "./skill-editor";
@@ -401,6 +402,7 @@ interface PromptFormProps {
   aiGenerationEnabled?: boolean;
   aiModelName?: string;
   initialPromptRequest?: string;
+  isInternalHackMode?: boolean;
 }
 
 // Read builder data from sessionStorage before form initialization
@@ -420,7 +422,7 @@ function getBuilderData(): { content?: string; type?: string; format?: string } 
   }
 }
 
-export function PromptForm({ categories, tags, initialData, initialContributors = [], promptId, mode = "create", aiGenerationEnabled = false, aiModelName, initialPromptRequest }: PromptFormProps) {
+export function PromptForm({ categories, tags, initialData, initialContributors = [], promptId, mode = "create", aiGenerationEnabled = false, aiModelName, initialPromptRequest, isInternalHackMode = false }: PromptFormProps) {
   const router = useRouter();
   const t = useTranslations("prompts");
   const tCommon = useTranslations("common");
@@ -433,6 +435,13 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
   // Get builder data on first render
   const [builderData] = useState(() => getBuilderData());
 
+  // Helper function to get page heading based on mode
+  const getPageHeading = () => {
+    if (mode === "edit") return t("edit");
+    if (isInternalHackMode) return t("createInternalHack");
+    return t("create");
+  };
+
   const promptSchema = createPromptSchema(t);
   const form = useForm<PromptFormValues>({
     resolver: zodResolver(promptSchema) as never,
@@ -443,10 +452,10 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
         ? prettifyJson(initialData.content) 
         : (initialData?.content || "")),
       type: builderData?.format ? "TEXT" : (builderData?.type as "TEXT" | "IMAGE" | "VIDEO" | "AUDIO" || initialData?.type || "TEXT"),
-      structuredFormat: (builderData?.format as "JSON" | "YAML") || initialData?.structuredFormat || undefined,
+      structuredFormat: isInternalHackMode ? "YAML" : ((builderData?.format as "JSON" | "YAML") || initialData?.structuredFormat || undefined),
       categoryId: initialData?.categoryId || "",
       tagIds: initialData?.tagIds || [],
-      isPrivate: initialData?.isPrivate || false,
+      isPrivate: isInternalHackMode ? false : (initialData?.isPrivate || false),
       mediaUrl: initialData?.mediaUrl || "",
       requiresMediaUpload: initialData?.requiresMediaUpload || false,
       requiredMediaType: initialData?.requiredMediaType || "IMAGE",
@@ -713,7 +722,9 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {/* Header: Page title + Private Switch */}
           <div className="flex items-center justify-between mb-2">
-            <h1 className="text-lg font-semibold">{mode === "edit" ? t("edit") : t("create")}</h1>
+            <h1 className="text-lg font-semibold">
+              {getPageHeading()}
+            </h1>
             <div className="flex items-center gap-3">
               {aiGenerationEnabled && (
                 <PromptBuilder
@@ -726,21 +737,23 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                   initialPromptRequest={initialPromptRequest}
                 />
               )}
-              <FormField
-                control={form.control}
-                name="isPrivate"
-                render={({ field }) => (
-                  <FormItem className="flex items-center gap-2">
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel className="!mt-0 text-sm font-normal">{t("promptPrivate")}</FormLabel>
-                  </FormItem>
-                )}
-              />
+              {!isInternalHackMode && (
+                <FormField
+                  control={form.control}
+                  name="isPrivate"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center gap-2">
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel className="!mt-0 text-sm font-normal">{t("promptPrivate")}</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
           </div>
 
@@ -949,6 +962,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
               selectedUsers={contributors}
               onSelect={(user) => setContributors((prev) => [...prev, user])}
               onRemove={(userId) => setContributors((prev) => prev.filter((u) => u.id !== userId))}
+              adminOnly={isInternalHackMode}
             />
           </div>
 
@@ -1279,6 +1293,11 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
             onConvert={(converted) => form.setValue("content", converted)}
           />
 
+          {/* Markdown Preview for Internal Hack Mode */}
+          {isInternalHackMode && structuredFormat === "YAML" && (
+            <MarkdownPreview content={promptContent} />
+          )}
+
           {/* Structured format detection warning - hide for SKILL and TASTE types */}
           {promptType !== "SKILL" && promptType !== "TASTE" && (
             <StructuredFormatWarning
@@ -1293,19 +1312,21 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
         </div>
 
         {/* ===== LLM PROCESSING ARROW ===== */}
-        <div className="flex flex-col items-center py-4">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <div className="h-px w-16 bg-border" />
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-xs font-medium">
-              <ArrowDown className="h-3.5 w-3.5" />
-              <span>{t("afterAiProcessing")}</span>
+        {!isInternalHackMode && (
+          <div className="flex flex-col items-center py-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="h-px w-16 bg-border" />
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-xs font-medium">
+                <ArrowDown className="h-3.5 w-3.5" />
+                <span>{t("afterAiProcessing")}</span>
+              </div>
+              <div className="h-px w-16 bg-border" />
             </div>
-            <div className="h-px w-16 bg-border" />
           </div>
-        </div>
+        )}
 
         {/* ===== OUTPUT SECTION ===== */}
-        {(promptType === "SKILL" || promptType === "TASTE") ? (
+        {!isInternalHackMode && ((promptType === "SKILL" || promptType === "TASTE") ? (
           /* SKILL/TASTE type shows a code output preview - code generated BY the skill/taste */
           <div className="space-y-4 py-6 border-t">
             <div className="space-y-1">
@@ -1437,28 +1458,29 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
               )}
             </div>
           </div>
-        )}
+        ))}
 
         {/* ===== WORKFLOW LINK SECTION ===== */}
-        <div className="space-y-3 py-6 border-t">
-          <FormField
-            control={form.control}
-            name="workflowLink"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("workflowLink")}</FormLabel>
-                <FormDescription className="text-xs">
-                  {mode === "create" 
-                    ? t("workflowLinkCreateNote")
-                    : t("workflowLinkDescription")
-                  }
-                </FormDescription>
-                <FormControl>
-                  <Input 
-                    placeholder={t("workflowLinkPlaceholder")} 
-                    {...field} 
-                    disabled={mode === "create"}
-                    className={mode === "create" ? "opacity-50" : ""}
+        {!isInternalHackMode && (
+          <div className="space-y-3 py-6 border-t">
+            <FormField
+              control={form.control}
+              name="workflowLink"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("workflowLink")}</FormLabel>
+                  <FormDescription className="text-xs">
+                    {mode === "create" 
+                      ? t("workflowLinkCreateNote")
+                      : t("workflowLinkDescription")
+                    }
+                  </FormDescription>
+                  <FormControl>
+                    <Input 
+                      placeholder={t("workflowLinkPlaceholder")} 
+                      {...field} 
+                      disabled={mode === "create"}
+                      className={mode === "create" ? "opacity-50" : ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -1466,6 +1488,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
             )}
           />
         </div>
+        )}
 
         <div className="flex justify-end gap-4 pt-2">
           <Button type="button" variant="outline" onClick={() => router.back()}>
