@@ -57,7 +57,7 @@ export default async function NewPromptPage({ searchParams }: PageProps) {
   const aiModelName = getAIModelName();
 
   return (
-    <div className="container max-w-3xl py-8">
+    <div className="container max-w-6xl py-8">
       <Alert className="mb-6">
         <Info className="h-4 w-4" />
         <AlertDescription>
