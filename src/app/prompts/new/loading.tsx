@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function NewPromptLoading() {
   return (
     <>
-      <div className="container max-w-3xl py-8">
+      <div className="container max-w-6xl py-8">
         <div className="space-y-4">
           {/* Header: Page title + Private Switch */}
           <div className="flex items-center justify-between mb-2">
