@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
 import { getAdminUserIds } from "@/lib/admin";
+import { getAdminUsernames } from "@/lib/auth";
 
 // Cache leaderboard data for 1 hour (3600 seconds)
 const getLeaderboard = unstable_cache(
@@ -80,8 +81,14 @@ const getLeaderboard = unstable_cache(
       },
     });
 
+    // Filter by admin users if S8_ADMINS is configured
+    const adminUsernames = getAdminUsernames();
+    const filteredUsers = adminUsernames.length > 0
+      ? topUsers.filter(user => adminUsernames.includes(user.username))
+      : topUsers;
+
     // Build leaderboard with vote counts
-    let leaderboard = topUsers
+    let leaderboard = filteredUsers
       .map((user) => ({
         id: user.id,
         name: user.name,
@@ -98,20 +105,29 @@ const getLeaderboard = unstable_cache(
     if (leaderboard.length < MIN_USERS) {
       const existingUserIds = new Set(leaderboard.map((u) => u.id));
 
-      const usersWithPrompts = await db.user.findMany({
-        where: {
-          id: {
-            notIn: Array.from(existingUserIds),
-            in: adminUserIds,
-          },
-          prompts: {
-            some: {
-              isPrivate: false,
-              deletedAt: null,
-              ...(dateFilter ? { createdAt: { gte: dateFilter } } : {}),
-            },
+      // Build where clause for additional users
+      const additionalUsersWhere: {
+        id: { notIn: string[] };
+        prompts: { some: Record<string, unknown> };
+        username?: { in: string[] };
+      } = {
+        id: { notIn: Array.from(existingUserIds) },
+        prompts: {
+          some: {
+            isPrivate: false,
+            deletedAt: null,
+            ...(dateFilter ? { createdAt: { gte: dateFilter } } : {}),
           },
         },
+      };
+
+      // Add username filter if admins configured
+      if (adminUsernames.length > 0) {
+        additionalUsersWhere.username = { in: adminUsernames };
+      }
+
+      const usersWithPrompts = await db.user.findMany({
+        where: additionalUsersWhere,
         select: {
           id: true,
           name: true,
