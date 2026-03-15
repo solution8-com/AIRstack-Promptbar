@@ -366,7 +366,7 @@
     "requiresVideo": "{count} {count, plural, one {video} other {video}} gerekli",
     "requiresDocument": "{count} {count, plural, one {doküman} other {doküman}} gerekli",
     "update": "Güncelle",
-    "createButton": "Oluştur",
+    "createButton": "Create Prompt",
     "pin": "Profile Sabitle",
     "unpin": "Sabitlemeyi Kaldır",
     "pinned": "Profile sabitlendi",
@@ -392,7 +392,12 @@
     "learnHowToWritePrompts": "Etkili promptlar nasıl yazılır öğrenin →",
     "structuredFormatDetected": "{format} formatı algılandı",
     "structuredFormatWarningDescription": "Prompt içeriğiniz yapılandırılmış veriye benziyor. Daha iyi sözdizimi vurgulama ve doğrulama için yapılandırılmış moda geçmeyi düşünün.",
-    "switchToStructured": "{format}'a geç"
+    "switchToStructured": "{format}'a geç",
+    "titlePlaceholderHack": "Enter a title for your hack",
+    "descriptionPlaceholderHack": "Optional description of your hack",
+    "inputTypeHack": "Hack Implementation Guide",
+    "createButtonHack": "Publish Your Hack",
+    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode"
   },
   "changeRequests": {
     "title": "Değişiklik İstekleri",

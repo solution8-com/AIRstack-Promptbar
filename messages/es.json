@@ -366,7 +366,7 @@
       "errorProcessing": "Error de procesamiento..."
     },
     "update": "Actualizar",
-    "createButton": "Crear",
+    "createButton": "Create Prompt",
     "pin": "Fijar en Perfil",
     "unpin": "Desfijar",
     "pinned": "Fijado en el perfil",
@@ -392,7 +392,12 @@
     "learnHowToWritePrompts": "Aprende a escribir prompts efectivos →",
     "structuredFormatDetected": "Formato {format} detectado",
     "structuredFormatWarningDescription": "El contenido de tu prompt parece ser datos estructurados. Considera cambiar al modo estructurado para mejor resaltado de sintaxis y validación.",
-    "switchToStructured": "Cambiar a {format}"
+    "switchToStructured": "Cambiar a {format}",
+    "titlePlaceholderHack": "Enter a title for your hack",
+    "descriptionPlaceholderHack": "Optional description of your hack",
+    "inputTypeHack": "Hack Implementation Guide",
+    "createButtonHack": "Publish Your Hack",
+    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode"
   },
   "changeRequests": {
     "title": "Solicitudes de Cambio",

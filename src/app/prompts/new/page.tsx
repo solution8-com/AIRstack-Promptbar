@@ -1,13 +1,9 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
-import { Info } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { PromptForm } from "@/components/prompts/prompt-form";
 import { db } from "@/lib/db";
 import { isAIGenerationEnabled, getAIModelName } from "@/lib/ai/generation";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ModeToggle } from "@/components/prompts/mode-toggle";
 
 export const metadata: Metadata = {
   title: "Create Prompt",
@@ -27,7 +23,6 @@ interface PageProps {
 
 export default async function NewPromptPage({ searchParams }: PageProps) {
   const session = await auth();
-  const t = await getTranslations("prompts");
   const { prompt: initialPromptRequest, title, content, type, format, mode } = await searchParams;
   
   const isInternalHackMode = mode === "internal-hack";
@@ -58,15 +53,6 @@ export default async function NewPromptPage({ searchParams }: PageProps) {
 
   return (
     <div className="container max-w-6xl py-8">
-      <Alert className="mb-6">
-        <Info className="h-4 w-4" />
-        <AlertDescription>
-          {t("createInfo")}
-        </AlertDescription>
-      </Alert>
-      
-      <ModeToggle currentMode={isInternalHackMode ? "internal-hack" : "prompt"} />
-      
       <PromptForm 
         categories={categories} 
         tags={tags} 

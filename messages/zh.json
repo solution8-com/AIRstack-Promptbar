@@ -366,7 +366,7 @@
     "requiresVideo": "需要 {count} 个视频",
     "requiresDocument": "需要 {count} 个文档",
     "update": "更新",
-    "createButton": "创建",
+    "createButton": "Create Prompt",
     "pin": "置顶到个人资料",
     "unpin": "取消置顶",
     "pinned": "已置顶到个人资料",
@@ -392,7 +392,12 @@
     "learnHowToWritePrompts": "学习如何写出有效的提示词 →",
     "structuredFormatDetected": "检测到 {format} 格式",
     "structuredFormatWarningDescription": "您的提示词内容看起来像结构化数据。考虑切换到结构化模式以获得更好的语法高亮和验证。",
-    "switchToStructured": "切换到 {format}"
+    "switchToStructured": "切换到 {format}",
+    "titlePlaceholderHack": "Enter a title for your hack",
+    "descriptionPlaceholderHack": "Optional description of your hack",
+    "inputTypeHack": "Hack Implementation Guide",
+    "createButtonHack": "Publish Your Hack",
+    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode"
   },
   "changeRequests": {
     "title": "变更请求",

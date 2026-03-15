@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, Upload, X, ArrowDown, Image as ImageIcon, Video, Volume2, Paperclip, Search, Sparkles, BookOpen, ExternalLink, ChevronDown, Settings2 } from "lucide-react";
+import { Loader2, Upload, X, ArrowDown, Image as ImageIcon, Video, Volume2, Paperclip, Search, Sparkles, BookOpen, ExternalLink, ChevronDown, Settings2, Info } from "lucide-react";
 import Link from "next/link";
 import { VariableToolbar } from "./variable-toolbar";
 import { VariableWarning } from "./variable-warning";
@@ -21,11 +21,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   generateSkillContentWithFrontmatter,
   updateSkillFrontmatter,
   validateSkillFrontmatter,
-  DEFAULT_SKILL_FILE,
 } from "@/lib/skill-files";
 import {
   Form,
@@ -485,6 +485,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
   const promptContent = form.watch("content");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const codeEditorRef = useRef<CodeEditorHandle>(null);
+  const previewSectionRef = useRef<HTMLDivElement>(null);
 
   // Warn user before leaving page with unsaved changes
   const isDirty = form.formState.isDirty;
@@ -720,11 +721,42 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Header: Page title + Private Switch */}
+          {/* Header: Page title + Mode Toggle + Private Switch */}
           <div className="flex items-center justify-between mb-2">
-            <h1 className="text-lg font-semibold">
-              {getPageHeading()}
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg font-semibold">
+                {getPageHeading()}
+              </h1>
+              {/* Inline Mode Toggle for Internal Hack */}
+              {mode === "create" && (
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="mode-toggle-inline"
+                    checked={isInternalHackMode}
+                    onCheckedChange={(checked) => {
+                      const params = new URLSearchParams(window.location.search);
+                      if (checked) {
+                        params.set("mode", "internal-hack");
+                      } else {
+                        params.delete("mode");
+                      }
+                      const queryString = params.toString();
+                      router.push(`/prompts/new${queryString ? `?${queryString}` : ""}`);
+                    }}
+                  />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="inline-flex items-center justify-center h-4 w-4 rounded-full border border-muted-foreground/40 text-muted-foreground/60 hover:text-muted-foreground cursor-help">
+                        <Info className="h-3 w-3" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs text-xs">{t("modeToggleTooltip")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              )}
+            </div>
             <div className="flex items-center gap-3">
               {aiGenerationEnabled && (
                 <PromptBuilder
@@ -782,7 +814,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                     <AiGenerateButton field="title" label="Title" />
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder={t("titlePlaceholder")} {...field} />
+                    <Input placeholder={isInternalHackMode ? t("titlePlaceholderHack") : t("titlePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -844,7 +876,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                 </FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder={t("descriptionPlaceholder")}
+                    placeholder={isInternalHackMode ? t("descriptionPlaceholderHack") : t("descriptionPlaceholder")}
                     className="resize-none"
                     rows={2}
                     {...field}
@@ -955,16 +987,18 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
           />
 
           {/* Contributors */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium block">{t("promptContributors")}</label>
-            <p className="text-xs text-muted-foreground">{t("contributorsDescription")}</p>
-            <ContributorSearch
-              selectedUsers={contributors}
-              onSelect={(user) => setContributors((prev) => [...prev, user])}
-              onRemove={(userId) => setContributors((prev) => prev.filter((u) => u.id !== userId))}
-              adminOnly={isInternalHackMode}
-            />
-          </div>
+          {!isInternalHackMode && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium block">{t("promptContributors")}</label>
+              <p className="text-xs text-muted-foreground">{t("contributorsDescription")}</p>
+              <ContributorSearch
+                selectedUsers={contributors}
+                onSelect={(user) => setContributors((prev) => [...prev, user])}
+                onRemove={(userId) => setContributors((prev) => prev.filter((u) => u.id !== userId))}
+                adminOnly={isInternalHackMode}
+              />
+            </div>
+          )}
 
           {/* Advanced Section */}
           <div className="border rounded-lg">
@@ -1101,7 +1135,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
         {/* ===== INPUT SECTION ===== */}
         <div className="space-y-4 py-6">
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-semibold">{t("inputType")}</h2>
+            <h2 className="text-base font-semibold">{isInternalHackMode ? t("inputTypeHack") : t("inputType")}</h2>
           </div>
           
           {/* Input Type & Format selectors */}
@@ -1156,22 +1190,24 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="JSON">JSON</SelectItem>
-                    <SelectItem value="YAML">YAML</SelectItem>
+                    <SelectItem value="YAML">YAML/MD</SelectItem>
                   </SelectContent>
                 </Select>
               )}
             </div>
             {/* Media upload toggle */}
-            <div className="flex items-center gap-2 sm:ml-auto">
-              <Switch
-                id="media-upload"
-                checked={requiresMediaUpload}
-                onCheckedChange={(v) => form.setValue("requiresMediaUpload", v)}
-              />
-              <label htmlFor="media-upload" className="text-sm cursor-pointer">
-                {t("requiresMediaUpload")}
-              </label>
-            </div>
+            {!isInternalHackMode && (
+              <div className="flex items-center gap-2 sm:ml-auto">
+                <Switch
+                  id="media-upload"
+                  checked={requiresMediaUpload}
+                  onCheckedChange={(v) => form.setValue("requiresMediaUpload", v)}
+                />
+                <label htmlFor="media-upload" className="text-sm cursor-pointer">
+                  {t("requiresMediaUpload")}
+                </label>
+              </div>
+            )}
           </div>
 
           {/* Media type & count - grouped buttons */}
@@ -1227,7 +1263,9 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                     />
                   ) : isStructuredInput ? (
                     <div className="rounded-md border overflow-hidden">
-                      <VariableToolbar onInsert={insertVariable} getSelectedText={getSelectedText} />
+                      {!isInternalHackMode && (
+                        <VariableToolbar onInsert={insertVariable} getSelectedText={getSelectedText} />
+                      )}
                       <CodeEditor
                         ref={codeEditorRef}
                         value={field.value}
@@ -1244,7 +1282,9 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                     </div>
                   ) : (
                     <div className="rounded-md border overflow-hidden">
-                      <VariableToolbar onInsert={insertVariable} getSelectedText={getSelectedText} />
+                      {!isInternalHackMode && (
+                        <VariableToolbar onInsert={insertVariable} getSelectedText={getSelectedText} />
+                      )}
                       <Textarea
                         ref={(el) => {
                           textareaRef.current = el;
@@ -1295,7 +1335,9 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
 
           {/* Markdown Preview for Internal Hack Mode */}
           {isInternalHackMode && structuredFormat === "YAML" && (
-            <MarkdownPreview content={promptContent} />
+            <div ref={previewSectionRef}>
+              <MarkdownPreview content={promptContent} />
+            </div>
           )}
 
           {/* Structured format detection warning - hide for SKILL and TASTE types */}
@@ -1494,9 +1536,21 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
           <Button type="button" variant="outline" onClick={() => router.back()}>
             {tCommon("cancel")}
           </Button>
+          {isInternalHackMode && (
+            <Button 
+              type="button" 
+              variant="outline"
+              onClick={() => {
+                previewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }}
+              className="bg-gradient-to-r from-amber-500/20 via-black to-amber-500/20 border-amber-500/50 hover:bg-amber-500/30 text-foreground"
+            >
+              {t("preview")}
+            </Button>
+          )}
           <Button type="submit" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {mode === "edit" ? t("update") : t("createButton")} Prompt
+            {mode === "edit" ? t("update") : (isInternalHackMode ? t("createButtonHack") : t("createButton"))}
           </Button>
         </div>
         </form>

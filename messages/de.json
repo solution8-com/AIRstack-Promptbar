@@ -366,7 +366,7 @@
     "requiresVideo": "Benötigt {count} {count, plural, one {Video} other {Videos}}",
     "requiresDocument": "Benötigt {count} {count, plural, one {Dokument} other {Dokumente}}",
     "update": "Aktualisieren",
-    "createButton": "Erstellen",
+    "createButton": "Create Prompt",
     "pin": "An Profil anheften",
     "unpin": "Lösen",
     "pinned": "An Profil angeheftet",
@@ -392,7 +392,12 @@
     "learnHowToWritePrompts": "Lernen Sie, effektive Prompts zu schreiben →",
     "structuredFormatDetected": "{format}-Format erkannt",
     "structuredFormatWarningDescription": "Ihr Prompt-Inhalt sieht nach strukturierten Daten aus. Erwägen Sie den Wechsel in den strukturierten Modus für bessere Syntaxhervorhebung und Validierung.",
-    "switchToStructured": "Zu {format} wechseln"
+    "switchToStructured": "Zu {format} wechseln",
+    "titlePlaceholderHack": "Enter a title for your hack",
+    "descriptionPlaceholderHack": "Optional description of your hack",
+    "inputTypeHack": "Hack Implementation Guide",
+    "createButtonHack": "Publish Your Hack",
+    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode"
   },
   "changeRequests": {
     "title": "Änderungsanfragen",
