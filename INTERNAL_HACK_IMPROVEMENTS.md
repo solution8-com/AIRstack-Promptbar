@@ -73,7 +73,7 @@ Descriptions are automatically generated using GitHub Models API after an intern
 
 1. **Trigger**: After creating a prompt with YAML format (internal hack mode)
 2. **Condition**: Only if no manual description was provided
-3. **Model**: Uses `gpt-4o-mini` via GitHub Models API
+3. **Model**: Attempts to use `gpt-5-nano` via GitHub Models API, falling back to `gpt-4o-mini` if unavailable
 4. **Process**:
    - Reads the hack title and implementation guide
    - Generates a concise 2-3 sentence description
