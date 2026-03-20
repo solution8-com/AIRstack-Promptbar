@@ -40,11 +40,11 @@ const playfairDisplay = Playfair_Display({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXTAUTH_URL || "http://localhost:3000"),
   title: {
-    default: "prompts.chat - AI Prompts Community",
-    template: "%s | prompts.chat",
+    default: "Solution8 PromptBar - AI Prompts Platform",
+    template: "%s | Solution8 PromptBar",
   },
   description:
-    "Discover, collect, and share the best AI prompts for ChatGPT, Claude, Gemini, and more. Join the largest community of AI prompt engineers and creators.",
+    "Collect, organize, and share AI prompts, skills and MCPs with Solution8 PromptBar. The internal AI prompts platform for teams powered by s8promptbar.",
   keywords: [
     "AI prompts",
     "ChatGPT prompts",
@@ -55,10 +55,12 @@ export const metadata: Metadata = {
     "GPT prompts",
     "AI assistant",
     "prompt templates",
+    "s8promptbar",
+    "Solution8",
   ],
-  authors: [{ name: "prompts.chat community" }],
-  creator: "prompts.chat",
-  publisher: "prompts.chat",
+  authors: [{ name: "Solution8 PromptBar community" }],
+  creator: "Solution8 PromptBar",
+  publisher: "Solution8 PromptBar",
   icons: {
     icon: [
       { url: "/favicon/favicon.ico", sizes: "48x48" },
@@ -70,31 +72,31 @@ export const metadata: Metadata = {
   },
   manifest: "/favicon/site.webmanifest",
   other: {
-    "apple-mobile-web-app-title": "prompts.chat",
+    "apple-mobile-web-app-title": "s8promptbar",
   },
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "prompts.chat",
-    title: "prompts.chat - AI Prompts Community",
+    siteName: "Solution8 PromptBar",
+    title: "Solution8 PromptBar - AI Prompts Platform",
     description:
-      "Discover, collect, and share the best AI prompts for ChatGPT, Claude, Gemini, and more. Join the largest community of AI prompt engineers.",
+      "Collect, organize, and share AI prompts, skills and MCPs with Solution8 PromptBar — the internal AI prompts platform for teams.",
     images: [
       {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "prompts.chat - AI Prompts Community",
+        alt: "Solution8 PromptBar - AI Prompts Platform",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "prompts.chat - AI Prompts Community",
+    title: "Solution8 PromptBar - AI Prompts Platform",
     description:
-      "Discover, collect, and share the best AI prompts for ChatGPT, Claude, Gemini, and more.",
+      "Collect, organize, and share AI prompts, skills and MCPs with Solution8 PromptBar.",
     images: ["/og.png"],
-    creator: "@promptschat",
+    creator: "@s8promptbar",
   },
   robots: {
     index: true,
@@ -108,7 +110,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: process.env.NEXTAUTH_URL || "https://prompts.chat",
+    canonical: process.env.NEXTAUTH_URL || "http://localhost:3000",
   },
 };
 

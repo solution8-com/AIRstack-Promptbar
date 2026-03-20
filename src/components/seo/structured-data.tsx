@@ -44,9 +44,8 @@ export async function StructuredData({ type, data }: StructuredDataProps) {
       },
       description: config.branding.description,
       sameAs: [
-        "https://github.com/f/prompts.chat",
-        "https://x.com/promptschat",
-        "https://x.com/fkadev",
+        "https://github.com/solution8-com/S8-Utility-Promptschat",
+        "https://x.com/s8promptbar",
       ],
     },
     website: {
