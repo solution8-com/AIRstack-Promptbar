@@ -709,9 +709,34 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
     });
 
     // Add blank lines around headings
-    beautified = beautified.replace(/([^\n])(^#{1,6}\s)/gm, '$1\n\n$2');
-    beautified = beautified.replace(/(^#{1,6}\s.*$)([^\n])/gm, '$1\n\n$2');
+    const headingLines = beautified.split('\n');
+    const processedLines: string[] = [];
+    for (let i = 0; i < headingLines.length; i++) {
+      const line = headingLines[i];
+      const isHeading = /^#{1,6}\s/.test(line);
 
+      if (isHeading) {
+        const hasPrevious = processedLines.length > 0;
+        const previousLine = hasPrevious ? processedLines[processedLines.length - 1] : "";
+
+        // Ensure a blank line before the heading if the previous line is non-empty
+        if (hasPrevious && previousLine.trim() !== "") {
+          processedLines.push("");
+        }
+
+        processedLines.push(line);
+
+        const nextLine = i + 1 < headingLines.length ? headingLines[i + 1] : undefined;
+
+        // Ensure a blank line after the heading if the next line exists and is non-empty
+        if (nextLine !== undefined && nextLine.trim() !== "") {
+          processedLines.push("");
+        }
+      } else {
+        processedLines.push(line);
+      }
+    }
+    beautified = processedLines.join('\n');
     // Ensure consistent list formatting
     beautified = beautified.replace(/^([*\-+])\s*/gm, '- ');
     beautified = beautified.replace(/^(\d+\.)\s*/gm, '$1 ');
