@@ -6,7 +6,7 @@ const useCloneBranding = true;
 export default defineConfig({
   // Branding - customize for white-label
   branding: {
-    name: "Solution8 promptBar",
+    name: "Solution8 PromptBar",
     logo: "/ffff.svg",
     logoDark: "/ffff.svg",
     favicon: "/ffff.svg",
