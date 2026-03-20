@@ -273,7 +273,9 @@ export async function POST(request: Request) {
       generateHackDescription(title, content)
         .then(async (generatedDescription) => {
           if (generatedDescription) {
-            console.log(`[Hack Description] Generated for hack ${prompt.id}:`, generatedDescription);
+            console.log(
+              `[Hack Description] Generated for hack ${prompt.id} (length: ${generatedDescription.length} characters)`
+            );
             await db.prompt.update({
               where: { id: prompt.id },
               data: { description: generatedDescription },
