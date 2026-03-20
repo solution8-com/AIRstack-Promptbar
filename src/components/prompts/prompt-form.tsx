@@ -602,17 +602,17 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
       codeEditorRef.current.insertAtCursor(variable);
       return;
     }
-    
+
     // For text prompts using textarea
     const textarea = textareaRef.current;
     const currentContent = form.getValues("content");
-    
+
     if (textarea) {
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
       const newContent = currentContent.slice(0, start) + variable + currentContent.slice(end);
       form.setValue("content", newContent);
-      
+
       // Set cursor position after inserted variable
       setTimeout(() => {
         textarea.focus();
@@ -621,6 +621,193 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
     } else {
       // Fallback: append to end
       form.setValue("content", currentContent + variable);
+    }
+  };
+
+  // Helper function to convert HTML to markdown
+  const htmlToMarkdown = (html: string): string => {
+    // Simple HTML to Markdown converter
+    let markdown = html;
+
+    // Handle headings
+    markdown = markdown.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n');
+    markdown = markdown.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n');
+    markdown = markdown.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n');
+    markdown = markdown.replace(/<h4[^>]*>(.*?)<\/h4>/gi, '#### $1\n');
+    markdown = markdown.replace(/<h5[^>]*>(.*?)<\/h5>/gi, '##### $1\n');
+    markdown = markdown.replace(/<h6[^>]*>(.*?)<\/h6>/gi, '###### $1\n');
+
+    // Handle bold and italic
+    markdown = markdown.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**');
+    markdown = markdown.replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**');
+    markdown = markdown.replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*');
+    markdown = markdown.replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*');
+
+    // Handle links
+    markdown = markdown.replace(/<a[^>]*href=["']([^"']*)["'][^>]*>(.*?)<\/a>/gi, '[$2]($1)');
+
+    // Handle lists
+    markdown = markdown.replace(/<ul[^>]*>(.*?)<\/ul>/gi, (match, content) => {
+      const items = content.match(/<li[^>]*>(.*?)<\/li>/gi);
+      if (!items) return match;
+      return items.map((item: string) => {
+        const text = item.replace(/<li[^>]*>(.*?)<\/li>/i, '$1').trim();
+        return `- ${text}`;
+      }).join('\n') + '\n';
+    });
+
+    markdown = markdown.replace(/<ol[^>]*>(.*?)<\/ol>/gi, (match, content) => {
+      const items = content.match(/<li[^>]*>(.*?)<\/li>/gi);
+      if (!items) return match;
+      return items.map((item: string, index: number) => {
+        const text = item.replace(/<li[^>]*>(.*?)<\/li>/i, '$1').trim();
+        return `${index + 1}. ${text}`;
+      }).join('\n') + '\n';
+    });
+
+    // Handle code blocks
+    markdown = markdown.replace(/<pre[^>]*><code[^>]*>([\s\S]*?)<\/code><\/pre>/gi, '```\n$1\n```\n');
+    markdown = markdown.replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`');
+
+    // Handle blockquotes
+    markdown = markdown.replace(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi, (match, content) => {
+      return content.split('\n').map((line: string) => `> ${line.trim()}`).join('\n') + '\n';
+    });
+
+    // Handle paragraphs and line breaks
+    markdown = markdown.replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n');
+    markdown = markdown.replace(/<br\s*\/?>/gi, '\n');
+    markdown = markdown.replace(/<div[^>]*>(.*?)<\/div>/gi, '$1\n');
+
+    // Remove remaining HTML tags
+    markdown = markdown.replace(/<[^>]+>/g, '');
+
+    // Decode HTML entities
+    markdown = markdown.replace(/&nbsp;/g, ' ');
+    markdown = markdown.replace(/&amp;/g, '&');
+    markdown = markdown.replace(/&lt;/g, '<');
+    markdown = markdown.replace(/&gt;/g, '>');
+    markdown = markdown.replace(/&quot;/g, '"');
+    markdown = markdown.replace(/&#39;/g, "'");
+
+    // Clean up excessive newlines (but preserve intentional blank lines)
+    markdown = markdown.replace(/\n{3,}/g, '\n\n');
+
+    return markdown.trim();
+  };
+
+  // Helper to beautify markdown
+  const beautifyMarkdown = (text: string): string => {
+    // Normalize line endings
+    let beautified = text.replace(/\r\n/g, '\n');
+
+    // Preserve code blocks and their formatting
+    const codeBlocks: string[] = [];
+    beautified = beautified.replace(/(```[\s\S]*?```)/g, (match) => {
+      codeBlocks.push(match);
+      return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+    });
+
+    // Add blank lines around headings
+    const headingLines = beautified.split('\n');
+    const processedLines: string[] = [];
+    for (let i = 0; i < headingLines.length; i++) {
+      const line = headingLines[i];
+      const isHeading = /^#{1,6}\s/.test(line);
+
+      if (isHeading) {
+        const hasPrevious = processedLines.length > 0;
+        const previousLine = hasPrevious ? processedLines[processedLines.length - 1] : "";
+
+        // Ensure a blank line before the heading if the previous line is non-empty
+        if (hasPrevious && previousLine.trim() !== "") {
+          processedLines.push("");
+        }
+
+        processedLines.push(line);
+
+        const nextLine = i + 1 < headingLines.length ? headingLines[i + 1] : undefined;
+
+        // Ensure a blank line after the heading if the next line exists and is non-empty
+        if (nextLine !== undefined && nextLine.trim() !== "") {
+          processedLines.push("");
+        }
+      } else {
+        processedLines.push(line);
+      }
+    }
+    beautified = processedLines.join('\n');
+    // Ensure consistent list formatting
+    beautified = beautified.replace(/^([*\-+])\s*/gm, '- ');
+    beautified = beautified.replace(/^(\d+\.)\s*/gm, '$1 ');
+
+    // Restore code blocks
+    codeBlocks.forEach((block, index) => {
+      beautified = beautified.replace(`__CODE_BLOCK_${index}__`, block);
+    });
+
+    // Clean up excessive blank lines
+    beautified = beautified.replace(/\n{3,}/g, '\n\n');
+
+    return beautified.trim();
+  };
+
+  // Handle paste events for internal hack mode
+  const handlePaste = (e: React.ClipboardEvent) => {
+    if (!isInternalHackMode) return;
+
+    const clipboardData = e.clipboardData;
+    if (!clipboardData) return;
+
+    // Check if HTML content is available (rich text)
+    const htmlData = clipboardData.getData('text/html');
+    const plainData = clipboardData.getData('text/plain');
+
+    if (htmlData) {
+      // Convert HTML to markdown
+      e.preventDefault();
+      const markdown = htmlToMarkdown(htmlData);
+      const beautified = beautifyMarkdown(markdown);
+
+      const currentContent = form.getValues("content");
+      const textarea = textareaRef.current;
+
+      if (textarea) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const newContent = currentContent.slice(0, start) + beautified + currentContent.slice(end);
+        form.setValue("content", newContent, { shouldDirty: true });
+
+        // Set cursor position after pasted content
+        setTimeout(() => {
+          textarea.focus();
+          textarea.setSelectionRange(start + beautified.length, start + beautified.length);
+        }, 0);
+      } else {
+        form.setValue("content", currentContent + beautified, { shouldDirty: true });
+      }
+    } else if (plainData) {
+      // Beautify plain markdown
+      e.preventDefault();
+      const beautified = beautifyMarkdown(plainData);
+
+      const currentContent = form.getValues("content");
+      const textarea = textareaRef.current;
+
+      if (textarea) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const newContent = currentContent.slice(0, start) + beautified + currentContent.slice(end);
+        form.setValue("content", newContent, { shouldDirty: true });
+
+        // Set cursor position after pasted content
+        setTimeout(() => {
+          textarea.focus();
+          textarea.setSelectionRange(start + beautified.length, start + beautified.length);
+        }, 0);
+      } else {
+        form.setValue("content", currentContent + beautified, { shouldDirty: true });
+      }
     }
   };
 
@@ -790,15 +977,17 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
           </div>
 
         {/* ===== PROMPT WRITING GUIDE LINK ===== */}
-        <Link
-          href="/how_to_write_effective_prompts"
-          target="_blank"
-          className="flex items-center gap-2 p-3 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors text-sm text-muted-foreground hover:text-foreground"
-        >
-          <BookOpen className="h-4 w-4 text-primary" />
-          <span>{t("learnHowToWritePrompts")}</span>
-          <ExternalLink className="h-3 w-3 ml-auto" />
-        </Link>
+        {!isInternalHackMode && (
+          <Link
+            href="/how_to_write_effective_prompts"
+            target="_blank"
+            className="flex items-center gap-2 p-3 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors text-sm text-muted-foreground hover:text-foreground"
+          >
+            <BookOpen className="h-4 w-4 text-primary" />
+            <span>{t("learnHowToWritePrompts")}</span>
+            <ExternalLink className="h-3 w-3 ml-auto" />
+          </Link>
+        )}
 
         {/* ===== METADATA SECTION ===== */}
         <div className="space-y-4 pb-6 border-b">
@@ -1000,136 +1189,138 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
             </div>
           )}
 
-          {/* Advanced Section */}
-          <div className="border rounded-lg">
-            <button
-              type="button"
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="flex items-center justify-between w-full p-3 text-sm font-medium text-left hover:bg-muted/50 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <Settings2 className="h-4 w-4 text-muted-foreground" />
-                {t("advancedOptions")}
-                {(bestWithModels.length > 0 || bestWithMCP.length > 0) && (
-                  <Badge variant="secondary" className="text-[10px] h-5">{bestWithModels.length + bestWithMCP.length}</Badge>
-                )}
-              </span>
-              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
-            </button>
-            {showAdvanced && (
-              <div className="p-3 space-y-4 border-t">
-                {/* Works Best With Models */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium block">{t("worksBestWithModels")}</label>
-                  <p className="text-xs text-muted-foreground">{t("worksBestWithModelsDescription")}</p>
-                  {bestWithModels.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {bestWithModels.map((slug) => {
-                        const model = AI_MODELS[slug as keyof typeof AI_MODELS];
-                        return (
-                          <Badge key={slug} variant="secondary" className="pr-1 flex items-center gap-1">
-                            {model?.name || slug}
+          {/* Advanced Section - Hidden in Internal Hack Mode */}
+          {!isInternalHackMode && (
+            <div className="border rounded-lg">
+              <button
+                type="button"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="flex items-center justify-between w-full p-3 text-sm font-medium text-left hover:bg-muted/50 transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <Settings2 className="h-4 w-4 text-muted-foreground" />
+                  {t("advancedOptions")}
+                  {(bestWithModels.length > 0 || bestWithMCP.length > 0) && (
+                    <Badge variant="secondary" className="text-[10px] h-5">{bestWithModels.length + bestWithMCP.length}</Badge>
+                  )}
+                </span>
+                <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
+              </button>
+              {showAdvanced && (
+                <div className="p-3 space-y-4 border-t">
+                  {/* Works Best With Models */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium block">{t("worksBestWithModels")}</label>
+                    <p className="text-xs text-muted-foreground">{t("worksBestWithModelsDescription")}</p>
+                    {bestWithModels.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {bestWithModels.map((slug) => {
+                          const model = AI_MODELS[slug as keyof typeof AI_MODELS];
+                          return (
+                            <Badge key={slug} variant="secondary" className="pr-1 flex items-center gap-1">
+                              {model?.name || slug}
+                              <button
+                                type="button"
+                                onClick={() => form.setValue("bestWithModels", bestWithModels.filter((s) => s !== slug))}
+                                className="ml-1 rounded-full hover:bg-muted p-0.5"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {bestWithModels.length < 3 && (
+                      <Select
+                        value=""
+                        onValueChange={(slug) => {
+                          if (slug && !bestWithModels.includes(slug)) {
+                            form.setValue("bestWithModels", [...bestWithModels, slug]);
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="w-full sm:w-64 h-8 text-xs">
+                          <SelectValue placeholder={t("selectModel")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(modelsByProvider).map(([provider, models]) => (
+                            <div key={provider}>
+                              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{provider}</div>
+                              {models
+                                .filter((m) => !bestWithModels.includes(m.slug))
+                                .map((model) => (
+                                  <SelectItem key={model.slug} value={model.slug}>
+                                    {model.name}
+                                  </SelectItem>
+                                ))}
+                            </div>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
+                  {/* Works Best With MCP */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium block">{t("worksBestWithMCP")}</label>
+                    <p className="text-xs text-muted-foreground">{t("worksBestWithMCPDescription")}</p>
+                    {bestWithMCP.length > 0 && (
+                      <div className="space-y-1.5">
+                        {bestWithMCP.map((mcp, index) => (
+                          <div key={index} className="flex items-center gap-2 p-2 rounded border bg-muted/30 text-xs">
+                            <code className="flex-1 break-all">{mcp.command}</code>
+                            {mcp.tools && mcp.tools.length > 0 && (
+                              <span className="text-muted-foreground">({mcp.tools.join(", ")})</span>
+                            )}
                             <button
                               type="button"
-                              onClick={() => form.setValue("bestWithModels", bestWithModels.filter((s) => s !== slug))}
-                              className="ml-1 rounded-full hover:bg-muted p-0.5"
+                              onClick={() => form.setValue("bestWithMCP", bestWithMCP.filter((_, i) => i !== index))}
+                              className="p-1 hover:bg-muted rounded"
                             >
                               <X className="h-3 w-3" />
                             </button>
-                          </Badge>
-                        );
-                      })}
-                    </div>
-                  )}
-                  {bestWithModels.length < 3 && (
-                    <Select
-                      value=""
-                      onValueChange={(slug) => {
-                        if (slug && !bestWithModels.includes(slug)) {
-                          form.setValue("bestWithModels", [...bestWithModels, slug]);
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="w-full sm:w-64 h-8 text-xs">
-                        <SelectValue placeholder={t("selectModel")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(modelsByProvider).map(([provider, models]) => (
-                          <div key={provider}>
-                            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{provider}</div>
-                            {models
-                              .filter((m) => !bestWithModels.includes(m.slug))
-                              .map((model) => (
-                                <SelectItem key={model.slug} value={model.slug}>
-                                  {model.name}
-                                </SelectItem>
-                              ))}
                           </div>
                         ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                </div>
-
-                {/* Works Best With MCP */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium block">{t("worksBestWithMCP")}</label>
-                  <p className="text-xs text-muted-foreground">{t("worksBestWithMCPDescription")}</p>
-                  {bestWithMCP.length > 0 && (
-                    <div className="space-y-1.5">
-                      {bestWithMCP.map((mcp, index) => (
-                        <div key={index} className="flex items-center gap-2 p-2 rounded border bg-muted/30 text-xs">
-                          <code className="flex-1 break-all">{mcp.command}</code>
-                          {mcp.tools && mcp.tools.length > 0 && (
-                            <span className="text-muted-foreground">({mcp.tools.join(", ")})</span>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => form.setValue("bestWithMCP", bestWithMCP.filter((_, i) => i !== index))}
-                            className="p-1 hover:bg-muted rounded"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ))}
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder={t("mcpCommandPlaceholder")}
+                        value={newMcpCommand}
+                        onChange={(e) => setNewMcpCommand(e.target.value)}
+                        className="flex-1 text-xs h-8"
+                      />
+                      <Input
+                        placeholder={t("mcpToolsPlaceholder")}
+                        value={newMcpTools}
+                        onChange={(e) => setNewMcpTools(e.target.value)}
+                        className="w-28 text-xs h-8"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-2 text-xs"
+                        disabled={!newMcpCommand.trim()}
+                        onClick={() => {
+                          if (newMcpCommand.trim()) {
+                            const tools = newMcpTools.trim() ? newMcpTools.split(",").map(t => t.trim()).filter(Boolean) : undefined;
+                            form.setValue("bestWithMCP", [...bestWithMCP, { command: newMcpCommand.trim(), tools }]);
+                            setNewMcpCommand("");
+                            setNewMcpTools("");
+                          }
+                        }}
+                      >
+                        {t("add")}
+                      </Button>
                     </div>
-                  )}
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder={t("mcpCommandPlaceholder")}
-                      value={newMcpCommand}
-                      onChange={(e) => setNewMcpCommand(e.target.value)}
-                      className="flex-1 text-xs h-8"
-                    />
-                    <Input
-                      placeholder={t("mcpToolsPlaceholder")}
-                      value={newMcpTools}
-                      onChange={(e) => setNewMcpTools(e.target.value)}
-                      className="w-28 text-xs h-8"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-8 px-2 text-xs"
-                      disabled={!newMcpCommand.trim()}
-                      onClick={() => {
-                        if (newMcpCommand.trim()) {
-                          const tools = newMcpTools.trim() ? newMcpTools.split(",").map(t => t.trim()).filter(Boolean) : undefined;
-                          form.setValue("bestWithMCP", [...bestWithMCP, { command: newMcpCommand.trim(), tools }]);
-                          setNewMcpCommand("");
-                          setNewMcpTools("");
-                        }
-                      }}
-                    >
-                      {t("add")}
-                    </Button>
                   </div>
-                </div>
 
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* ===== INPUT SECTION ===== */}
@@ -1139,64 +1330,69 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
           </div>
           
           {/* Input Type & Format selectors */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex items-center gap-3">
-              <Select 
-                value={promptType === "SKILL" ? "SKILL" : promptType === "TASTE" ? "TASTE" : (isStructuredInput ? "STRUCTURED" : "TEXT")} 
-                onValueChange={(v) => {
-                  if (v === "STRUCTURED") {
-                    form.setValue("structuredFormat", "JSON");
-                    form.setValue("type", "TEXT");
-                  } else if (v === "SKILL") {
-                    form.setValue("structuredFormat", undefined);
-                    form.setValue("type", "SKILL");
-                    // Auto-generate frontmatter from title and description
-                    const currentContent = form.getValues("content");
-                    const title = form.getValues("title");
-                    const description = form.getValues("description") || "";
-                    // Only generate if content is empty or doesn't look like skill content
-                    if (!currentContent || !currentContent.startsWith("---")) {
-                      form.setValue("content", generateSkillContentWithFrontmatter(title, description));
+          {isInternalHackMode ? (
+            // Internal Hack Mode: Show fixed "Hack Instructions" label only
+            <div className="px-4 py-2 rounded-md border bg-muted/20">
+              <span className="text-sm font-medium">{t("hackInstructionsLabel")}</span>
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="flex items-center gap-3">
+                <Select
+                  value={promptType === "SKILL" ? "SKILL" : promptType === "TASTE" ? "TASTE" : (isStructuredInput ? "STRUCTURED" : "TEXT")}
+                  onValueChange={(v) => {
+                    if (v === "STRUCTURED") {
+                      form.setValue("structuredFormat", "JSON");
+                      form.setValue("type", "TEXT");
+                    } else if (v === "SKILL") {
+                      form.setValue("structuredFormat", undefined);
+                      form.setValue("type", "SKILL");
+                      // Auto-generate frontmatter from title and description
+                      const currentContent = form.getValues("content");
+                      const title = form.getValues("title");
+                      const description = form.getValues("description") || "";
+                      // Only generate if content is empty or doesn't look like skill content
+                      if (!currentContent || !currentContent.startsWith("---")) {
+                        form.setValue("content", generateSkillContentWithFrontmatter(title, description));
+                      }
+                    } else if (v === "TASTE") {
+                      form.setValue("structuredFormat", undefined);
+                      form.setValue("type", "TASTE");
+                      // Auto-generate placeholder taste content
+                      const currentContent = form.getValues("content");
+                      if (!currentContent || !currentContent.startsWith("# Taste")) {
+                        form.setValue("content", `# Taste\n- Package manager is npm (not pnpm or yarn). Confidence: 0.95\n- Use Next.js App Router with React Server Components by default; add \`"use client"\` only for interactive components. Confidence: 0.95\n`);
+                      }
+                    } else {
+                      form.setValue("structuredFormat", undefined);
+                      form.setValue("type", "TEXT");
                     }
-                  } else if (v === "TASTE") {
-                    form.setValue("structuredFormat", undefined);
-                    form.setValue("type", "TASTE");
-                    // Auto-generate placeholder taste content
-                    const currentContent = form.getValues("content");
-                    if (!currentContent || !currentContent.startsWith("# Taste")) {
-                      form.setValue("content", `# Taste\n- Package manager is npm (not pnpm or yarn). Confidence: 0.95\n- Use Next.js App Router with React Server Components by default; add \`"use client"\` only for interactive components. Confidence: 0.95\n`);
-                    }
-                  } else {
-                    form.setValue("structuredFormat", undefined);
-                    form.setValue("type", "TEXT");
-                  }
-                }}
-              >
-                <SelectTrigger className="h-9 w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="TEXT">{t("inputTypes.text")}</SelectItem>
-                  <SelectItem value="STRUCTURED">{t("inputTypes.structured")}</SelectItem>
-                  <SelectItem value="SKILL">{t("inputTypes.skill")}</SelectItem>
-                  <SelectItem value="TASTE">{t("inputTypes.taste")}</SelectItem>
-                </SelectContent>
-              </Select>
-              {isStructuredInput && (
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                <Select value={structuredFormat || "JSON"} onValueChange={(v) => form.setValue("structuredFormat", v as any)}>
-                  <SelectTrigger className="h-9 w-24">
+                  }}
+                >
+                  <SelectTrigger className="h-9 w-48">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="JSON">JSON</SelectItem>
-                    <SelectItem value="YAML">YAML/MD</SelectItem>
+                    <SelectItem value="TEXT">{t("inputTypes.text")}</SelectItem>
+                    <SelectItem value="STRUCTURED">{t("inputTypes.structured")}</SelectItem>
+                    <SelectItem value="SKILL">{t("inputTypes.skill")}</SelectItem>
+                    <SelectItem value="TASTE">{t("inputTypes.taste")}</SelectItem>
                   </SelectContent>
                 </Select>
-              )}
-            </div>
-            {/* Media upload toggle */}
-            {!isInternalHackMode && (
+                {isStructuredInput && (
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  <Select value={structuredFormat || "JSON"} onValueChange={(v) => form.setValue("structuredFormat", v as any)}>
+                    <SelectTrigger className="h-9 w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="JSON">JSON</SelectItem>
+                      <SelectItem value="YAML">YAML/MD</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+              {/* Media upload toggle */}
               <div className="flex items-center gap-2 sm:ml-auto">
                 <Switch
                   id="media-upload"
@@ -1207,8 +1403,8 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                   {t("requiresMediaUpload")}
                 </label>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Media type & count - grouped buttons */}
           {requiresMediaUpload && (
@@ -1262,7 +1458,10 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                       onChange={field.onChange}
                     />
                   ) : isStructuredInput ? (
-                    <div className="rounded-md border overflow-hidden">
+                    <div
+                      className="rounded-md border overflow-hidden"
+                      onPaste={isInternalHackMode ? handlePaste : undefined}
+                    >
                       {!isInternalHackMode && (
                         <VariableToolbar onInsert={insertVariable} getSelectedText={getSelectedText} />
                       )}
@@ -1294,6 +1493,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                         value={field.value}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
+                        onPaste={isInternalHackMode ? handlePaste : undefined}
                         placeholder={t("contentPlaceholder")}
                         className="min-h-[150px] font-mono border-0 rounded-none focus-visible:ring-0"
                       />

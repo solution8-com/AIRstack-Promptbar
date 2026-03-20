@@ -119,6 +119,74 @@ The setup wizard configures branding, theme, authentication (GitHub/Google/Azure
 
 ---
 
+## 🤖 GitHub Models Integration
+
+Enable AI-powered description generation for internal documentation using GitHub Models API.
+
+### What is GitHub Models?
+
+GitHub Models provides free access to cutting-edge AI models (GPT-5-nano, GPT-4o, Llama, Phi, etc.) directly through GitHub. Perfect for prototyping and development.
+
+### Setup Steps
+
+**1. Get Your GitHub Models Token**
+
+Visit [github.com/marketplace/models](https://github.com/marketplace/models) and:
+- Click "Get started" or sign in with your GitHub account
+- Navigate to your settings/tokens page
+- Generate a new token with "models" access
+- Copy the token (starts with `ghp_` or `github_pat_`)
+
+**2. Add Token to Environment**
+
+Add to your `.env` file:
+```bash
+# Required for internal hack description generation
+GITHUB_MODELS_TOKEN=your_github_token_here
+```
+
+**3. Verify Setup**
+
+The system will automatically:
+- Use `gpt-5-nano` model (fastest, most cost-effective)
+- Fallback to `gpt-4o-mini` if gpt-5-nano is unavailable
+- Generate descriptions when creating internal hacks without manual descriptions
+
+### Usage Limits (Free Tier)
+
+- **gpt-5-nano**: 150 requests/day, 8K input + 4K output tokens/request
+- **gpt-4o-mini**: 50 requests/day, 8K input + 4K output tokens/request
+- Sufficient for typical internal documentation needs
+
+### Troubleshooting
+
+**Error: "GITHUB_MODELS_TOKEN environment variable is required"**
+- Add the token to your `.env` file
+- Restart your development server
+
+**Error: "model_not_found" for gpt-5-nano**
+- System will automatically fallback to gpt-4o-mini
+- No action required - this is normal behavior
+
+**Rate Limit Exceeded**
+- Free tier limits apply (see above)
+- Upgrade to paid tier or wait for daily reset
+- Or disable AI generation temporarily
+
+### Model Information
+
+| Model | Speed | Cost | Quality | Use Case |
+|-------|-------|------|---------|----------|
+| gpt-5-nano | ⚡⚡⚡ | 💰 | ⭐⭐⭐ | Quick descriptions, high volume |
+| gpt-4o-mini | ⚡⚡ | 💰💰 | ⭐⭐⭐⭐ | Balanced quality/cost |
+| gpt-4o | ⚡ | 💰💰💰 | ⭐⭐⭐⭐⭐ | Complex technical docs |
+
+Current implementation uses gpt-5-nano → gpt-4o-mini fallback strategy for optimal cost/performance.
+
+📖 **[GitHub Models Documentation](https://docs.github.com/en/github-models)** • 🔗 **[Models Marketplace](https://github.com/marketplace/models)**
+
+---
+
 ## 🔌 Integrations
 
 ### CLI

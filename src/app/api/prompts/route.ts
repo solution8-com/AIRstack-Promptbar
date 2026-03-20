@@ -8,6 +8,7 @@ import { generatePromptEmbedding, findAndSaveRelatedPrompts } from "@/lib/ai/emb
 import { generatePromptSlug } from "@/lib/slug";
 import { checkPromptQuality } from "@/lib/ai/quality-check";
 import { isSimilarContent, normalizeContent } from "@/lib/similarity";
+import { generateHackDescription } from "@/lib/ai/generate-hack-description";
 
 const promptSchema = z.object({
   title: z.string().min(1).max(200),
@@ -263,6 +264,30 @@ export async function POST(request: Request) {
         .catch((err) =>
           console.error("Failed to generate embedding/related prompts for:", prompt.id, err)
         );
+    }
+
+    // Generate description for internal hacks (non-blocking)
+    // Only if: Internal hack (non-private prompts from internal hack mode) AND no manual description provided
+    if (!isPrivate && !description) {
+      console.log(`[Hack Description] Generating description for hack ${prompt.id}`);
+      generateHackDescription(title, content)
+        .then(async (generatedDescription) => {
+          if (generatedDescription) {
+            console.log(
+              `[Hack Description] Generated for hack ${prompt.id} (length: ${generatedDescription.length} characters)`
+            );
+            await db.prompt.update({
+              where: { id: prompt.id },
+              data: { description: generatedDescription },
+            });
+            console.log(`[Hack Description] Description saved for hack ${prompt.id}`);
+          } else {
+            console.log(`[Hack Description] Generation returned null for hack ${prompt.id}`);
+          }
+        })
+        .catch((err) => {
+          console.error("[Hack Description] Failed to generate description for hack:", prompt.id, err);
+        });
     }
 
     // Run quality check for auto-delist (non-blocking for public prompts)
