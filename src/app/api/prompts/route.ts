@@ -267,10 +267,8 @@ export async function POST(request: Request) {
     }
 
     // Generate description for internal hacks (non-blocking)
-    // Only if: Internal hack mode (detected by private:false + YAML format) AND no manual description provided
-    // Internal hacks always use YAML format, but we check it to ensure we only generate for hacks
-    const isInternalHack = !isPrivate && structuredFormat === "YAML";
-    if (isInternalHack && !description) {
+    // Only if: Internal hack (non-private prompts from internal hack mode) AND no manual description provided
+    if (!isPrivate && !description) {
       console.log(`[Hack Description] Generating description for hack ${prompt.id}`);
       generateHackDescription(title, content)
         .then(async (generatedDescription) => {
