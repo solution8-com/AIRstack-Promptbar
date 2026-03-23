@@ -145,6 +145,7 @@ function isAdminUser(username: string | null | undefined): boolean {
 }
 
 const REQUIRED_ORG = process.env.S8_REQUIRED_ORG || "solution8-com";
+const ENFORCE_GITHUB_ORG = process.env.S8_ENFORCE_GITHUB_ORG !== "false";
 
 async function isGithubOrgMember(username: string | null | undefined, accessToken?: string | null): Promise<boolean> {
   if (!username || !accessToken) return false;
@@ -157,8 +158,18 @@ async function isGithubOrgMember(username: string | null | undefined, accessToke
       },
     });
 
-    return res.status === 204;
-  } catch {
+    if (res.status !== 204) {
+      const bodyText = await res.text();
+      console.warn(
+        `[auth] GitHub org check failed`,
+        JSON.stringify({ org: REQUIRED_ORG, username, status: res.status, statusText: res.statusText, body: bodyText.slice(0, 200) })
+      );
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("[auth] GitHub org check error", { org: REQUIRED_ORG, username, error });
     return false;
   }
 }
@@ -166,7 +177,7 @@ async function isGithubOrgMember(username: string | null | undefined, accessToke
 // Build auth config dynamically based on prompts.config.ts
 async function buildAuthConfig() {
   const config = await getConfig();
-  const providerIds = getConfiguredProviders(config).filter((id) => id === "github");
+  const providerIds = getConfiguredProviders(config);
   
   const authProviders = providerIds
     .map((id) => {
@@ -197,11 +208,15 @@ async function buildAuthConfig() {
     callbacks: {
       async signIn({ account, profile }): Promise<boolean> {
         if (account?.provider !== "github") {
-          return false;
+          return undefined;
         }
 
         const githubUsername = (profile as { login?: string })?.login;
         const accessToken = account.access_token as string | undefined;
+
+        if (!ENFORCE_GITHUB_ORG) {
+          return true;
+        }
 
         return isGithubOrgMember(githubUsername, accessToken);
       },

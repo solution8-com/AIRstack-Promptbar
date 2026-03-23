@@ -88,25 +88,17 @@ export function CategoriesTable({ categories }: CategoriesTableProps) {
     [categories]
   );
 
-  // Build hierarchical list for display (parents first, then children indented)
-  const hierarchicalCategories = useMemo(() => {
-    const result: (Category & { level: number })[] = [];
-    
-    // Add root categories and their children
-    rootCategories.forEach(parent => {
-      result.push({ ...parent, level: 0 });
-      const children = categories.filter(c => c.parentId === parent.id);
-      children.forEach(child => {
-        result.push({ ...child, level: 1 });
-      });
-    });
-    
-    return result;
-  }, [categories, rootCategories]);
-
   const sortedCategories = useMemo(() => {
-    const list = [...hierarchicalCategories];
-    list.sort((a, b) => {
+    const childrenMap = new Map<string, (Category & { level: number })[]>();
+    categories.forEach((category) => {
+      if (category.parentId) {
+        const existing = childrenMap.get(category.parentId) ?? [];
+        existing.push({ ...category, level: 1 });
+        childrenMap.set(category.parentId, existing);
+      }
+    });
+
+    const compare = (a: Category, b: Category) => {
       let aValue: string | number = "";
       let bValue: string | number = "";
 
@@ -121,9 +113,19 @@ export function CategoriesTable({ categories }: CategoriesTableProps) {
       if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
       if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
       return 0;
+    };
+
+    const sortedRoots = [...rootCategories].sort(compare);
+
+    const result: (Category & { level: number })[] = [];
+    sortedRoots.forEach((root) => {
+      result.push({ ...root, level: 0 });
+      const children = childrenMap.get(root.id) ?? [];
+      result.push(...children);
     });
-    return list;
-  }, [hierarchicalCategories, sortDirection, sortField]);
+
+    return result;
+  }, [categories, rootCategories, sortDirection, sortField]);
 
   const toggleSort = (field: "name" | "slug" | "prompts") => {
     if (sortField === field) {

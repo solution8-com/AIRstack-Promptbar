@@ -95,7 +95,7 @@ Generate a concise description (2-3 sentences, under 500 characters) that explai
         max_tokens: 150,
       });
     } catch (error: unknown) {
-      const err = error as { error?: { code?: string }; status?: number };
+      const err = error as OpenAIErrorResponse;
       // If gpt-5-nano is not available, fallback to gpt-4o-mini
       if (err?.error?.code === "model_not_found" || err?.status === 404) {
         console.log("[generateHackDescription] gpt-5-nano not available, falling back to gpt-4o-mini");
@@ -144,4 +144,8 @@ Generate a concise description (2-3 sentences, under 500 characters) that explai
  */
 export function isHackDescriptionGenerationEnabled(): boolean {
   return !!process.env.GITHUB_MODELS_TOKEN;
+}
+interface OpenAIErrorResponse {
+  error?: { code?: string };
+  status?: number;
 }

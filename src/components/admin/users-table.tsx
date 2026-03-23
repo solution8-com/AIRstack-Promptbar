@@ -263,15 +263,39 @@ export function UsersTable() {
 
     setLoading(true);
     try {
-      await Promise.all(
+      const results = await Promise.allSettled(
         selectedIds.map((id) =>
           fetch(`/api/admin/users/${id}`, {
             method: "DELETE",
-          })
+          }).then((res) => ({ res, id }))
         )
       );
-      toast.success(t("deleted"));
-      setSelectedIds([]);
+
+      const succeeded: string[] = [];
+      const failed: string[] = [];
+
+      results.forEach((result, index) => {
+        const id = selectedIds[index];
+        if (result.status === "fulfilled") {
+          if (result.value.res.ok) {
+            succeeded.push(result.value.id);
+          } else {
+            failed.push(result.value.id);
+          }
+        } else {
+          failed.push(id);
+        }
+      });
+
+      if (succeeded.length > 0) {
+        toast.success(t("deleted"));
+      }
+
+      if (failed.length > 0) {
+        toast.error(`${t("deleteFailed")} (${failed.join(", ")})`);
+      }
+
+      setSelectedIds((prev) => prev.filter((id) => !succeeded.includes(id)));
       fetchUsers(currentPage, searchQuery, userFilter);
       router.refresh();
     } catch {

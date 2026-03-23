@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { getToken } from "next-auth/jwt";
 
 const PUBLIC_PATHS = ["/login", "/register", "/api/auth", "/unauthorized"];
+const REQUIRED_ORG = process.env.S8_REQUIRED_ORG || "solution8-com";
+const ENFORCE_GITHUB_ORG = process.env.S8_ENFORCE_GITHUB_ORG !== "false";
 
 function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
@@ -19,20 +21,25 @@ function handleUnauthorized(request: NextRequest) {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const hasFileExtension = /\.[a-zA-Z0-9]+$/.test(pathname);
 
   if (
     pathname.startsWith("/_next/") ||
-    pathname.startsWith("/favicon") ||
-    pathname.startsWith("/sitemap") ||
-    pathname.startsWith("/robots.txt") ||
+    pathname === "/robots.txt" ||
+    pathname === "/favicon.ico" ||
+    hasFileExtension ||
     isPublicPath(pathname)
   ) {
     return NextResponse.next();
   }
 
-  const session = await auth();
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
-  if (!session?.user?.orgMember) {
+  if (!token) {
+    return handleUnauthorized(request);
+  }
+
+  if (ENFORCE_GITHUB_ORG && token.org !== REQUIRED_ORG) {
     return handleUnauthorized(request);
   }
 

@@ -248,15 +248,39 @@ export function PromptsManagement({ aiSearchEnabled, promptsWithoutEmbeddings, t
 
     setDeletingPrompt(true);
     try {
-      await Promise.all(
+      const results = await Promise.allSettled(
         selectedPromptIds.map((id) =>
           fetch(`/api/admin/prompts/${id}`, {
             method: "DELETE",
-          })
+          }).then((res) => ({ res, id }))
         )
       );
-      toast.success(t("promptsList.deleted"));
-      setSelectedPromptIds([]);
+
+      const succeeded: string[] = [];
+      const failed: string[] = [];
+
+      results.forEach((result, index) => {
+        const id = selectedPromptIds[index];
+        if (result.status === "fulfilled") {
+          if (result.value.res.ok) {
+            succeeded.push(result.value.id);
+          } else {
+            failed.push(result.value.id);
+          }
+        } else {
+          failed.push(id);
+        }
+      });
+
+      if (succeeded.length > 0) {
+        toast.success(t("promptsList.deleted"));
+      }
+
+      if (failed.length > 0) {
+        toast.error(`${t("prompts.deleteFailed")} (${failed.join(", ")})`);
+      }
+
+      setSelectedPromptIds((prev) => prev.filter((id) => !succeeded.includes(id)));
       fetchPrompts(currentPage, searchQuery, promptFilter);
       router.refresh();
     } catch (error) {
@@ -780,6 +804,13 @@ export function PromptsManagement({ aiSearchEnabled, promptsWithoutEmbeddings, t
               </Button>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
+              <input
+                type="checkbox"
+                aria-label="select all prompts"
+                checked={selectedPromptIds.length > 0 && selectedPromptIds.length === sortedPrompts.length}
+                onChange={(e) => toggleSelectAllPrompts(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300"
+              />
               <Select value={sortField} onValueChange={(value) => setSortField(value as typeof sortField)}>
                 <SelectTrigger className="w-[140px]">
                   <SelectValue placeholder={tCommon("sort") || "Sort"} />
@@ -925,13 +956,6 @@ export function PromptsManagement({ aiSearchEnabled, promptsWithoutEmbeddings, t
               })}
             </p>
             <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                aria-label="select all prompts"
-                checked={selectedPromptIds.length > 0 && selectedPromptIds.length === sortedPrompts.length}
-                onChange={(e) => toggleSelectAllPrompts(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300"
-              />
               <Button
                 size="icon"
                 variant="outline"
