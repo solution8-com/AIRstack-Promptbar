@@ -171,19 +171,30 @@ export function TagsTable({ tags }: TagsTableProps) {
 
     setLoading(true);
     try {
-      await Promise.all(
+      const results = await Promise.allSettled(
         selectedIds.map((id) =>
           fetch(`/api/admin/tags/${id}`, {
             method: "DELETE",
+          }).then((res) => {
+            if (!res.ok) throw new Error(`Failed to delete ${id}`);
+            return id;
           })
         )
       );
 
-      toast.success(t("deleted"));
-      setSelectedIds([]);
+      const succeeded = results
+        .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
+        .map((r) => r.value);
+      const failed = results.filter((r) => r.status === "rejected").length;
+
+      setSelectedIds((prev) => prev.filter((id) => !succeeded.includes(id)));
+
+      if (failed > 0) {
+        toast.error(t("bulkDeletePartialFail", { failed, succeeded: succeeded.length }));
+      } else {
+        toast.success(t("deleted"));
+      }
       router.refresh();
-    } catch {
-      toast.error(t("deleteFailed"));
     } finally {
       setLoading(false);
     }
