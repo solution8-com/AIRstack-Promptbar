@@ -176,6 +176,17 @@ export function TagsTable({ tags }: TagsTableProps) {
           fetch(`/api/admin/tags/${id}`, {
             method: "DELETE",
           }).then((res) => {
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    if (!window.confirm(t("deleteConfirmTitle"))) return;
+
+    setLoading(true);
+    try {
+      const results = await Promise.allSettled(
+        selectedIds.map((id) =>
+          fetch(`/api/admin/tags/${id}`, {
+            method: "DELETE",
+          }).then((res) => {
             if (!res.ok) throw new Error(`Failed to delete ${id}`);
             return id;
           })
