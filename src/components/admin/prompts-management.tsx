@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -125,6 +125,9 @@ export function PromptsManagement({ aiSearchEnabled, promptsWithoutEmbeddings, t
   const [promptToDelete, setPromptToDelete] = useState<AdminPrompt | null>(null);
   const [deletingPrompt, setDeletingPrompt] = useState(false);
   const [promptFilter, setPromptFilter] = useState("all");
+  const [selectedPromptIds, setSelectedPromptIds] = useState<string[]>([]);
+  const [sortField, setSortField] = useState<"title" | "views" | "votes" | "createdAt">("title");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const fetchPrompts = useCallback(async (page: number, search: string, filter: string) => {
     setLoadingPrompts(true);
@@ -166,6 +169,54 @@ export function PromptsManagement({ aiSearchEnabled, promptsWithoutEmbeddings, t
     setCurrentPage(1);
   };
 
+  const sortedPrompts = useMemo(() => {
+    const list = [...prompts];
+    list.sort((a, b) => {
+      let aValue: string | number = "";
+      let bValue: string | number = "";
+
+      switch (sortField) {
+        case "views":
+          aValue = a.viewCount;
+          bValue = b.viewCount;
+          break;
+        case "votes":
+          aValue = a._count.votes;
+          bValue = b._count.votes;
+          break;
+        case "createdAt":
+          aValue = new Date(a.createdAt).getTime();
+          bValue = new Date(b.createdAt).getTime();
+          break;
+        default:
+          aValue = a.title.toLowerCase();
+          bValue = b.title.toLowerCase();
+      }
+
+      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+    return list;
+  }, [prompts, sortDirection, sortField]);
+
+  const toggleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const togglePromptSelect = (id: string) => {
+    setSelectedPromptIds((prev) => (prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]));
+  };
+
+  const toggleSelectAllPrompts = (checked: boolean) => {
+    setSelectedPromptIds(checked ? sortedPrompts.map((p) => p.id) : []);
+  };
+
   const handleDeletePrompt = async () => {
     if (!promptToDelete) return;
 
@@ -186,6 +237,30 @@ export function PromptsManagement({ aiSearchEnabled, promptsWithoutEmbeddings, t
       router.refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to delete prompt");
+    } finally {
+      setDeletingPrompt(false);
+    }
+  };
+
+  const handleBulkDeletePrompts = async () => {
+    if (selectedPromptIds.length === 0) return;
+    if (!window.confirm(t("promptsList.deleteConfirmTitle"))) return;
+
+    setDeletingPrompt(true);
+    try {
+      await Promise.all(
+        selectedPromptIds.map((id) =>
+          fetch(`/api/admin/prompts/${id}`, {
+            method: "DELETE",
+          })
+        )
+      );
+      toast.success(t("promptsList.deleted"));
+      setSelectedPromptIds([]);
+      fetchPrompts(currentPage, searchQuery, promptFilter);
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("prompts.deleteFailed"));
     } finally {
       setDeletingPrompt(false);
     }
@@ -704,33 +779,68 @@ export function PromptsManagement({ aiSearchEnabled, promptsWithoutEmbeddings, t
                 {loadingPrompts ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
               </Button>
             </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Select value={sortField} onValueChange={(value) => setSortField(value as typeof sortField)}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder={tCommon("sort") || "Sort"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="title">{tCommon("title") || "Title"}</SelectItem>
+                  <SelectItem value="views">{tCommon("views") || "Views"}</SelectItem>
+                  <SelectItem value="votes">{tCommon("votes") || "Votes"}</SelectItem>
+                  <SelectItem value="createdAt">{tCommon("created") || "Created"}</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" onClick={() => toggleSort(sortField)}>
+                {sortDirection === "asc" ? tCommon("ascending") || "Asc" : tCommon("descending") || "Desc"}
+              </Button>
+              {selectedPromptIds.length > 0 && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleBulkDeletePrompts}
+                  disabled={deletingPrompt}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {t("prompts.delete")}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Mobile-friendly Prompts Cards */}
-        <div className="space-y-3">
-          {loadingPrompts && prompts.length === 0 ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : prompts.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              {t("promptsList.noPrompts")}
-            </div>
-          ) : (
-            prompts.map((prompt) => (
-              <div
-                key={prompt.id}
-                className="rounded-lg border bg-card p-4 space-y-3"
-              >
-                {/* Header Row */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="font-medium truncate">{prompt.title}</h4>
-                      {prompt.isFeatured && (
-                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 flex-shrink-0" />
-                      )}
+          {/* Mobile-friendly Prompts Cards */}
+          <div className="space-y-3">
+            {loadingPrompts && sortedPrompts.length === 0 ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : sortedPrompts.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                {t("promptsList.noPrompts")}
+              </div>
+            ) : (
+              sortedPrompts.map((prompt) => (
+                <div
+                  key={prompt.id}
+                  className="rounded-lg border bg-card p-4 space-y-3"
+                >
+                  {/* Header Row */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <input
+                        type="checkbox"
+                        aria-label={`select ${prompt.title}`}
+                        checked={selectedPromptIds.includes(prompt.id)}
+                        onChange={() => togglePromptSelect(prompt.id)}
+                        className="h-4 w-4 mt-1 rounded border-gray-300"
+                      />
+                      <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="font-medium truncate">{prompt.title}</h4>
+                        {prompt.isFeatured && (
+                          <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 flex-shrink-0" />
+                        )}
                       {prompt.isPrivate && (
                         <Badge variant="secondary" className="text-xs">
                           <EyeOff className="h-3 w-3 mr-1" />
@@ -748,14 +858,15 @@ export function PromptsManagement({ aiSearchEnabled, promptsWithoutEmbeddings, t
                           <Flag className="h-3 w-3 mr-1" />
                           {prompt._count.reports}
                         </Badge>
-                      )}
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {prompt.type} • {prompt.viewCount} {t("promptsList.views")} • {prompt._count.votes} {t("promptsList.votes")}
+                      </p>
+                      </div>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {prompt.type} • {prompt.viewCount} {t("promptsList.views")} • {prompt._count.votes} {t("promptsList.votes")}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {prompt.id && (
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {prompt.id && (
                       <Link href={`/prompts/${prompt.id}`} target="_blank" prefetch={false}>
                         <Button size="icon" variant="ghost" className="h-8 w-8">
                           <ExternalLink className="h-4 w-4" />
@@ -814,6 +925,13 @@ export function PromptsManagement({ aiSearchEnabled, promptsWithoutEmbeddings, t
               })}
             </p>
             <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                aria-label="select all prompts"
+                checked={selectedPromptIds.length > 0 && selectedPromptIds.length === sortedPrompts.length}
+                onChange={(e) => toggleSelectAllPrompts(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300"
+              />
               <Button
                 size="icon"
                 variant="outline"

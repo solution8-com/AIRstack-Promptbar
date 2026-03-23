@@ -70,7 +70,7 @@ describe("Admin utilities", () => {
         id: "user-1",
         username: "admin1",
         role: "USER",
-      } as any);
+      });
 
       const result = await isUserAdmin("user-1");
       expect(result).toBe(true);
@@ -82,7 +82,7 @@ describe("Admin utilities", () => {
         id: "user-1",
         username: "someuser",
         role: "ADMIN",
-      } as any);
+      });
 
       const result = await isUserAdmin("user-1");
       expect(result).toBe(true);
@@ -94,7 +94,7 @@ describe("Admin utilities", () => {
         id: "user-1",
         username: "regularuser",
         role: "USER",
-      } as any);
+      });
 
       const result = await isUserAdmin("user-1");
       expect(result).toBe(false);
@@ -114,7 +114,7 @@ describe("Admin utilities", () => {
         { id: "user-1" },
         { id: "user-2" },
         { id: "user-3" },
-      ] as any);
+      ]);
 
       const result = await getAdminUserIds();
       expect(result).toEqual(["user-1", "user-2", "user-3"]);

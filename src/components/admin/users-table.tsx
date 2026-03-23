@@ -78,6 +78,9 @@ export function UsersTable() {
   const [editCreditsUser, setEditCreditsUser] = useState<UserData | null>(null);
   const [newCreditLimit, setNewCreditLimit] = useState("");
   const [loading, setLoading] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [sortField, setSortField] = useState<"username" | "email" | "role" | "prompts" | "createdAt">("username");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   // Pagination and search state
   const [users, setUsers] = useState<UserData[]>([]);
@@ -202,6 +205,82 @@ export function UsersTable() {
     }
   };
 
+  const sortedUsers = useMemo(() => {
+    const list = [...users];
+    list.sort((a, b) => {
+      let aValue: string | number = "";
+      let bValue: string | number = "";
+
+      switch (sortField) {
+        case "email":
+          aValue = (a.email || "").toLowerCase();
+          bValue = (b.email || "").toLowerCase();
+          break;
+        case "role":
+          aValue = a.role;
+          bValue = b.role;
+          break;
+        case "prompts":
+          aValue = a._count.prompts;
+          bValue = b._count.prompts;
+          break;
+        case "createdAt":
+          aValue = new Date(a.createdAt).getTime();
+          bValue = new Date(b.createdAt).getTime();
+          break;
+        default:
+          aValue = (a.username || "").toLowerCase();
+          bValue = (b.username || "").toLowerCase();
+      }
+
+      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+    return list;
+  }, [sortDirection, sortField, users]);
+
+  const toggleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const toggleSelectAll = (checked: boolean) => {
+    setSelectedIds(checked ? sortedUsers.map((u) => u.id) : []);
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    if (!window.confirm(t("deleteConfirmTitle"))) return;
+
+    setLoading(true);
+    try {
+      await Promise.all(
+        selectedIds.map((id) =>
+          fetch(`/api/admin/users/${id}`, {
+            method: "DELETE",
+          })
+        )
+      );
+      toast.success(t("deleted"));
+      setSelectedIds([]);
+      fetchUsers(currentPage, searchQuery, userFilter);
+      router.refresh();
+    } catch {
+      toast.error(t("deleteFailed"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleEditCredits = (user: UserData) => {
     setEditCreditsUser(user);
     setNewCreditLimit(user.dailyGenerationLimit.toString());
@@ -233,17 +312,17 @@ export function UsersTable() {
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-        <div>
-          <h3 className="text-lg font-semibold">{t("title")}</h3>
-          <p className="text-sm text-muted-foreground">{t("description")}</p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <Select value={userFilter} onValueChange={handleFilterChange}>
-            <SelectTrigger className="w-full sm:w-[140px]">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div>
+            <h3 className="text-lg font-semibold">{t("title")}</h3>
+            <p className="text-sm text-muted-foreground">{t("description")}</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Select value={userFilter} onValueChange={handleFilterChange}>
+              <SelectTrigger className="w-full sm:w-[140px]">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("filters.all")}</SelectItem>
               <SelectItem value="admin">{t("filters.admin")}</SelectItem>
@@ -253,23 +332,36 @@ export function UsersTable() {
               <SelectItem value="flagged">{t("filters.flagged")}</SelectItem>
             </SelectContent>
           </Select>
-          <div className="flex gap-2">
-            <div className="relative flex-1 sm:flex-none">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={t("searchPlaceholder")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className="pl-9 w-full sm:w-[200px]"
-              />
+            <div className="flex gap-2">
+              <div className="relative flex-1 sm:flex-none">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={t("searchPlaceholder")}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  className="pl-9 w-full sm:w-[200px]"
+                />
+              </div>
+              <Button size="icon" variant="outline" onClick={handleSearch} disabled={loadingUsers}>
+                {loadingUsers ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+              </Button>
             </div>
-            <Button size="icon" variant="outline" onClick={handleSearch} disabled={loadingUsers}>
-              {loadingUsers ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-            </Button>
+            <div className="flex items-center gap-2">
+              {selectedIds.length > 0 && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleBulkDelete}
+                  disabled={loading}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {t("delete")}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
       {loadingUsers && users.length === 0 ? (
         <div className="flex items-center justify-center py-12 border rounded-md">
@@ -283,10 +375,17 @@ export function UsersTable() {
         <>
           {/* Mobile Card View */}
           <div className="block sm:hidden space-y-3">
-            {users.map((user) => (
+            {sortedUsers.map((user) => (
               <div key={user.id} className="rounded-lg border bg-card p-4 space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
+                    <input
+                      type="checkbox"
+                      aria-label={`select ${user.username}`}
+                      checked={selectedIds.includes(user.id)}
+                      onChange={() => toggleSelect(user.id)}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={user.avatar || undefined} />
                       <AvatarFallback>
@@ -363,17 +462,35 @@ export function UsersTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("user")}</TableHead>
-              <TableHead>{t("email")}</TableHead>
-              <TableHead>{t("role")}</TableHead>
-              <TableHead className="text-center">{t("prompts")}</TableHead>
-              <TableHead>{t("joined")}</TableHead>
+              <TableHead className="w-[50px]">
+                <input
+                  type="checkbox"
+                  aria-label="select all users"
+                  checked={selectedIds.length > 0 && selectedIds.length === sortedUsers.length}
+                  onChange={(e) => toggleSelectAll(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+              </TableHead>
+              <TableHead className="cursor-pointer" onClick={() => toggleSort("username")}>{t("user")}</TableHead>
+              <TableHead className="cursor-pointer" onClick={() => toggleSort("email")}>{t("email")}</TableHead>
+              <TableHead className="cursor-pointer" onClick={() => toggleSort("role")}>{t("role")}</TableHead>
+              <TableHead className="text-center cursor-pointer" onClick={() => toggleSort("prompts")}>{t("prompts")}</TableHead>
+              <TableHead className="cursor-pointer" onClick={() => toggleSort("createdAt")}>{t("joined")}</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((user) => (
+            {sortedUsers.map((user) => (
               <TableRow key={user.id}>
+                <TableCell>
+                  <input
+                    type="checkbox"
+                    aria-label={`select ${user.username}`}
+                    checked={selectedIds.includes(user.id)}
+                    onChange={() => toggleSelect(user.id)}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
