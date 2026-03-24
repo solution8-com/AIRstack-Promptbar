@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { MoreHorizontal, Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -62,6 +63,9 @@ export function TagsTable({ tags }: TagsTableProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [sortField, setSortField] = useState<"name" | "slug" | "color" | "prompts">("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [formData, setFormData] = useState({ name: "", slug: "", color: "#6366f1" });
 
   const openCreateDialog = () => {
@@ -124,6 +128,79 @@ export function TagsTable({ tags }: TagsTableProps) {
     }
   };
 
+  const sortedTags = useMemo(() => {
+    const list = [...tags];
+    list.sort((a, b) => {
+      let aValue: string | number = "";
+      let bValue: string | number = "";
+
+      if (sortField === "prompts") {
+        aValue = a._count.prompts;
+        bValue = b._count.prompts;
+      } else {
+        aValue = (a[sortField] as string).toLowerCase();
+        bValue = (b[sortField] as string).toLowerCase();
+      }
+
+      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+    return list;
+  }, [sortDirection, sortField, tags]);
+
+  const toggleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const toggleSelectAll = (checked: boolean) => {
+    setSelectedIds(checked ? sortedTags.map((t) => t.id) : []);
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    if (!window.confirm(t("deleteConfirmTitle"))) return;
+
+    setLoading(true);
+    try {
+      const results = await Promise.allSettled(
+        selectedIds.map((id) =>
+          fetch(`/api/admin/tags/${id}`, {
+            method: "DELETE",
+          }).then((res) => {
+            if (!res.ok) throw new Error(`Failed to delete ${id}`);
+            return id;
+          })
+        )
+      );
+
+      const succeeded = results
+        .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
+        .map((r) => r.value);
+      const failed = results.filter((r) => r.status === "rejected").length;
+
+      setSelectedIds((prev) => prev.filter((id) => !succeeded.includes(id)));
+
+      if (failed > 0) {
+        toast.error(t("bulkDeletePartialFail", { failed, succeeded: succeeded.length }));
+      } else {
+        toast.success(t("deleted"));
+      }
+      router.refresh();
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <div className="flex items-center justify-between mb-4">
@@ -131,33 +208,63 @@ export function TagsTable({ tags }: TagsTableProps) {
           <h3 className="text-lg font-semibold">{t("title")}</h3>
           <p className="text-sm text-muted-foreground">{t("description")}</p>
         </div>
-        <Button size="sm" onClick={openCreateDialog}>
-          <Plus className="h-4 w-4 mr-2" />
-          {t("add")}
-        </Button>
+        <div className="flex items-center gap-2">
+          {selectedIds.length > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleBulkDelete}
+              disabled={loading}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {t("delete")}
+            </Button>
+          )}
+          <Button size="sm" onClick={openCreateDialog}>
+            <Plus className="h-4 w-4 mr-2" />
+            {t("add")}
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("name")}</TableHead>
-              <TableHead>{t("slug")}</TableHead>
-              <TableHead>{t("color")}</TableHead>
-              <TableHead className="text-center">{t("prompts")}</TableHead>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  aria-label="select all tags"
+                  checked={selectedIds.length > 0 && selectedIds.length === sortedTags.length}
+                  onCheckedChange={(checked) => toggleSelectAll(Boolean(checked))}
+                  className="h-4 w-4"
+                />
+              </TableHead>
+              <TableHead className="cursor-pointer" onClick={() => toggleSort("name")}>{t("name")}</TableHead>
+              <TableHead className="cursor-pointer" onClick={() => toggleSort("slug")}>{t("slug")}</TableHead>
+              <TableHead className="cursor-pointer" onClick={() => toggleSort("color")}>{t("color")}</TableHead>
+              <TableHead className="text-center cursor-pointer" onClick={() => toggleSort("prompts")}>{t("prompts")}</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {tags.length === 0 ? (
+            {sortedTags.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                   {t("noTags")}
                 </TableCell>
               </TableRow>
             ) : (
-              tags.map((tag) => (
+              sortedTags.map((tag) => (
                 <TableRow key={tag.id}>
+                  <TableCell>
+                    <input
+                      type="checkbox"
+                      aria-label={`select ${tag.name}`}
+                      checked={selectedIds.includes(tag.id)}
+                      onChange={() => toggleSelect(tag.id)}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                  </TableCell>
                   <TableCell>
                     <span
                       className="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium"

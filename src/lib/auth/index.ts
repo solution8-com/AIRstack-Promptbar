@@ -144,6 +144,36 @@ function isAdminUser(username: string | null | undefined): boolean {
   return admins.includes(username);
 }
 
+const REQUIRED_ORG = process.env.S8_REQUIRED_ORG || "solution8-com";
+const ENFORCE_GITHUB_ORG = process.env.S8_ENFORCE_GITHUB_ORG !== "false";
+
+async function isGithubOrgMember(username: string | null | undefined, accessToken?: string | null): Promise<boolean> {
+  if (!username || !accessToken) return false;
+
+  try {
+    const res = await fetch(`https://api.github.com/orgs/${REQUIRED_ORG}/members/${username}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/vnd.github+json",
+      },
+    });
+
+    if (res.status !== 204) {
+      const bodyText = await res.text();
+      console.warn(
+        `[auth] GitHub org check failed`,
+        JSON.stringify({ org: REQUIRED_ORG, username, status: res.status, statusText: res.statusText, body: bodyText.slice(0, 200) })
+      );
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("[auth] GitHub org check error", { org: REQUIRED_ORG, username, error });
+    return false;
+  }
+}
+
 // Build auth config dynamically based on prompts.config.ts
 async function buildAuthConfig() {
   const config = await getConfig();
@@ -176,6 +206,20 @@ async function buildAuthConfig() {
       error: "/login",
     },
     callbacks: {
+      async signIn({ account, profile }): Promise<boolean> {
+        if (account?.provider !== "github") {
+          return undefined;
+        }
+
+        const githubUsername = (profile as { login?: string })?.login;
+        const accessToken = account.access_token as string | undefined;
+
+        if (!ENFORCE_GITHUB_ORG) {
+          return true;
+        }
+
+        return isGithubOrgMember(githubUsername, accessToken);
+      },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       async jwt({ token, user, trigger }: { token: any; user?: any; trigger?: string }) {
         // On sign in, look up the actual database user by email to ensure correct ID
@@ -198,6 +242,8 @@ async function buildAuthConfig() {
             token.locale = dbUser.locale;
             token.name = dbUser.name;
             token.picture = dbUser.avatar;
+            token.orgMember = true;
+            token.org = REQUIRED_ORG;
           }
         }
 
@@ -227,6 +273,9 @@ async function buildAuthConfig() {
             token.name = dbUser.name;
             token.picture = dbUser.avatar;
           }
+
+          token.orgMember = token.orgMember ?? false;
+          token.org = REQUIRED_ORG;
         }
 
         return token;
@@ -244,6 +293,8 @@ async function buildAuthConfig() {
           session.user.locale = token.locale as string;
           session.user.name = token.name ?? null;
           session.user.image = token.picture ?? null;
+          session.user.orgMember = Boolean(token.orgMember);
+          session.user.org = token.org as string;
         }
         return session;
       },
@@ -282,6 +333,8 @@ declare module "next-auth" {
       role: string;
       username: string;
       locale: string;
+      orgMember: boolean;
+      org: string;
     };
   }
 }
@@ -294,5 +347,7 @@ declare module "@auth/core/jwt" {
     locale: string;
     name?: string | null;
     picture?: string | null;
+    orgMember?: boolean;
+    org?: string;
   }
 }
