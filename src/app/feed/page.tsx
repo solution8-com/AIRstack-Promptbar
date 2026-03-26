@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { ArrowRight, Bell, FolderOpen, Sparkles } from "lucide-react";
+import { ArrowRight, FolderOpen, Sparkles } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { PromptList } from "@/components/prompts/prompt-list";
 
 export default async function FeedPage() {
@@ -17,82 +16,56 @@ export default async function FeedPage() {
     redirect("/login");
   }
 
-  // Get user's subscribed categories
-  const subscriptions = await db.categorySubscription.findMany({
-    where: { userId: session.user.id },
+  // Fetch ALL prompts from admin users only, chronologically sorted
+  const promptsRaw = await db.prompt.findMany({
+    where: {
+      isPrivate: false,
+      isUnlisted: false,
+      deletedAt: null,
+      author: {
+        role: "ADMIN"
+      }
+    },
+    orderBy: { createdAt: "desc" },
+    take: 30,
     include: {
-      category: {
+      author: {
         select: {
           id: true,
           name: true,
-          slug: true,
+          username: true,
+          avatar: true,
+          verified: true,
+        },
+      },
+      category: {
+        include: {
+          parent: {
+            select: { id: true, name: true, slug: true },
+          },
+        },
+      },
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
+      _count: {
+        select: {
+          votes: true,
+          contributors: true,
+          outgoingConnections: { where: { label: { not: "related" } } },
+          incomingConnections: { where: { label: { not: "related" } } },
         },
       },
     },
   });
-
-  const subscribedCategoryIds = subscriptions.map((s) => s.categoryId);
-
-  // Fetch prompts from subscribed categories
-  const promptsRaw = subscribedCategoryIds.length > 0
-    ? await db.prompt.findMany({
-        where: {
-          isPrivate: false,
-          isUnlisted: false,
-          deletedAt: null,
-          categoryId: { in: subscribedCategoryIds },
-        },
-        orderBy: { createdAt: "desc" },
-        take: 30,
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              username: true,
-              avatar: true,
-              verified: true,
-            },
-          },
-          category: {
-            include: {
-              parent: {
-                select: { id: true, name: true, slug: true },
-              },
-            },
-          },
-          tags: {
-            include: {
-              tag: true,
-            },
-          },
-          _count: {
-            select: {
-              votes: true,
-              contributors: true,
-              outgoingConnections: { where: { label: { not: "related" } } },
-              incomingConnections: { where: { label: { not: "related" } } },
-            },
-          },
-        },
-      })
-    : [];
 
   const prompts = promptsRaw.map((p) => ({
     ...p,
     voteCount: p._count?.votes ?? 0,
     contributorCount: p._count?.contributors ?? 0,
   }));
-
-  // Get all categories for subscription
-  const categories = await db.category.findMany({
-    orderBy: { name: "asc" },
-    include: {
-      _count: {
-        select: { prompts: true },
-      },
-    },
-  });
 
   return (
     <div className="container py-6">
@@ -119,20 +92,6 @@ export default async function FeedPage() {
         </div>
       </div>
 
-      {/* Subscribed Categories */}
-      {subscriptions.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-6">
-          {subscriptions.map(({ category }) => (
-            <Link key={category.id} href={`/categories/${category.slug}`}>
-              <Badge variant="secondary" className="gap-1">
-                <Bell className="h-3 w-3" />
-                {category.name}
-              </Badge>
-            </Link>
-          ))}
-        </div>
-      )}
-
       {/* Feed */}
       {prompts.length > 0 ? (
         <PromptList prompts={prompts} currentPage={1} totalPages={1} />
@@ -141,26 +100,8 @@ export default async function FeedPage() {
           <FolderOpen className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
           <h2 className="font-medium mb-1">{t("noPromptsInFeed")}</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            {t("subscribeToCategories")}
+            {t("noAdminPromptsYet")}
           </p>
-
-          {/* Category suggestions */}
-          <div className="flex flex-wrap justify-center gap-2 max-w-md mx-auto">
-            {categories.slice(0, 6).map((category) => (
-              <Link key={category.id} href={`/categories/${category.slug}`}>
-                <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-                  {category.name}
-                  <span className="ml-1 text-muted-foreground">({category._count.prompts})</span>
-                </Badge>
-              </Link>
-            ))}
-          </div>
-
-          <div className="mt-4">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/categories">{t("viewAllCategories")}</Link>
-            </Button>
-          </div>
         </div>
       )}
     </div>
