@@ -586,6 +586,12 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                     {t("nav.settings")}
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/collection">
+                    <Bookmark className="mr-2 h-4 w-4" />
+                    {t("nav.collection")}
+                  </Link>
+                </DropdownMenuItem>
                 {isAdmin && (
                   <DropdownMenuItem asChild>
                     <Link href="/admin">
