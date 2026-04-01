@@ -44,6 +44,18 @@ export function AddExampleDialog({
   const [activeTab, setActiveTab] = useState<string>("url");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const sanitizeMediaUrl = (value: string): string => {
+    try {
+      const url = new URL(value);
+      if (url.protocol === "http:" || url.protocol === "https:") {
+        return url.toString();
+      }
+      return "";
+    } catch {
+      return "";
+    }
+  };
+
   const isVideoType = promptType === "VIDEO";
 
   useEffect(() => {
@@ -239,7 +251,7 @@ export function AddExampleDialog({
                     type="url"
                     placeholder={isVideoType ? "https://example.com/my-video.mp4" : "https://example.com/my-image.png"}
                     value={mediaUrl}
-                    onChange={(e) => setMediaUrl(e.target.value)}
+                    onChange={(e) => setMediaUrl(sanitizeMediaUrl(e.target.value))}
                   />
                 </TabsContent>
                 <TabsContent value="upload" className="mt-3">

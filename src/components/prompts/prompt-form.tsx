@@ -684,11 +684,11 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
 
     // Decode HTML entities
     markdown = markdown.replace(/&nbsp;/g, ' ');
-    markdown = markdown.replace(/&amp;/g, '&');
     markdown = markdown.replace(/&lt;/g, '<');
     markdown = markdown.replace(/&gt;/g, '>');
     markdown = markdown.replace(/&quot;/g, '"');
     markdown = markdown.replace(/&#39;/g, "'");
+    markdown = markdown.replace(/&amp;/g, '&');
 
     // Clean up excessive newlines (but preserve intentional blank lines)
     markdown = markdown.replace(/\n{3,}/g, '\n\n');
