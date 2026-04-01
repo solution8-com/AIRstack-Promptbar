@@ -629,7 +629,9 @@
       "currentCredits": "حالياً: {remaining}/{limit} رصيد متبقي",
       "creditsUpdated": "تم تحديث الرصيد بنجاح",
       "creditsUpdateFailed": "فشل تحديث الرصيد",
-      "save": "حفظ"
+      "save": "حفظ",
+      "adminZone": "منطقة المشرف",
+      "deleteUser": "حذف المستخدم"
     },
     "categories": {
       "title": "إدارة التصنيفات",

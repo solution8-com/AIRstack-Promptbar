@@ -629,7 +629,9 @@
       "currentCredits": "Attualmente: {remaining}/{limit} crediti rimanenti",
       "creditsUpdated": "Crediti aggiornati con successo",
       "creditsUpdateFailed": "Impossibile aggiornare i crediti",
-      "save": "Salva"
+      "save": "Salva",
+      "adminZone": "Zona Amministratore",
+      "deleteUser": "Elimina Utente"
     },
     "categories": {
       "title": "Gestione Categorie",

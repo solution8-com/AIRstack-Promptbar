@@ -634,7 +634,9 @@
       "currentCredits": "Şu an: {remaining}/{limit} kredi kaldı",
       "creditsUpdated": "Krediler başarıyla güncellendi",
       "creditsUpdateFailed": "Krediler güncellenemedi",
-      "save": "Kaydet"
+      "save": "Kaydet",
+      "adminZone": "Yönetici Alanı",
+      "deleteUser": "Kullanıcıyı Sil"
     },
     "categories": {
       "title": "Kategori Yönetimi",

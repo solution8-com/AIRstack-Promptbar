@@ -629,7 +629,9 @@
       "currentCredits": "כרגע: {remaining}/{limit} קרדיטים נותרו",
       "creditsUpdated": "הקרדיטים עודכנו בהצלחה",
       "creditsUpdateFailed": "עדכון הקרדיטים נכשל",
-      "save": "שמור"
+      "save": "שמור",
+      "adminZone": "אזור מנהל",
+      "deleteUser": "מחק משתמש"
     },
     "categories": {
       "title": "ניהול קטגוריות",

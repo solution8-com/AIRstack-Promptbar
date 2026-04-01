@@ -629,7 +629,9 @@
       "currentCredits": "Huidig: {remaining}/{limit} credits resterend",
       "creditsUpdated": "Credits succesvol bijgewerkt",
       "creditsUpdateFailed": "Kon credits niet bijwerken",
-      "save": "Opslaan"
+      "save": "Opslaan",
+      "adminZone": "Beheerderszone",
+      "deleteUser": "Gebruiker verwijderen"
     },
     "categories": {
       "title": "Categoriebeheer",

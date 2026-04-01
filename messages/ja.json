@@ -634,7 +634,9 @@
       "currentCredits": "現在: {remaining}/{limit} クレジット残り",
       "creditsUpdated": "クレジットが正常に更新されました",
       "creditsUpdateFailed": "クレジットの更新に失敗しました",
-      "save": "保存"
+      "save": "保存",
+      "adminZone": "管理者ゾーン",
+      "deleteUser": "ユーザーを削除"
     },
     "categories": {
       "title": "カテゴリー管理",
