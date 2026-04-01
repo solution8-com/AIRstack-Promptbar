@@ -629,7 +629,9 @@
       "currentCredits": "현재: {remaining}/{limit} 크레딧 남음",
       "creditsUpdated": "크레딧이 성공적으로 업데이트되었습니다",
       "creditsUpdateFailed": "크레딧 업데이트 실패",
-      "save": "저장"
+      "save": "저장",
+      "adminZone": "관리자 영역",
+      "deleteUser": "사용자 삭제"
     },
     "categories": {
       "title": "카테고리 관리",

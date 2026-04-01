@@ -629,7 +629,9 @@
       "currentCredits": "فعلی: {remaining}/{limit} اعتبار باقی‌مانده",
       "creditsUpdated": "اعتبار با موفقیت به‌روزرسانی شد",
       "creditsUpdateFailed": "به‌روزرسانی اعتبار ناموفق بود",
-      "save": "ذخیره"
+      "save": "ذخیره",
+      "adminZone": "ناحیه مدیر",
+      "deleteUser": "حذف کاربر"
     },
     "categories": {
       "title": "مدیریت دسته‌بندی‌ها",

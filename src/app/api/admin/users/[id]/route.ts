@@ -105,8 +105,15 @@ export async function DELETE(
       return NextResponse.json({ error: "Cannot delete yourself" }, { status: 400 });
     }
 
-    await db.user.delete({
-      where: { id },
+    await db.$transaction(async (tx) => {
+      // Re-assign featured prompts owned by the target user to the acting admin
+      await tx.prompt.updateMany({
+        where: { authorId: id, isFeatured: true },
+        data: { authorId: session.user.id },
+      });
+
+      // Delete the user — cascade rules in schema handle remaining relations
+      await tx.user.delete({ where: { id } });
     });
 
     return NextResponse.json({ success: true });

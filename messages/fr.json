@@ -634,7 +634,9 @@
       "currentCredits": "Actuellement: {remaining}/{limit} crédits restants",
       "creditsUpdated": "Crédits mis à jour avec succès",
       "creditsUpdateFailed": "Échec de la mise à jour des crédits",
-      "save": "Enregistrer"
+      "save": "Enregistrer",
+      "adminZone": "Zone Administrateur",
+      "deleteUser": "Supprimer l'utilisateur"
     },
     "categories": {
       "title": "Gestion des Catégories",

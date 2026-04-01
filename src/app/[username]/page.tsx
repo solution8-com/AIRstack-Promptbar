@@ -19,6 +19,7 @@ import { McpServerPopup } from "@/components/mcp/mcp-server-popup";
 import { PrivatePromptsNote } from "@/components/prompts/private-prompts-note";
 import { ActivityChartWrapper } from "@/components/user/activity-chart-wrapper";
 import { ProfileLinks, type CustomLink } from "@/components/user/profile-links";
+import { DeleteUserButton } from "@/components/admin/delete-user-button";
 
 interface UserProfilePageProps {
   params: Promise<{ username: string }>;
@@ -58,6 +59,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
   const t = await getTranslations("user");
   const tChanges = await getTranslations("changeRequests");
   const tPrompts = await getTranslations("prompts");
+  const tAdminUsers = await getTranslations("admin.users");
   const locale = await getLocale();
 
   // Decode URL-encoded @ symbol
@@ -753,6 +755,14 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Admin Zone — visible only to admins viewing another user's profile */}
+      {session?.user?.role === "ADMIN" && session.user.id !== user.id && (
+        <div className="mt-8 border border-destructive/30 rounded-lg p-4 bg-destructive/5">
+          <h3 className="text-sm font-semibold text-destructive mb-3">{tAdminUsers("adminZone")}</h3>
+          <DeleteUserButton userId={user.id} username={user.username} />
+        </div>
+      )}
     </div>
   );
 }

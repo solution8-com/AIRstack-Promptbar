@@ -117,7 +117,7 @@
     "tastesDescription": "Agent Basic Instructions are single markdown files that define your coding style and preferences. They help AI coding agents learn how you write code, so they can match your conventions, patterns, and taste.",
     "createInfo": "This platform doesn't run or execute prompts — it's a community-driven library for sharing and discovering AI prompts. Create your prompt here, and others can copy and use it in their preferred AI tools like ChatGPT, Claude, Gemini, or any other LLM. The community can also comment on your prompts and suggest improvements through change requests.",
     "markdownPreview": "Markdown Preview",
-    "edit": "Edit",
+    "edit": "Edit Prompt",
     "preview": "Preview",
     "noContentToPreview": "No content to preview",
     "hfDataStudio": {
@@ -130,7 +130,6 @@
       "aiPlaceholder": "Describe the SQL query you need...",
       "generateSql": "Generate SQL"
     },
-    "edit": "Edit Prompt",
     "delete": "Delete Prompt",
     "noPrompts": "No prompts found",
     "noPromptsDescription": "Try adjusting your search or filter criteria to find what you're looking for.",
@@ -642,7 +641,9 @@
       "currentCredits": "Currently: {remaining}/{limit} credits remaining",
       "creditsUpdated": "Credits updated successfully",
       "creditsUpdateFailed": "Failed to update credits",
-      "save": "Save"
+      "save": "Save",
+      "adminZone": "Admin Zone",
+      "deleteUser": "Delete User"
     },
     "categories": {
       "title": "Category Management",

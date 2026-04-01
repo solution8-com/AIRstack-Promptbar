@@ -629,7 +629,9 @@
       "currentCredits": "Сейчас: {remaining}/{limit} кредитов осталось",
       "creditsUpdated": "Кредиты успешно обновлены",
       "creditsUpdateFailed": "Не удалось обновить кредиты",
-      "save": "Сохранить"
+      "save": "Сохранить",
+      "adminZone": "Зона администратора",
+      "deleteUser": "Удалить пользователя"
     },
     "categories": {
       "title": "Управление категориями",

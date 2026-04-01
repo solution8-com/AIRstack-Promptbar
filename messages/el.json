@@ -629,7 +629,9 @@
       "currentCredits": "Τρέχουσες: {remaining}/{limit} πιστώσεις απομένουν",
       "creditsUpdated": "Οι πιστώσεις ενημερώθηκαν επιτυχώς",
       "creditsUpdateFailed": "Αποτυχία ενημέρωσης πιστώσεων",
-      "save": "Αποθήκευση"
+      "save": "Αποθήκευση",
+      "adminZone": "Ζώνη Διαχειριστή",
+      "deleteUser": "Διαγραφή Χρήστη"
     },
     "categories": {
       "title": "Διαχείριση κατηγοριών",

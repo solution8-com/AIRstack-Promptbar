@@ -634,7 +634,9 @@
       "currentCredits": "当前: 剩余 {remaining}/{limit} 额度",
       "creditsUpdated": "额度更新成功",
       "creditsUpdateFailed": "额度更新失败",
-      "save": "保存"
+      "save": "保存",
+      "adminZone": "管理员区域",
+      "deleteUser": "删除用户"
     },
     "categories": {
       "title": "分类管理",

@@ -634,7 +634,9 @@
       "currentCredits": "Aktuell: {remaining}/{limit} Guthaben verbleibend",
       "creditsUpdated": "Guthaben erfolgreich aktualisiert",
       "creditsUpdateFailed": "Guthaben konnte nicht aktualisiert werden",
-      "save": "Speichern"
+      "save": "Speichern",
+      "adminZone": "Admin-Bereich",
+      "deleteUser": "Benutzer löschen"
     },
     "categories": {
       "title": "Kategorieverwaltung",
