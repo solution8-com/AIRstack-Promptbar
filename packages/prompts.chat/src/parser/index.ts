@@ -341,7 +341,10 @@ export function toYaml(prompt: ParsedPrompt): string {
           lines.push(`      ${line}`);
         }
       } else {
-        lines.push(`    content: "${msg.content.replace(/"/g, '\\"')}"`);
+        const escapedContent = msg.content
+          .replace(/\\/g, '\\\\')
+          .replace(/"/g, '\\"');
+        lines.push(`    content: "${escapedContent}"`);
       }
     }
   }
