@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Noto_Sans_Arabic, Geist_Mono, Playfair_Display } from "next/font/google";
 import { headers } from "next/headers";
 import { getMessages, getLocale } from "next-intl/server";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Providers } from "@/components/providers";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -188,6 +189,7 @@ export default async function RootLayout({
         {process.env.GOOGLE_ANALYTICS_ID && (
           <Analytics gaId={process.env.GOOGLE_ANALYTICS_ID} />
         )}
+        <SpeedInsights />
         <Providers locale={locale} messages={messages} theme={config.theme} branding={{ ...config.branding, useCloneBranding: config.homepage?.useCloneBranding }}>
           {isEmbedRoute || isKidsRoute ? (
             children
