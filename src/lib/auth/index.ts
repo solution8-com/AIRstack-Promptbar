@@ -218,7 +218,7 @@ async function buildAuthConfig() {
     callbacks: {
       async signIn({ account, profile }): Promise<boolean> {
         if (account?.provider !== "github") {
-          return undefined;
+          return true;
         }
 
         const githubUsername = (profile as { login?: string })?.login;
@@ -249,7 +249,7 @@ async function buildAuthConfig() {
                 username: dbUser.username,
                 s8AdminsConfigured: Boolean(process.env.S8_ADMINS),
               }));
-              throw new Error("Access denied: You are not authorized to access this platform.");
+              return null;
             }
             
             token.id = dbUser.id;
