@@ -39,7 +39,7 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXTAUTH_URL || "http://localhost:3000"),
+  metadataBase: new URL(process.env.AUTH_URL || process.env.NEXTAUTH_URL || "http://localhost:3000"),
   title: {
     default: "Solution8 PromptBar - AI Prompts Platform",
     template: "%s | Solution8 PromptBar",
@@ -111,7 +111,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: process.env.NEXTAUTH_URL || "http://localhost:3000",
+    canonical: process.env.AUTH_URL || process.env.NEXTAUTH_URL || "http://localhost:3000",
   },
 };
 
