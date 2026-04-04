@@ -28,7 +28,7 @@ interface StructuredDataProps {
 
 export async function StructuredData({ type, data }: StructuredDataProps) {
   const config = await getConfig();
-  const baseUrl = process.env.NEXTAUTH_URL || "https://prompts.chat";
+  const baseUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://prompts.chat";
 
   const schemas: Record<string, object | null> = {
     organization: {

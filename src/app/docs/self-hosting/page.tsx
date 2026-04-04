@@ -162,7 +162,7 @@ export default function SelfHostingPage() {
                     <TableCell className="text-muted-foreground text-sm">PostgreSQL connection string. Add <code className="text-xs">?connection_limit=5&pool_timeout=10</code> for serverless.</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell className="font-mono text-xs">NEXTAUTH_URL</TableCell>
+                    <TableCell className="font-mono text-xs">AUTH_URL</TableCell>
                     <TableCell className="text-muted-foreground text-sm">Your app URL (e.g., <code className="text-xs">http://localhost:3000</code>)</TableCell>
                   </TableRow>
                   <TableRow>
