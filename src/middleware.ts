@@ -10,8 +10,22 @@ function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
 
-function handleUnauthorized(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith("/api")) {
+function authLog(event: string, details: Record<string, unknown>) {
+  console.log(`[AUTH] ${event}`, JSON.stringify(details));
+}
+
+function handleUnauthorized(request: NextRequest, reason: string, tokenInfo?: Record<string, unknown>) {
+  const { pathname } = request.nextUrl;
+  authLog("UNAUTHORIZED_REDIRECT", {
+    reason,
+    path: pathname,
+    method: request.method,
+    token: tokenInfo ?? null,
+    referer: request.headers.get("referer") ?? undefined,
+    userAgent: request.headers.get("user-agent") ?? undefined,
+  });
+
+  if (pathname.startsWith("/api")) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
@@ -36,11 +50,15 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
   if (!token) {
-    return handleUnauthorized(request);
+    return handleUnauthorized(request, "NO_TOKEN");
   }
 
   if (ENFORCE_GITHUB_ORG && token.org !== REQUIRED_ORG) {
-    return handleUnauthorized(request);
+    return handleUnauthorized(request, "WRONG_ORG", {
+      tokenOrg: token.org ?? null,
+      requiredOrg: REQUIRED_ORG,
+      username: token.username ?? token.name ?? null,
+    });
   }
 
   // Rewrite .prompt.md and .prompt.yml requests to the raw API route

@@ -160,16 +160,26 @@ async function isGithubOrgMember(username: string | null | undefined, accessToke
 
     if (res.status !== 204) {
       const bodyText = await res.text();
-      console.warn(
-        `[auth] GitHub org check failed`,
-        JSON.stringify({ org: REQUIRED_ORG, username, status: res.status, statusText: res.statusText, body: bodyText.slice(0, 200) })
-      );
+      console.log(`[AUTH] SIGNIN_DENIED`, JSON.stringify({
+        reason: "NOT_ORG_MEMBER",
+        org: REQUIRED_ORG,
+        username,
+        githubStatus: res.status,
+        githubStatusText: res.statusText,
+        githubBody: bodyText.slice(0, 200),
+      }));
       return false;
     }
 
+    console.log(`[AUTH] SIGNIN_ORG_OK`, JSON.stringify({ org: REQUIRED_ORG, username }));
     return true;
   } catch (error) {
-    console.error("[auth] GitHub org check error", { org: REQUIRED_ORG, username, error });
+    console.error(`[AUTH] SIGNIN_ORG_CHECK_ERROR`, JSON.stringify({
+      reason: "GITHUB_API_EXCEPTION",
+      org: REQUIRED_ORG,
+      username,
+      error: String(error),
+    }));
     return false;
   }
 }
@@ -215,6 +225,7 @@ async function buildAuthConfig() {
         const accessToken = account.access_token as string | undefined;
 
         if (!ENFORCE_GITHUB_ORG) {
+          console.log(`[AUTH] SIGNIN_ORG_SKIPPED`, JSON.stringify({ reason: "ENFORCE_GITHUB_ORG=false", username: githubUsername }));
           return true;
         }
 
@@ -233,6 +244,11 @@ async function buildAuthConfig() {
             // Check if user is in admin list (if S8_ADMINS is configured)
             if (!isAdminUser(dbUser.username)) {
               // User not in admin list - deny access
+              console.log(`[AUTH] JWT_SIGNIN_DENIED`, JSON.stringify({
+                reason: "NOT_IN_ADMIN_LIST",
+                username: dbUser.username,
+                s8AdminsConfigured: Boolean(process.env.S8_ADMINS),
+              }));
               throw new Error("Access denied: You are not authorized to access this platform.");
             }
             
@@ -256,12 +272,22 @@ async function buildAuthConfig() {
 
           // User no longer exists - invalidate token
           if (!dbUser) {
+            console.log(`[AUTH] JWT_TOKEN_INVALIDATED`, JSON.stringify({
+              reason: "USER_NOT_IN_DB",
+              tokenUserId: token.id,
+              tokenUsername: token.username ?? null,
+            }));
             return null;
           }
           
           // Check if user is still in admin list
           if (!isAdminUser(dbUser.username)) {
             // User no longer in admin list - invalidate token
+            console.log(`[AUTH] JWT_TOKEN_INVALIDATED`, JSON.stringify({
+              reason: "REMOVED_FROM_ADMIN_LIST",
+              username: dbUser.username,
+              s8AdminsConfigured: Boolean(process.env.S8_ADMINS),
+            }));
             return null;
           }
 
