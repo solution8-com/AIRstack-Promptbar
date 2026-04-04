@@ -9,9 +9,9 @@ import type { Adapter, AdapterUser } from "next-auth/adapters";
 initializePlugins();
 
 // Generate a unique username from email or name
-async function generateUsername(email: string, name?: string | null): Promise<string> {
+async function generateUsername(email: string | null | undefined, name?: string | null): Promise<string> {
   // Try to use the part before @ in email
-  let baseUsername = email.split("@")[0].toLowerCase().replace(/[^a-z0-9_]/g, "");
+  let baseUsername = email ? email.split("@")[0].toLowerCase().replace(/[^a-z0-9_]/g, "") : "";
   
   // If too short, use name
   if (baseUsername.length < 3 && name) {
