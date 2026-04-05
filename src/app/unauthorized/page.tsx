@@ -26,7 +26,7 @@ export default function UnauthorizedPage() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
           <Button asChild>
-            <Link href="/">
+            <Link href="/login" prefetch={false}>
               <Home className="mr-2 h-4 w-4" />
               {tNotFound("goHome")}
             </Link>
