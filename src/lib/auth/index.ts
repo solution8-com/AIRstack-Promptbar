@@ -237,12 +237,13 @@ async function buildAuthConfig() {
         if (user && user.email) {
           const dbUser = await db.user.findUnique({
             where: { email: user.email },
-            select: { id: true, role: true, username: true, locale: true, name: true, avatar: true },
+            select: { id: true, role: true, username: true, locale: true, name: true, avatar: true, githubUsername: true },
           });
 
           if (dbUser) {
             // Check if user is in admin list (if S8_ADMINS is configured)
-            if (!isAdminUser(dbUser.username)) {
+            // Evaluate both the exact GitHub username and the sanitized DB username
+            if (!isAdminUser(dbUser.githubUsername) && !isAdminUser(dbUser.username)) {
               // User not in admin list - deny access
               console.log(`[AUTH] JWT_SIGNIN_DENIED`, JSON.stringify({
                 reason: "NOT_IN_ADMIN_LIST",
@@ -267,7 +268,7 @@ async function buildAuthConfig() {
         if (token.id && !user) {
           const dbUser = await db.user.findUnique({
             where: { id: token.id as string },
-            select: { id: true, role: true, username: true, locale: true, name: true, avatar: true },
+            select: { id: true, role: true, username: true, locale: true, name: true, avatar: true, githubUsername: true },
           });
 
           // User no longer exists - invalidate token
@@ -281,7 +282,8 @@ async function buildAuthConfig() {
           }
           
           // Check if user is still in admin list
-          if (!isAdminUser(dbUser.username)) {
+          // Evaluate both the exact GitHub username and the sanitized DB username
+          if (!isAdminUser(dbUser.githubUsername) && !isAdminUser(dbUser.username)) {
             // User no longer in admin list - invalidate token
             console.log(`[AUTH] JWT_TOKEN_INVALIDATED`, JSON.stringify({
               reason: "REMOVED_FROM_ADMIN_LIST",
