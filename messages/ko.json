@@ -2268,6 +2268,10 @@
     "cancel": "취소",
     "submit": "제출",
     "communityExamples": "커뮤니티 예제",
-    "userExample": "사용자 예제"
+    "userExample": "사용자 예제",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

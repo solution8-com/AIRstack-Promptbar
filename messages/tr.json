@@ -2284,6 +2284,10 @@
     "cancel": "İptal",
     "submit": "Gönder",
     "communityExamples": "Topluluk Örnekleri",
-    "userExample": "Kullanıcı örneği"
+    "userExample": "Kullanıcı örneği",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

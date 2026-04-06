@@ -2282,6 +2282,10 @@
     "cancel": "Cancelar",
     "submit": "Enviar",
     "communityExamples": "Exemplos da Comunidade",
-    "userExample": "Exemplo do usuário"
+    "userExample": "Exemplo do usuário",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

@@ -2264,6 +2264,10 @@
     "cancel": "لغو",
     "submit": "ارسال",
     "communityExamples": "مثال‌های جامعه",
-    "userExample": "مثال کاربر"
+    "userExample": "مثال کاربر",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

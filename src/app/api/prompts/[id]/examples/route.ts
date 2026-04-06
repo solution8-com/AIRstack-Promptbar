@@ -7,6 +7,7 @@ const addExampleSchema = z.object({
   mediaUrl: z.string().url(),
   comment: z.string().max(500).optional(),
 });
+const EXAMPLE_SUPPORTED_TYPES = new Set(["IMAGE", "VIDEO", "SKILL"]);
 
 export async function GET(
   req: NextRequest,
@@ -23,8 +24,8 @@ export async function GET(
     return NextResponse.json({ error: "Prompt not found" }, { status: 404 });
   }
 
-  // Only allow examples for IMAGE and VIDEO prompts
-  if (prompt.type !== "IMAGE" && prompt.type !== "VIDEO") {
+  // Only allow examples for IMAGE, VIDEO, and SKILL prompts
+  if (!EXAMPLE_SUPPORTED_TYPES.has(prompt.type)) {
     return NextResponse.json({ error: "Examples not supported for this prompt type" }, { status: 400 });
   }
 
@@ -71,8 +72,8 @@ export async function POST(
       return NextResponse.json({ error: "Prompt not found" }, { status: 404 });
     }
 
-    // Only allow examples for IMAGE and VIDEO prompts
-    if (prompt.type !== "IMAGE" && prompt.type !== "VIDEO") {
+    // Only allow examples for IMAGE, VIDEO, and SKILL prompts
+    if (!EXAMPLE_SUPPORTED_TYPES.has(prompt.type)) {
       return NextResponse.json({ error: "Examples not supported for this prompt type" }, { status: 400 });
     }
 
