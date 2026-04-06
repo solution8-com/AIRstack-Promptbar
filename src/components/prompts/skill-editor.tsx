@@ -112,7 +112,7 @@ async function collectEntries(
     counters.bytes += file.size;
 
     if (counters.files > DROP_MAX_FILES || counters.bytes > DROP_MAX_BYTES) {
-      throw "LIMIT_EXCEEDED";
+      throw new Error("LIMIT_EXCEEDED");
     }
 
     result.push({ file, relativePath: entry.fullPath });
@@ -533,7 +533,7 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
         try {
           await collectEntries(rootEntry, collected, counters);
         } catch (err) {
-          if (err === "LIMIT_EXCEEDED") {
+          if (err instanceof Error && err.message === "LIMIT_EXCEEDED") {
             setDropError(t("dropErrorTooLarge"));
             return;
           }
@@ -556,14 +556,9 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
         // Filter by allowed extensions.
         const validFiles = collected.filter(({ file }) => {
           const ext = getExtension(file.name);
-          // Accept files with no extension (e.g. .env without extension) only if
-          // the full name starts with a dot and passes the set check.
-          if (ext === "") {
-            // Files like ".env", ".gitignore" – check the name itself.
-            return ALLOWED_DROP_EXTENSIONS.has(`.${file.name.replace(/^\./, "").toLowerCase()}`) ||
-              ALLOWED_DROP_EXTENSIONS.has(file.name.toLowerCase());
-          }
-          return ALLOWED_DROP_EXTENSIONS.has(ext);
+          // For dotfiles like ".env" getExtension returns ""; fall back to
+          // checking the whole filename (lowercased) against the allowed set.
+          return ext !== "" ? ALLOWED_DROP_EXTENSIONS.has(ext) : ALLOWED_DROP_EXTENSIONS.has(file.name.toLowerCase());
         });
 
         // Read contents in parallel.
@@ -578,7 +573,7 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
 
             // Map SKILL.md (if present) → DEFAULT_SKILL_FILE constant.
             const filename =
-              withoutRoot.toUpperCase() === DEFAULT_SKILL_FILE.toUpperCase()
+              withoutRoot.toLowerCase() === DEFAULT_SKILL_FILE.toLowerCase()
                 ? DEFAULT_SKILL_FILE
                 : withoutRoot;
 
@@ -640,7 +635,11 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
     >
       {/* Drag-over overlay */}
       {isDragOver && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-background/80 border-2 border-dashed border-primary rounded-lg pointer-events-none">
+        <div
+          role="status"
+          aria-live="polite"
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-background/80 border-2 border-dashed border-primary rounded-lg pointer-events-none"
+        >
           <UploadCloud className="h-10 w-10 text-primary" />
           <p className="text-sm font-medium text-primary">{t("dropFolderHere")}</p>
         </div>
@@ -648,16 +647,23 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
 
       {/* Processing overlay */}
       {isProcessingDrop && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-background/80 rounded-lg pointer-events-none">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <div
+          role="status"
+          aria-live="polite"
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-background/80 rounded-lg pointer-events-none"
+        >
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" aria-hidden="true" />
           <p className="text-sm text-muted-foreground">{t("dropProcessing")}</p>
         </div>
       )}
 
       {/* Drop error overlay */}
       {dropError && (
-        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-background/95 rounded-lg p-6">
-          <AlertCircle className="h-10 w-10 text-destructive shrink-0" />
+        <div
+          role="alert"
+          className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-background/95 rounded-lg p-6"
+        >
+          <AlertCircle className="h-10 w-10 text-destructive shrink-0" aria-hidden="true" />
           <p className="text-center text-sm font-medium text-destructive max-w-xs">
             {dropError}
           </p>
