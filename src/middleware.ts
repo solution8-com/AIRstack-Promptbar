@@ -10,6 +10,38 @@ function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
 
+function authLog(event: string, details: Record<string, unknown>) {
+  console.log(`[AUTH] ${event}`, JSON.stringify(details));
+}
+
+function wantsJson(request: NextRequest) {
+  const accept = request.headers.get("accept") ?? "";
+  return request.nextUrl.pathname.startsWith("/api") || accept.includes("application/json");
+}
+
+function handleUnauthorized(request: NextRequest, reason: string, tokenInfo?: Record<string, unknown>) {
+  const { pathname } = request.nextUrl;
+  const jsonResponse = { error: "unauthorized", reason };
+  const responseType = wantsJson(request) ? "json" : "redirect";
+
+  authLog("UNAUTHORIZED", {
+    reason,
+    path: pathname,
+    method: request.method,
+    responseType,
+    token: tokenInfo ?? null,
+    referer: request.headers.get("referer") ?? undefined,
+    userAgent: request.headers.get("user-agent") ?? undefined,
+  });
+
+  if (responseType === "json") {
+    return NextResponse.json(jsonResponse, { status: 401 });
+  }
+
+  const url = new URL("/unauthorized", request.url);
+  return NextResponse.redirect(url, { status: 302 });
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasFileExtension = /\.[a-zA-Z0-9]+$/.test(pathname);
@@ -31,15 +63,16 @@ export async function middleware(request: NextRequest) {
   // =======================================================================
 
   const allCookies = request.cookies.getAll();
-  const sessionCookie = allCookies.find(c => c.name.includes("session-token"));
+  const sessionCookie = allCookies.find((cookie) => cookie.name.includes("session-token"));
+  const sessionCookieName = sessionCookie?.name?.replace(/\.\d+$/, "");
   const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || process.env.NEXTAUTH_JWT_SECRET;
 
   let token = await getToken({
     req: request,
     secret: secret,
-    cookieName: sessionCookie?.name,
-    salt: sessionCookie?.name,
-    secureCookie: sessionCookie?.name?.startsWith("__Secure-"),
+    cookieName: sessionCookieName,
+    salt: sessionCookieName,
+    secureCookie: sessionCookieName?.startsWith("__Secure-"),
   });
 
   if (!token) {
@@ -47,14 +80,18 @@ export async function middleware(request: NextRequest) {
   }
 
   if (!token) {
-    console.error("[AUTH] NO_TOKEN in middleware. Found cookies:", allCookies.map(c => c.name));
-    const url = new URL("/unauthorized", request.url);
-    return NextResponse.redirect(url, { status: 302 });
+    return handleUnauthorized(request, "NO_TOKEN", {
+      cookies: allCookies.map((cookie) => cookie.name),
+      sessionCookieName: sessionCookieName ?? null,
+    });
   }
 
   if (ENFORCE_GITHUB_ORG && token.org !== REQUIRED_ORG) {
-    const url = new URL("/unauthorized", request.url);
-    return NextResponse.redirect(url, { status: 302 });
+    return handleUnauthorized(request, "WRONG_ORG", {
+      tokenOrg: token.org ?? null,
+      requiredOrg: REQUIRED_ORG,
+      username: token.username ?? token.name ?? null,
+    });
   }
 
   if (pathname.startsWith("/prompts/") && (pathname.endsWith(".prompt.md") || pathname.endsWith(".prompt.yml"))) {
