@@ -85,6 +85,7 @@ interface DiscoverTabsProps {
   mostContributed: Prompt[];
   allUsernames: string[];
   adminUsernames: string[];
+  isAdmin?: boolean;
 }
 
 export function DiscoverTabs({
@@ -95,6 +96,7 @@ export function DiscoverTabs({
   mostContributed,
   allUsernames,
   adminUsernames,
+  isAdmin = false,
 }: DiscoverTabsProps) {
   const t = useTranslations("feed");
   const tDiscovery = useTranslations("discovery");
@@ -410,7 +412,7 @@ export function DiscoverTabs({
           {filteredFeatured.length > 0 ? (
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
               {filteredFeatured.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
               ))}
             </Masonry>
           ) : (
@@ -438,7 +440,7 @@ export function DiscoverTabs({
           {filteredMostContributed.length > 0 ? (
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
               {filteredMostContributed.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
               ))}
             </Masonry>
           ) : (
@@ -466,7 +468,7 @@ export function DiscoverTabs({
           {filteredRecentlyUpdated.length > 0 ? (
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
               {filteredRecentlyUpdated.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
               ))}
             </Masonry>
           ) : (
@@ -494,7 +496,7 @@ export function DiscoverTabs({
           {filteredLatest.length > 0 ? (
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
               {filteredLatest.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
               ))}
             </Masonry>
           ) : (

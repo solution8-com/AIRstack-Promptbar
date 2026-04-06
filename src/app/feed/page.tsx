@@ -10,6 +10,7 @@ import { PromptList } from "@/components/prompts/prompt-list";
 export default async function FeedPage() {
   const t = await getTranslations("feed");
   const session = await auth();
+  const isAdmin = session?.user?.role === "ADMIN";
 
   // Redirect to login if not authenticated
   if (!session?.user) {
@@ -94,7 +95,7 @@ export default async function FeedPage() {
 
       {/* Feed */}
       {prompts.length > 0 ? (
-        <PromptList prompts={prompts} currentPage={1} totalPages={1} />
+        <PromptList prompts={prompts} currentPage={1} totalPages={1} isAdmin={isAdmin} />
       ) : (
         <div className="text-center py-12 border rounded-lg bg-muted/30">
           <FolderOpen className="h-10 w-10 text-muted-foreground mx-auto mb-3" />

@@ -397,7 +397,9 @@
     "descriptionPlaceholderHack": "Optional description of your hack",
     "inputTypeHack": "Hack Implementation Guide",
     "createButtonHack": "Publish Your Hack",
-    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode"
+    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating..."
   },
   "changeRequests": {
     "title": "变更请求",
@@ -702,7 +704,8 @@
       "editTitle": "编辑标签",
       "editDescription": "更新标签详情",
       "deleteConfirmTitle": "删除标签？",
-      "deleteConfirmDescription": "这将从所有提示词中移除该标签。"
+      "deleteConfirmDescription": "这将从所有提示词中移除该标签。",
+      "deleteHoverHint": "Delete tag"
     },
     "webhooks": {
       "title": "Webhook 管理",

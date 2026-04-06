@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InfinitePromptList } from "@/components/prompts/infinite-prompt-list";
 import { db } from "@/lib/db";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Taste",
@@ -111,6 +112,8 @@ interface TastesPageProps {
 }
 
 export default async function TastesPage({ searchParams }: TastesPageProps) {
+  const session = await auth();
+  const isAdmin = session?.user?.role === "ADMIN";
   const t = await getTranslations("prompts");
   const tNav = await getTranslations("nav");
   const tSearch = await getTranslations("search");
@@ -153,6 +156,7 @@ export default async function TastesPage({ searchParams }: TastesPageProps) {
       <InfinitePromptList
         initialPrompts={tastes}
         initialTotal={total}
+        isAdmin={isAdmin}
         filters={{
           q: params.q,
           type: "TASTE",

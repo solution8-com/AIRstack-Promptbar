@@ -70,12 +70,14 @@ interface SkillsFilteredListProps {
   skills: Skill[];
   allUsernames: string[];
   adminUsernames: string[];
+  isAdmin?: boolean;
 }
 
 export function SkillsFilteredList({
   skills,
   allUsernames,
   adminUsernames,
+  isAdmin = false,
 }: SkillsFilteredListProps) {
   const tCommon = useTranslations("common");
 
@@ -307,7 +309,7 @@ export function SkillsFilteredList({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredSkills.length > 0 ? (
           filteredSkills.map((skill) => (
-            <PromptCard key={skill.id} prompt={skill} />
+            <PromptCard key={skill.id} prompt={skill} isAdmin={isAdmin} />
           ))
         ) : (
           <div className="col-span-full text-center text-muted-foreground py-8">

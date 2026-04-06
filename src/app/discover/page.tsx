@@ -2,8 +2,11 @@ import { DiscoverTabs } from "@/components/prompts/discover-tabs";
 import { StructuredData } from "@/components/seo/structured-data";
 import { db } from "@/lib/db";
 import { getAdminUsernames } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 
 export default async function DiscoverPage() {
+  const session = await auth();
+  const isAdmin = session?.user?.role === "ADMIN";
   const limit = 25;
 
   const promptInclude = {
@@ -154,6 +157,7 @@ export default async function DiscoverPage() {
         mostContributed={mostContributed}
         allUsernames={allUsernames.map(u => u.username)}
         adminUsernames={adminUsernames}
+        isAdmin={isAdmin}
       />
     </>
   );

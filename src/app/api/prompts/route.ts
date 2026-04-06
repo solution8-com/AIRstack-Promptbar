@@ -167,6 +167,14 @@ export async function POST(request: Request) {
 
     // Generate slug from title (translated to English)
     const slug = await generatePromptSlug(title);
+    const existingTagIds = tagIds.length > 0
+      ? await db.tag.findMany({
+          where: { id: { in: tagIds } },
+          select: { id: true },
+        })
+      : [];
+    const validTagIdSet = new Set(existingTagIds.map((tag) => tag.id));
+    const validTagIds = tagIds.filter((tagId) => validTagIdSet.has(tagId));
 
     // Create prompt with tags
     // Auto-delist if user is flagged
@@ -195,7 +203,7 @@ export async function POST(request: Request) {
           delistReason: "UNUSUAL_ACTIVITY",
         }),
         tags: {
-          create: tagIds.map((tagId) => ({
+          create: validTagIds.map((tagId) => ({
             tagId,
           })),
         },

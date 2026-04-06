@@ -392,7 +392,9 @@
     "learnHowToWritePrompts": "Effektiv promptlar yazmağı öyrənin →",
     "structuredFormatDetected": "{format} formatı aşkarlandı",
     "structuredFormatWarningDescription": "Prompt məzmununuz strukturlaşdırılmış məlumata bənzəyir. Daha yaxşı sintaksis vurğulama və doğrulama üçün strukturlaşdırılmış rejimə keçməyi düşünün.",
-    "switchToStructured": "{format}-a keçin"
+    "switchToStructured": "{format}-a keçin",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating..."
   },
   "changeRequests": {
     "title": "Dəyişiklik Sorğuları",
@@ -697,7 +699,8 @@
       "editTitle": "Etiketi Redaktə et",
       "editDescription": "Etiket detallarını yeniləyin",
       "deleteConfirmTitle": "Etiket Silinsin?",
-      "deleteConfirmDescription": "Bu etiket bütün promptlardan silinəcək."
+      "deleteConfirmDescription": "Bu etiket bütün promptlardan silinəcək.",
+      "deleteHoverHint": "Delete tag"
     },
     "webhooks": {
       "title": "Webhook İdarəetməsi",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { getPromptUrl } from "@/lib/urls";
@@ -15,6 +16,7 @@ import { VariableFillModal, hasVariables, renderContentWithVariables } from "@/c
 import { ExamplesSlider } from "@/components/prompts/examples-slider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AudioPlayer } from "@/components/prompts/audio-player";
+import { AdminTagBadge } from "@/components/prompts/admin-tag-badge";
 import {
   Tooltip,
   TooltipContent,
@@ -84,9 +86,11 @@ export interface PromptCardProps {
   };
   showPinButton?: boolean;
   isPinned?: boolean;
+  isAdmin?: boolean;
 }
 
-export function PromptCard({ prompt, showPinButton = false, isPinned = false }: PromptCardProps) {
+export function PromptCard({ prompt, showPinButton = false, isPinned = false, isAdmin = false }: PromptCardProps) {
+  const router = useRouter();
   const t = useTranslations("prompts");
   const tCommon = useTranslations("common");
   const _locale = useLocale();
@@ -174,6 +178,10 @@ export function PromptCard({ prompt, showPinButton = false, isPinned = false }: 
     } catch {
       toast.error(t("downloadFailed"));
     }
+  };
+
+  const handleTagDeleted = () => {
+    router.refresh();
   };
 
   return (
@@ -316,15 +324,13 @@ export function PromptCard({ prompt, showPinButton = false, isPinned = false }: 
         {prompt.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
             {prompt.tags.slice(0, 3).map(({ tag }) => (
-              <Link 
+              <AdminTagBadge
                 key={tag.id}
-                href={`/tags/${tag.slug}`}
-                prefetch={false}
-                className="px-1.5 py-0.5 rounded text-[10px] hover:opacity-80 transition-opacity" 
-                style={{ backgroundColor: tag.color + "15", color: tag.color }}
-              >
-                {tag.name}
-              </Link>
+                tag={tag}
+                variant="card-link"
+                isAdmin={isAdmin}
+                onDelete={handleTagDeleted}
+              />
             ))}
             {prompt.tags.length > 3 && (
               <span className="text-[10px] text-muted-foreground">+{prompt.tags.length - 3}</span>

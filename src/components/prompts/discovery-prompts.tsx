@@ -5,12 +5,15 @@ import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Masonry } from "@/components/ui/masonry";
 import { PromptCard } from "@/components/prompts/prompt-card";
+import { auth } from "@/lib/auth";
 
 interface DiscoveryPromptsProps {
   isHomepage?: boolean;
 }
 
 export async function DiscoveryPrompts({ isHomepage = false }: DiscoveryPromptsProps) {
+  const session = await auth();
+  const isAdmin = session?.user?.role === "ADMIN";
   const t = await getTranslations("feed");
   const tDiscovery = await getTranslations("discovery");
 
@@ -150,7 +153,7 @@ export async function DiscoveryPrompts({ isHomepage = false }: DiscoveryPromptsP
             </div>
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
               {featuredPrompts.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
               ))}
             </Masonry>
           </div>
@@ -175,7 +178,7 @@ export async function DiscoveryPrompts({ isHomepage = false }: DiscoveryPromptsP
             </div>
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
               {todaysMostUpvoted.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
               ))}
             </Masonry>
           </div>
@@ -200,7 +203,7 @@ export async function DiscoveryPrompts({ isHomepage = false }: DiscoveryPromptsP
             </div>
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
               {latestPrompts.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
               ))}
             </Masonry>
           </div>
@@ -225,7 +228,7 @@ export async function DiscoveryPrompts({ isHomepage = false }: DiscoveryPromptsP
             </div>
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
               {recentlyUpdated.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
               ))}
             </Masonry>
           </div>
@@ -250,7 +253,7 @@ export async function DiscoveryPrompts({ isHomepage = false }: DiscoveryPromptsP
             </div>
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
               {mostContributed.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
               ))}
             </Masonry>
           </div>

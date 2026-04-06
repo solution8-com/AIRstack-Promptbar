@@ -43,6 +43,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const sortOption = sort || "newest";
   const session = await auth();
   const t = await getTranslations();
+  const isAdmin = session?.user?.role === "ADMIN";
 
   const category = await db.category.findUnique({
     where: { slug },
@@ -195,7 +196,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
       </div>
 
       {/* Prompts */}
-      <PromptList prompts={prompts} currentPage={currentPage} totalPages={totalPages} />
+      <PromptList prompts={prompts} currentPage={currentPage} totalPages={totalPages} isAdmin={isAdmin} />
     </div>
   );
 }

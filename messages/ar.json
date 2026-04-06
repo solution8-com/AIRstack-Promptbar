@@ -392,7 +392,9 @@
     "learnHowToWritePrompts": "تعلم كيفية كتابة أوامر فعالة ←",
     "structuredFormatDetected": "تم اكتشاف تنسيق {format}",
     "structuredFormatWarningDescription": "يبدو أن محتوى الأمر الخاص بك يشبه بيانات منظمة. فكر في التبديل إلى الوضع المنظم للحصول على تمييز بنائي وتحقق أفضل.",
-    "switchToStructured": "التبديل إلى {format}"
+    "switchToStructured": "التبديل إلى {format}",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating..."
   },
   "changeRequests": {
     "title": "طلبات التغيير",
@@ -697,7 +699,8 @@
       "editTitle": "تعديل الوسم",
       "editDescription": "تحديث تفاصيل الوسم",
       "deleteConfirmTitle": "حذف الوسم؟",
-      "deleteConfirmDescription": "سيؤدي هذا إلى إزالة الوسم من جميع الأوامر."
+      "deleteConfirmDescription": "سيؤدي هذا إلى إزالة الوسم من جميع الأوامر.",
+      "deleteHoverHint": "Delete tag"
     },
     "webhooks": {
       "title": "إدارة الويب هوك",

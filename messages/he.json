@@ -392,7 +392,9 @@
     "learnHowToWritePrompts": "למדו איך לכתוב פרומפטים יעילים ←",
     "structuredFormatDetected": "זוהה פורמט {format}",
     "structuredFormatWarningDescription": "תוכן הפרומפט שלך נראה כמו נתונים מובנים. שקול לעבור למצב מובנה להדגשת תחביר ואימות טובים יותר.",
-    "switchToStructured": "לעבור ל-{format}"
+    "switchToStructured": "לעבור ל-{format}",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating..."
   },
   "changeRequests": {
     "title": "בקשות שינוי",
@@ -697,7 +699,8 @@
       "editTitle": "ערוך תגית",
       "editDescription": "עדכן פרטי תגית",
       "deleteConfirmTitle": "למחוק תגית?",
-      "deleteConfirmDescription": "פעולה זו תסיר את התגית מכל הפרומפטים."
+      "deleteConfirmDescription": "פעולה זו תסיר את התגית מכל הפרומפטים.",
+      "deleteHoverHint": "Delete tag"
     },
     "webhooks": {
       "title": "ניהול Webhooks",

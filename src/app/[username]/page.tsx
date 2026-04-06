@@ -101,6 +101,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
   const page = Math.max(1, parseInt(pageParam || "1") || 1);
   const perPage = 24;
   const isOwner = session?.user?.id === user.id;
+  const isAdmin = session?.user?.role === "ADMIN";
   const isUnclaimed = user.email?.endsWith("@unclaimed.prompts.chat") ?? false;
 
   // Parse date filter for filtering prompts by day (validate YYYY-MM-DD format)
@@ -626,7 +627,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {pinnedPrompts.map((prompt: PromptCardProps["prompt"]) => (
-                  <PromptCard key={prompt.id} prompt={prompt} showPinButton={isOwner} isPinned={isOwner} />
+                  <PromptCard key={prompt.id} prompt={prompt} showPinButton={isOwner} isPinned={isOwner} isAdmin={isAdmin} />
                 ))}
               </div>
             </div>
@@ -667,6 +668,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
                 totalPages={totalPages}
                 pinnedIds={pinnedIds}
                 showPinButton={isOwner}
+                isAdmin={isAdmin}
               />
             </>
           ) : null}
@@ -681,7 +683,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {contributions.map((prompt: PromptCardProps["prompt"]) => (
-                <PromptCard key={prompt.id} prompt={prompt} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
               ))}
             </div>
           )}
@@ -696,7 +698,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
           ) : (
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
               {likedPrompts.map((prompt: PromptCardProps["prompt"]) => (
-                <PromptCard key={prompt.id} prompt={prompt} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
               ))}
             </Masonry>
           )}
@@ -711,7 +713,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {userExamples.map((prompt: PromptCardProps["prompt"]) => (
-                <PromptCard key={prompt.id} prompt={prompt} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
               ))}
             </div>
           )}
