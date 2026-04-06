@@ -10,29 +10,6 @@ function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
 
-function authLog(event: string, details: Record<string, unknown>) {
-  console.log(`[AUTH] ${event}`, JSON.stringify(details));
-}
-
-function handleUnauthorized(request: NextRequest, reason: string, tokenInfo?: Record<string, unknown>) {
-  const { pathname } = request.nextUrl;
-  authLog("UNAUTHORIZED_REDIRECT", {
-    reason,
-    path: pathname,
-    method: request.method,
-    token: tokenInfo ?? null,
-    referer: request.headers.get("referer") ?? undefined,
-    userAgent: request.headers.get("user-agent") ?? undefined,
-  });
-
-  if (pathname.startsWith("/api")) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
-
-  const url = new URL("/unauthorized", request.url);
-  return NextResponse.redirect(url, { status: 302 });
-}
-
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasFileExtension = /\.[a-zA-Z0-9]+$/.test(pathname);
@@ -47,21 +24,39 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = await getToken({ req: request, secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET });
+  // =======================================================================
+  // FOOLPROOF COOKIE DISCOVERY
+  // Vercel Edge misreads HTTPS status and looks for the wrong cookie name.
+  // We find exactly what the browser sent and force getToken to use it.
+  // =======================================================================
+
+  const allCookies = request.cookies.getAll();
+  const sessionCookie = allCookies.find(c => c.name.includes("session-token"));
+  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || process.env.NEXTAUTH_JWT_SECRET;
+
+  let token = await getToken({
+    req: request,
+    secret: secret,
+    cookieName: sessionCookie?.name,
+    salt: sessionCookie?.name,
+    secureCookie: sessionCookie?.name?.startsWith("__Secure-"),
+  });
 
   if (!token) {
-    return handleUnauthorized(request, "NO_TOKEN");
+    token = await getToken({ req: request, secret });
+  }
+
+  if (!token) {
+    console.error("[AUTH] NO_TOKEN in middleware. Found cookies:", allCookies.map(c => c.name));
+    const url = new URL("/unauthorized", request.url);
+    return NextResponse.redirect(url, { status: 302 });
   }
 
   if (ENFORCE_GITHUB_ORG && token.org !== REQUIRED_ORG) {
-    return handleUnauthorized(request, "WRONG_ORG", {
-      tokenOrg: token.org ?? null,
-      requiredOrg: REQUIRED_ORG,
-      username: token.username ?? token.name ?? null,
-    });
+    const url = new URL("/unauthorized", request.url);
+    return NextResponse.redirect(url, { status: 302 });
   }
 
-  // Rewrite .prompt.md and .prompt.yml requests to the raw API route
   if (pathname.startsWith("/prompts/") && (pathname.endsWith(".prompt.md") || pathname.endsWith(".prompt.yml"))) {
     const id = pathname.slice("/prompts/".length);
     const url = request.nextUrl.clone();
@@ -69,7 +64,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
-  // Add pathname header for layout detection
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", pathname);
 
