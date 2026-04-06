@@ -891,10 +891,10 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
       });
-      const result = await response.json();
+      const result: { id?: string; message?: string; error?: string; name?: string; slug?: string; color?: string } = await response.json();
 
       if (!response.ok || !result?.id) {
-        throw new Error("Failed to create tag");
+        throw new Error(result?.message || result?.error || "Failed to create tag");
       }
 
       setAvailableTags((prev) => {
@@ -906,8 +906,8 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
       toggleTag(result.id);
       setTagSearch("");
       tagInputRef.current?.focus();
-    } catch {
-      toast.error(tCommon("somethingWentWrong"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : tCommon("somethingWentWrong"));
     } finally {
       setIsCreatingTag(false);
     }

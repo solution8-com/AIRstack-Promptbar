@@ -146,11 +146,11 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
         </div>
       ) : (
         <div className="space-y-4">
-            <div className="columns-1 md:columns-2 lg:columns-3 gap-4">
-              {prompts.map((prompt) => (
+          <div className="columns-1 md:columns-2 lg:columns-3 gap-4">
+            {prompts.map((prompt) => (
               <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
-              ))}
-            </div>
+            ))}
+          </div>
 
           {/* Pagination */}
           {totalPages > 1 && (
