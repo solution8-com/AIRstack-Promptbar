@@ -411,7 +411,9 @@
     "learnHowToWritePrompts": "Learn how to write effective prompts →",
     "structuredFormatDetected": "{format} format detected",
     "structuredFormatWarningDescription": "Your prompt content looks like structured data. Consider switching to structured mode for better syntax highlighting and validation.",
-    "switchToStructured": "Switch to {format}"
+    "switchToStructured": "Switch to {format}",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating..."
   },
   "changeRequests": {
     "title": "Change Requests",
@@ -716,7 +718,8 @@
       "editTitle": "Edit Tag",
       "editDescription": "Update tag details",
       "deleteConfirmTitle": "Delete Tag?",
-      "deleteConfirmDescription": "This will remove the tag from all prompts."
+      "deleteConfirmDescription": "This will remove the tag from all prompts.",
+      "deleteHoverHint": "Delete tag"
     },
     "webhooks": {
       "title": "Webhook Management",
@@ -2281,17 +2284,21 @@
     "addMyExample": "Add My Example",
     "addExampleTitle": "Add Your Example",
     "addExampleDescriptionImage": "Share an image you created using this prompt.",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
     "addExampleDescriptionVideo": "Share a video you created using this prompt.",
     "imageUrl": "Image URL",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
     "videoUrl": "Video URL",
     "imagePreview": "Image Preview",
     "videoPreview": "Video Preview",
     "urlTab": "URL",
     "uploadTab": "Upload",
     "clickToUpload": "Click to upload an image",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
     "clickToUploadVideo": "Click to upload a video",
     "uploading": "Uploading...",
     "maxFileSize": "Max 4MB (JPEG, PNG, GIF, WebP)",
+    "maxFileSizeVideo": "Max 4MB (MP4)",
     "fileTooLarge": "File is too large. Maximum size is 4MB.",
     "invalidFileType": "Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.",
     "invalidVideoType": "Invalid file type. Only MP4 videos are allowed.",

@@ -12,6 +12,7 @@ import { PinnedCategories } from "@/components/categories/pinned-categories";
 import { HFDataStudioDropdown } from "@/components/prompts/hf-data-studio-dropdown";
 import { McpServerPopup } from "@/components/mcp/mcp-server-popup";
 import { db } from "@/lib/db";
+import { auth } from "@/lib/auth";
 import { isAISearchEnabled, semanticSearch } from "@/lib/ai/embeddings";
 import { isAIGenerationEnabled } from "@/lib/ai/generation";
 import config from "@/../prompts.config";
@@ -172,6 +173,8 @@ interface PromptsPageProps {
 }
 
 export default async function PromptsPage({ searchParams }: PromptsPageProps) {
+  const session = await auth();
+  const isAdmin = session?.user?.role === "ADMIN";
   const t = await getTranslations("prompts");
   const tSearch = await getTranslations("search");
   const params = await searchParams;
@@ -322,12 +325,14 @@ export default async function PromptsPage({ searchParams }: PromptsPageProps) {
               tags={tags}
               currentFilters={params}
               aiSearchEnabled={aiSearchAvailable}
+              isAdmin={isAdmin}
             />
           </aside>
           <main className="flex-1 min-w-0">
             <InfinitePromptList
               initialPrompts={prompts}
               initialTotal={total}
+              isAdmin={isAdmin}
               filters={{
                 q: params.q,
                 type: params.type,

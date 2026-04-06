@@ -392,7 +392,9 @@
     "learnHowToWritePrompts": "Impara a scrivere prompt efficaci →",
     "structuredFormatDetected": "Formato {format} rilevato",
     "structuredFormatWarningDescription": "Il contenuto del tuo prompt sembra essere dati strutturati. Considera di passare alla modalità strutturata per una migliore evidenziazione della sintassi e validazione.",
-    "switchToStructured": "Passa a {format}"
+    "switchToStructured": "Passa a {format}",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating..."
   },
   "changeRequests": {
     "title": "Richieste di Modifica",
@@ -697,7 +699,8 @@
       "editTitle": "Modifica Tag",
       "editDescription": "Aggiorna i dettagli del tag",
       "deleteConfirmTitle": "Eliminare il Tag?",
-      "deleteConfirmDescription": "Questo rimuoverà il tag da tutti i prompt."
+      "deleteConfirmDescription": "Questo rimuoverà il tag da tutti i prompt.",
+      "deleteHoverHint": "Elimina tag"
     },
     "webhooks": {
       "title": "Gestione Webhook",
@@ -2283,6 +2286,10 @@
     "cancel": "Annulla",
     "submit": "Invia",
     "communityExamples": "Esempi della Community",
-    "userExample": "Esempio utente"
+    "userExample": "Esempio utente",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

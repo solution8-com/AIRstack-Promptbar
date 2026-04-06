@@ -392,7 +392,9 @@
     "learnHowToWritePrompts": "효과적인 프롬프트 작성법 배우기 →",
     "structuredFormatDetected": "{format} 형식 감지됨",
     "structuredFormatWarningDescription": "프롬프트 내용이 구조화된 데이터처럼 보입니다. 더 나은 구문 강조 표시 및 유효성 검사를 위해 구조화 모드로 전환하는 것을 고려해 보세요.",
-    "switchToStructured": "{format}으로 전환"
+    "switchToStructured": "{format}으로 전환",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating..."
   },
   "changeRequests": {
     "title": "변경 요청",
@@ -697,7 +699,8 @@
       "editTitle": "태그 편집",
       "editDescription": "태그 세부정보 업데이트",
       "deleteConfirmTitle": "태그를 삭제하시겠습니까?",
-      "deleteConfirmDescription": "모든 프롬프트에서 태그가 제거됩니다."
+      "deleteConfirmDescription": "모든 프롬프트에서 태그가 제거됩니다.",
+      "deleteHoverHint": "태그 삭제"
     },
     "webhooks": {
       "title": "웹훅 관리",
@@ -2265,6 +2268,10 @@
     "cancel": "취소",
     "submit": "제출",
     "communityExamples": "커뮤니티 예제",
-    "userExample": "사용자 예제"
+    "userExample": "사용자 예제",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

@@ -392,7 +392,9 @@
     "learnHowToWritePrompts": "یاد بگیرید چگونه پرامپت‌های مؤثر بنویسید →",
     "structuredFormatDetected": "قالب {format} شناسایی شد",
     "structuredFormatWarningDescription": "محتوای پرامپت شما شبیه داده ساختارمند است. برای هایلایت نحو و اعتبارسنجی بهتر، به حالت ساختارمند تغییر دهید.",
-    "switchToStructured": "تغییر به {format}"
+    "switchToStructured": "تغییر به {format}",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating..."
   },
   "changeRequests": {
     "title": "درخواست‌های تغییر",
@@ -697,7 +699,8 @@
       "editTitle": "ویرایش برچسب",
       "editDescription": "جزئیات برچسب را به‌روزرسانی کنید",
       "deleteConfirmTitle": "برچسب حذف شود؟",
-      "deleteConfirmDescription": "این برچسب را از همه پرامپت‌ها حذف می‌کند."
+      "deleteConfirmDescription": "این برچسب را از همه پرامپت‌ها حذف می‌کند.",
+      "deleteHoverHint": "حذف برچسب"
     },
     "webhooks": {
       "title": "مدیریت وب‌هوک‌ها",
@@ -2261,6 +2264,10 @@
     "cancel": "لغو",
     "submit": "ارسال",
     "communityExamples": "مثال‌های جامعه",
-    "userExample": "مثال کاربر"
+    "userExample": "مثال کاربر",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

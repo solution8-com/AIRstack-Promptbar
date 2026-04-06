@@ -397,7 +397,9 @@
     "descriptionPlaceholderHack": "Optional description of your hack",
     "inputTypeHack": "Hack Implementation Guide",
     "createButtonHack": "Publish Your Hack",
-    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode"
+    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating..."
   },
   "changeRequests": {
     "title": "Solicitudes de Cambio",
@@ -702,7 +704,8 @@
       "editTitle": "Editar Etiqueta",
       "editDescription": "Actualizar detalles de la etiqueta",
       "deleteConfirmTitle": "¿Eliminar Etiqueta?",
-      "deleteConfirmDescription": "Esto eliminará la etiqueta de todos los prompts."
+      "deleteConfirmDescription": "Esto eliminará la etiqueta de todos los prompts.",
+      "deleteHoverHint": "Eliminar etiqueta"
     },
     "webhooks": {
       "title": "Gestión de Webhooks",
@@ -2285,6 +2288,10 @@
     "cancel": "Cancelar",
     "submit": "Enviar",
     "communityExamples": "Ejemplos de la Comunidad",
-    "userExample": "Ejemplo de usuario"
+    "userExample": "Ejemplo de usuario",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

@@ -29,7 +29,7 @@ export function UserExamplesSection({
     setRefreshTrigger((prev) => prev + 1);
   }, []);
 
-  const supportsExamples = type === "IMAGE" || type === "VIDEO";
+  const supportsExamples = type === "IMAGE" || type === "VIDEO" || type === "SKILL";
 
   const renderAddButton = useCallback((asThumbnail: boolean) => (
     <AddExampleDialog

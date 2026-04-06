@@ -382,6 +382,15 @@ interface Contributor {
   avatar: string | null;
 }
 
+interface TagCreationResponse {
+  id?: string;
+  name?: string;
+  slug?: string;
+  color?: string;
+  message?: string;
+  error?: string;
+}
+
 interface PromptFormProps {
   categories: Array<{
     id: string;
@@ -427,6 +436,8 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
   const t = useTranslations("prompts");
   const tCommon = useTranslations("common");
   const [isLoading, setIsLoading] = useState(false);
+  const [availableTags, setAvailableTags] = useState(tags);
+  const [isCreatingTag, setIsCreatingTag] = useState(false);
   const [contributors, setContributors] = useState<Contributor[]>(initialContributors);
   const [usedAiButtons, setUsedAiButtons] = useState<Set<string>>(new Set());
   const builderRef = useRef<PromptBuilderHandle>(null);
@@ -878,6 +889,50 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
     }
   };
 
+  const addTagIfNotPresent = (tagId: string) => {
+    const currentTagIds = form.getValues("tagIds");
+    if (!currentTagIds.includes(tagId)) {
+      form.setValue("tagIds", [...currentTagIds, tagId]);
+    }
+  };
+
+  const handleCreateTag = async () => {
+    const name = tagSearch.trim();
+    if (!name || isCreatingTag) return;
+
+    setIsCreatingTag(true);
+    try {
+      const response = await fetch("/api/tags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      const result: TagCreationResponse = await response.json();
+
+      if (!response.ok || !result?.id) {
+        if (result?.error === "slug_conflict") {
+          toast.error(result.message || tCommon("somethingWentWrong"));
+          return;
+        }
+        throw new Error(result?.message || result?.error || "Failed to create tag");
+      }
+
+      setAvailableTags((prev) => {
+        if (prev.some((tag) => tag.id === result.id)) {
+          return prev;
+        }
+        return [...prev, result].sort((a, b) => a.name.localeCompare(b.name));
+      });
+      addTagIfNotPresent(result.id);
+      setTagSearch("");
+      tagInputRef.current?.focus();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : tCommon("somethingWentWrong"));
+    } finally {
+      setIsCreatingTag(false);
+    }
+  };
+
   const handleAiGenerate = (field: string, label: string) => {
     if (usedAiButtons.has(field) || !builderRef.current) return;
     setUsedAiButtons(prev => new Set(prev).add(field));
@@ -948,7 +1003,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
               {aiGenerationEnabled && (
                 <PromptBuilder
                   ref={builderRef}
-                  availableTags={tags}
+                  availableTags={availableTags}
                   availableCategories={categories}
                   currentState={currentBuilderState}
                   onStateChange={handleBuilderStateChange}
@@ -1081,12 +1136,12 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
             control={form.control}
             name="tagIds"
             render={() => {
-              const filteredTags = tags.filter(
+              const filteredTags = availableTags.filter(
                 (tag) =>
                   !selectedTags.includes(tag.id) &&
                   tag.name.toLowerCase().includes(tagSearch.toLowerCase())
               );
-              const selectedTagObjects = tags.filter((tag) => selectedTags.includes(tag.id));
+              const selectedTagObjects = availableTags.filter((tag) => selectedTags.includes(tag.id));
 
               return (
                 <FormItem>
@@ -1165,7 +1220,14 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                     )}
                     {tagDropdownOpen && tagSearch && filteredTags.length === 0 && (
                       <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-md p-3 text-sm text-muted-foreground">
-                        {t("noTagsFound")}
+                        <button
+                          type="button"
+                          onClick={handleCreateTag}
+                          disabled={isCreatingTag}
+                          className="w-full text-left hover:text-foreground disabled:opacity-70"
+                        >
+                          {isCreatingTag ? t("creatingTag") : t("createTag", { name: tagSearch.trim() })}
+                        </button>
                       </div>
                     )}
                   </div>

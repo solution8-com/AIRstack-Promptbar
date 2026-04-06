@@ -10,6 +10,7 @@ import { PromptList } from "@/components/prompts/prompt-list";
 export default async function CollectionPage() {
   const t = await getTranslations("collection");
   const session = await auth();
+  const isAdmin = session?.user?.role === "ADMIN";
 
   if (!session?.user) {
     redirect("/login");
@@ -89,7 +90,7 @@ export default async function CollectionPage() {
       </div>
 
       {prompts.length > 0 ? (
-        <PromptList prompts={prompts} currentPage={1} totalPages={1} />
+        <PromptList prompts={prompts} currentPage={1} totalPages={1} isAdmin={isAdmin} />
       ) : (
         <div className="text-center py-12 border rounded-lg bg-muted/30">
           <Bookmark className="h-10 w-10 text-muted-foreground mx-auto mb-3" />

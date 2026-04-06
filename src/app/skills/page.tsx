@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { SkillsFilteredList } from "@/components/prompts/skills-filtered-list";
 import { db } from "@/lib/db";
 import { getAdminUsernames } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Skills",
@@ -90,6 +91,8 @@ function getCachedSkills(perPage: number) {
 }
 
 export default async function SkillsPage() {
+  const session = await auth();
+  const isAdmin = session?.user?.role === "ADMIN";
   const t = await getTranslations("prompts");
   const tNav = await getTranslations("nav");
   const tSearch = await getTranslations("search");
@@ -131,6 +134,7 @@ export default async function SkillsPage() {
         skills={skills}
         allUsernames={allUsernames.map(u => u.username)}
         adminUsernames={adminUsernames}
+        isAdmin={isAdmin}
       />
     </div>
   );

@@ -53,7 +53,7 @@ export function MediaPreviewWithExamples({
   const displayTitle = selectedExample?.comment || title;
   const isShowingExample = !!selectedExample;
 
-  const supportsExamples = type === "IMAGE" || type === "VIDEO";
+  const supportsExamples = type === "IMAGE" || type === "VIDEO" || type === "SKILL";
 
   if (hasError && !isShowingExample) {
     return (

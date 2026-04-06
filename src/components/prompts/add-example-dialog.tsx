@@ -57,6 +57,23 @@ export function AddExampleDialog({
   };
 
   const isVideoType = promptType === "VIDEO";
+  const isSkillType = promptType === "SKILL";
+  const isImageLikeType = promptType === "IMAGE" || isSkillType;
+  const descriptionKey = isVideoType
+    ? "addExampleDescriptionVideo"
+    : isSkillType
+      ? "addExampleDescriptionSkill"
+      : "addExampleDescriptionImage";
+  const mediaUrlLabelKey = isVideoType
+    ? "videoUrl"
+    : isSkillType
+      ? "skillOutcomeImageUrl"
+      : "imageUrl";
+  const uploadHintKey = isVideoType
+    ? "clickToUploadVideo"
+    : isSkillType
+      ? "clickToUploadSkillOutcome"
+      : "clickToUpload";
 
   useEffect(() => {
     fetch("/api/config/storage")
@@ -194,16 +211,16 @@ export function AddExampleDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>{t("addExampleTitle")}</DialogTitle>
-            <DialogDescription>
-              {isVideoType ? t("addExampleDescriptionVideo") : t("addExampleDescriptionImage")}
-            </DialogDescription>
-          </DialogHeader>
+            <DialogHeader>
+              <DialogTitle>{t("addExampleTitle")}</DialogTitle>
+              <DialogDescription>
+                {t(descriptionKey)}
+              </DialogDescription>
+            </DialogHeader>
           <div className="space-y-4 py-4">
             {mediaUrl ? (
               <div className="space-y-2">
-                <Label>{isVideoType ? t("videoPreview") : t("imagePreview")}</Label>
+                  <Label>{isVideoType ? t("videoPreview") : t("imagePreview")}</Label>
                 <div className="relative inline-block w-full">
                   <div className="rounded-lg overflow-hidden border bg-muted/30">
                     {isVideoType ? (
@@ -245,14 +262,14 @@ export function AddExampleDialog({
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="url" className="space-y-2 mt-3">
-                  <Label htmlFor="mediaUrl">{isVideoType ? t("videoUrl") : t("imageUrl")}</Label>
-                  <Input
-                    id="mediaUrl"
-                    type="url"
-                    placeholder={isVideoType ? "https://example.com/my-video.mp4" : "https://example.com/my-image.png"}
-                    value={mediaUrl}
-                    onChange={(e) => setMediaUrl(sanitizeMediaUrl(e.target.value))}
-                  />
+                   <Label htmlFor="mediaUrl">{t(mediaUrlLabelKey)}</Label>
+                   <Input
+                     id="mediaUrl"
+                     type="url"
+                     placeholder={isVideoType ? "https://example.com/my-video.mp4" : "https://example.com/my-image.png"}
+                     value={mediaUrl}
+                     onChange={(e) => setMediaUrl(sanitizeMediaUrl(e.target.value))}
+                   />
                 </TabsContent>
                 <TabsContent value="upload" className="mt-3">
                   <div
@@ -265,10 +282,10 @@ export function AddExampleDialog({
                       <Upload className="h-8 w-8 text-muted-foreground" />
                     )}
                     <p className="text-sm text-muted-foreground text-center">
-                      {isUploading ? t("uploading") : t(isVideoType ? "clickToUploadVideo" : "clickToUpload")}
+                       {isUploading ? t("uploading") : t(uploadHintKey)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {t("maxFileSize")}
+                       {t(isImageLikeType ? "maxFileSize" : "maxFileSizeVideo")}
                     </p>
                   </div>
                   <input

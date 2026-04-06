@@ -397,7 +397,9 @@
     "descriptionPlaceholderHack": "Optional description of your hack",
     "inputTypeHack": "Hack Implementation Guide",
     "createButtonHack": "Publish Your Hack",
-    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode"
+    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating..."
   },
   "changeRequests": {
     "title": "変更リクエスト",
@@ -702,7 +704,8 @@
       "editTitle": "タグを編集",
       "editDescription": "タグの詳細を更新",
       "deleteConfirmTitle": "タグを削除しますか？",
-      "deleteConfirmDescription": "すべてのプロンプトからこのタグが削除されます。"
+      "deleteConfirmDescription": "すべてのプロンプトからこのタグが削除されます。",
+      "deleteHoverHint": "タグを削除"
     },
     "webhooks": {
       "title": "Webhook管理",
@@ -2270,6 +2273,10 @@
     "cancel": "キャンセル",
     "submit": "送信",
     "communityExamples": "コミュニティの例",
-    "userExample": "ユーザーの例"
+    "userExample": "ユーザーの例",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

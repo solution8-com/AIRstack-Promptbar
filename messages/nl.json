@@ -392,7 +392,9 @@
     "learnHowToWritePrompts": "Leer hoe je effectieve prompts schrijft →",
     "structuredFormatDetected": "{format}-formaat gedetecteerd",
     "structuredFormatWarningDescription": "Je promptinhoud lijkt op gestructureerde data. Overweeg om naar gestructureerde modus te wisselen voor betere syntax-highlighting en validatie.",
-    "switchToStructured": "Wisselen naar {format}"
+    "switchToStructured": "Wisselen naar {format}",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating..."
   },
   "changeRequests": {
     "title": "Wijzigingsverzoeken",
@@ -697,7 +699,8 @@
       "editTitle": "Tag bewerken",
       "editDescription": "Tagdetails bijwerken",
       "deleteConfirmTitle": "Tag verwijderen?",
-      "deleteConfirmDescription": "Dit verwijdert de tag van alle prompts."
+      "deleteConfirmDescription": "Dit verwijdert de tag van alle prompts.",
+      "deleteHoverHint": "Tag verwijderen"
     },
     "webhooks": {
       "title": "Webhookbeheer",
@@ -2268,6 +2271,10 @@
     "cancel": "Annuleren",
     "submit": "Versturen",
     "communityExamples": "Community Voorbeelden",
-    "userExample": "Gebruikers Voorbeeld"
+    "userExample": "Gebruikers Voorbeeld",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

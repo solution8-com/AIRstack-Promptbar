@@ -397,7 +397,9 @@
     "descriptionPlaceholderHack": "Optional description of your hack",
     "inputTypeHack": "Hack Implementation Guide",
     "createButtonHack": "Publish Your Hack",
-    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode"
+    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating..."
   },
   "changeRequests": {
     "title": "Değişiklik İstekleri",
@@ -702,7 +704,8 @@
       "editTitle": "Etiket Düzenle",
       "editDescription": "Etiket detaylarını güncelleyin",
       "deleteConfirmTitle": "Etiket Silinsin mi?",
-      "deleteConfirmDescription": "Bu etiket tüm promptlardan kaldırılacaktır."
+      "deleteConfirmDescription": "Bu etiket tüm promptlardan kaldırılacaktır.",
+      "deleteHoverHint": "Etiketi sil"
     },
     "webhooks": {
       "title": "Webhook Yönetimi",
@@ -2281,6 +2284,10 @@
     "cancel": "İptal",
     "submit": "Gönder",
     "communityExamples": "Topluluk Örnekleri",
-    "userExample": "Kullanıcı örneği"
+    "userExample": "Kullanıcı örneği",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }
