@@ -32,10 +32,28 @@ export async function POST(request: Request) {
     const name = parsed.data.name.trim();
     const slug = await generatePromptSlug(name);
 
-    const tag = await db.tag.upsert({
+    const existingTag = await db.tag.findUnique({
       where: { slug },
-      update: {},
-      create: {
+    });
+
+    if (existingTag) {
+      const matchesRequestedName = existingTag.name.trim().toLowerCase() === name.toLowerCase();
+
+      if (!matchesRequestedName) {
+        return NextResponse.json(
+          {
+            error: "slug_conflict",
+            message: `Tag name conflicts with existing tag "${existingTag.name}"`,
+          },
+          { status: 409 }
+        );
+      }
+
+      return NextResponse.json(existingTag);
+    }
+
+    const tag = await db.tag.create({
+      data: {
         name,
         slug,
         color: DEFAULT_TAG_COLOR,

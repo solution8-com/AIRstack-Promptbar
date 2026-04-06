@@ -387,6 +387,7 @@ interface TagCreationResponse {
   name?: string;
   slug?: string;
   color?: string;
+  conflictTagName?: string;
   message?: string;
   error?: string;
 }
@@ -903,6 +904,10 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
       const result: TagCreationResponse = await response.json();
 
       if (!response.ok || !result?.id) {
+        if (result?.error === "slug_conflict") {
+          toast.error(result.message || tCommon("somethingWentWrong"));
+          return;
+        }
         throw new Error(result?.message || result?.error || "Failed to create tag");
       }
 
@@ -912,7 +917,10 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
         }
         return [...prev, result].sort((a, b) => a.name.localeCompare(b.name));
       });
-      toggleTag(result.id);
+      const currentTagIds = form.getValues("tagIds");
+      if (!currentTagIds.includes(result.id)) {
+        form.setValue("tagIds", [...currentTagIds, result.id]);
+      }
       setTagSearch("");
       tagInputRef.current?.focus();
     } catch (error) {
