@@ -382,6 +382,15 @@ interface Contributor {
   avatar: string | null;
 }
 
+interface TagCreationResponse {
+  id?: string;
+  name?: string;
+  slug?: string;
+  color?: string;
+  message?: string;
+  error?: string;
+}
+
 interface PromptFormProps {
   categories: Array<{
     id: string;
@@ -891,7 +900,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
       });
-      const result: { id?: string; message?: string; error?: string; name?: string; slug?: string; color?: string } = await response.json();
+      const result: TagCreationResponse = await response.json();
 
       if (!response.ok || !result?.id) {
         throw new Error(result?.message || result?.error || "Failed to create tag");

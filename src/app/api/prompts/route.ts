@@ -167,12 +167,10 @@ export async function POST(request: Request) {
 
     // Generate slug from title (translated to English)
     const slug = await generatePromptSlug(title);
-    const existingTagIds = tagIds.length > 0
-      ? await db.tag.findMany({
-          where: { id: { in: tagIds } },
-          select: { id: true },
-        })
-      : [];
+    const existingTagIds = await db.tag.findMany({
+      where: { id: { in: tagIds } },
+      select: { id: true },
+    });
     const validTagIdSet = new Set(existingTagIds.map((tag) => tag.id));
     const validTagIds = tagIds.filter((tagId) => validTagIdSet.has(tagId));
 
