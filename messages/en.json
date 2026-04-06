@@ -267,6 +267,13 @@
     "addNewFileDescription": "Enter a filename with extension. Use / for directories (e.g., config.json, src/utils.ts)",
     "deleteFileConfirm": "Delete File?",
     "deleteFileDescription": "Are you sure you want to delete \"{filename}\"? This action cannot be undone.",
+    "dropFolderHere": "Drop skill folder here",
+    "dropHint": "Drop a skill folder to import",
+    "dropProcessing": "Reading files…",
+    "dropErrorNotFolder": "Please drop a folder, not individual files.",
+    "dropErrorTooLarge": "The dropped folder is too large (max 100 files / 5 MB). Try a smaller directory.",
+    "dropErrorNoManifest": "The folder must contain a \"skill.nd.json\" file directly inside the root folder.",
+    "dropErrorGeneric": "An error occurred while reading the folder. Please try again.",
     "validation": {
       "filenameEmpty": "Filename cannot be empty",
       "filenameInvalidChars": "Filename contains invalid characters",
