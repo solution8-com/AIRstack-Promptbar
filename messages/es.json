@@ -705,7 +705,7 @@
       "editDescription": "Actualizar detalles de la etiqueta",
       "deleteConfirmTitle": "¿Eliminar Etiqueta?",
       "deleteConfirmDescription": "Esto eliminará la etiqueta de todos los prompts.",
-      "deleteHoverHint": "Delete tag"
+      "deleteHoverHint": "Eliminar etiqueta"
     },
     "webhooks": {
       "title": "Gestión de Webhooks",

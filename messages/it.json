@@ -700,7 +700,7 @@
       "editDescription": "Aggiorna i dettagli del tag",
       "deleteConfirmTitle": "Eliminare il Tag?",
       "deleteConfirmDescription": "Questo rimuoverà il tag da tutti i prompt.",
-      "deleteHoverHint": "Delete tag"
+      "deleteHoverHint": "Elimina tag"
     },
     "webhooks": {
       "title": "Gestione Webhook",

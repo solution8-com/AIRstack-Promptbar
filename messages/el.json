@@ -700,7 +700,7 @@
       "editDescription": "Ενημέρωση στοιχείων ετικέτας",
       "deleteConfirmTitle": "Διαγραφή ετικέτας;",
       "deleteConfirmDescription": "Αυτό θα αφαιρέσει την ετικέτα από όλα τα prompts.",
-      "deleteHoverHint": "Delete tag"
+      "deleteHoverHint": "Διαγραφή ετικέτας"
     },
     "webhooks": {
       "title": "Διαχείριση Webhooks",

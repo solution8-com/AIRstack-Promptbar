@@ -705,7 +705,7 @@
       "editDescription": "Tag-Details aktualisieren",
       "deleteConfirmTitle": "Tag löschen?",
       "deleteConfirmDescription": "Dies entfernt den Tag von allen Prompts.",
-      "deleteHoverHint": "Delete tag"
+      "deleteHoverHint": "Tag löschen"
     },
     "webhooks": {
       "title": "Webhook-Verwaltung",

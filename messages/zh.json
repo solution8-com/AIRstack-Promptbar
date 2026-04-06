@@ -705,7 +705,7 @@
       "editDescription": "更新标签详情",
       "deleteConfirmTitle": "删除标签？",
       "deleteConfirmDescription": "这将从所有提示词中移除该标签。",
-      "deleteHoverHint": "Delete tag"
+      "deleteHoverHint": "删除标签"
     },
     "webhooks": {
       "title": "Webhook 管理",

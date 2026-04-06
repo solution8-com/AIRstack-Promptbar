@@ -8,6 +8,7 @@ import { generatePromptSlug } from "@/lib/slug";
 const createTagSchema = z.object({
   name: z.string().trim().min(1).max(50),
 });
+const DEFAULT_TAG_COLOR = "#6366f1";
 
 export async function POST(request: Request) {
   try {
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
       create: {
         name,
         slug,
-        color: "#6366f1",
+        color: DEFAULT_TAG_COLOR,
       },
     });
 

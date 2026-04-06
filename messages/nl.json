@@ -700,7 +700,7 @@
       "editDescription": "Tagdetails bijwerken",
       "deleteConfirmTitle": "Tag verwijderen?",
       "deleteConfirmDescription": "Dit verwijdert de tag van alle prompts.",
-      "deleteHoverHint": "Delete tag"
+      "deleteHoverHint": "Tag verwijderen"
     },
     "webhooks": {
       "title": "Webhookbeheer",

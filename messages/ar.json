@@ -700,7 +700,7 @@
       "editDescription": "تحديث تفاصيل الوسم",
       "deleteConfirmTitle": "حذف الوسم؟",
       "deleteConfirmDescription": "سيؤدي هذا إلى إزالة الوسم من جميع الأوامر.",
-      "deleteHoverHint": "Delete tag"
+      "deleteHoverHint": "حذف الوسم"
     },
     "webhooks": {
       "title": "إدارة الويب هوك",

@@ -700,7 +700,7 @@
       "editDescription": "جزئیات برچسب را به‌روزرسانی کنید",
       "deleteConfirmTitle": "برچسب حذف شود؟",
       "deleteConfirmDescription": "این برچسب را از همه پرامپت‌ها حذف می‌کند.",
-      "deleteHoverHint": "Delete tag"
+      "deleteHoverHint": "حذف برچسب"
     },
     "webhooks": {
       "title": "مدیریت وب‌هوک‌ها",

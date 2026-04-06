@@ -700,7 +700,7 @@
       "editDescription": "Etiket detallarını yeniləyin",
       "deleteConfirmTitle": "Etiket Silinsin?",
       "deleteConfirmDescription": "Bu etiket bütün promptlardan silinəcək.",
-      "deleteHoverHint": "Delete tag"
+      "deleteHoverHint": "Teqi sil"
     },
     "webhooks": {
       "title": "Webhook İdarəetməsi",

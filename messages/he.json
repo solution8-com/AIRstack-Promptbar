@@ -700,7 +700,7 @@
       "editDescription": "עדכן פרטי תגית",
       "deleteConfirmTitle": "למחוק תגית?",
       "deleteConfirmDescription": "פעולה זו תסיר את התגית מכל הפרומפטים.",
-      "deleteHoverHint": "Delete tag"
+      "deleteHoverHint": "מחק תגית"
     },
     "webhooks": {
       "title": "ניהול Webhooks",

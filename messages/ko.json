@@ -700,7 +700,7 @@
       "editDescription": "태그 세부정보 업데이트",
       "deleteConfirmTitle": "태그를 삭제하시겠습니까?",
       "deleteConfirmDescription": "모든 프롬프트에서 태그가 제거됩니다.",
-      "deleteHoverHint": "Delete tag"
+      "deleteHoverHint": "태그 삭제"
     },
     "webhooks": {
       "title": "웹훅 관리",

@@ -705,7 +705,7 @@
       "editDescription": "タグの詳細を更新",
       "deleteConfirmTitle": "タグを削除しますか？",
       "deleteConfirmDescription": "すべてのプロンプトからこのタグが削除されます。",
-      "deleteHoverHint": "Delete tag"
+      "deleteHoverHint": "タグを削除"
     },
     "webhooks": {
       "title": "Webhook管理",

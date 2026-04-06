@@ -700,7 +700,7 @@
       "editDescription": "Обновить данные тега",
       "deleteConfirmTitle": "Удалить тег?",
       "deleteConfirmDescription": "Это удалит тег со всех промптов.",
-      "deleteHoverHint": "Delete tag"
+      "deleteHoverHint": "Удалить тег"
     },
     "webhooks": {
       "title": "Управление вебхуками",
