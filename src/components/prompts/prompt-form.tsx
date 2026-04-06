@@ -387,7 +387,6 @@ interface TagCreationResponse {
   name?: string;
   slug?: string;
   color?: string;
-  conflictTagName?: string;
   message?: string;
   error?: string;
 }
@@ -890,6 +889,13 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
     }
   };
 
+  const addTagIfNotPresent = (tagId: string) => {
+    const currentTagIds = form.getValues("tagIds");
+    if (!currentTagIds.includes(tagId)) {
+      form.setValue("tagIds", [...currentTagIds, tagId]);
+    }
+  };
+
   const handleCreateTag = async () => {
     const name = tagSearch.trim();
     if (!name || isCreatingTag) return;
@@ -917,10 +923,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
         }
         return [...prev, result].sort((a, b) => a.name.localeCompare(b.name));
       });
-      const currentTagIds = form.getValues("tagIds");
-      if (!currentTagIds.includes(result.id)) {
-        form.setValue("tagIds", [...currentTagIds, result.id]);
-      }
+      addTagIfNotPresent(result.id);
       setTagSearch("");
       tagInputRef.current?.focus();
     } catch (error) {
