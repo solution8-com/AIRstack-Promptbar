@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       },
     });
 
-    revalidateTag("tags", "max");
+    revalidateTag("tags");
 
     return NextResponse.json(tag);
   } catch (error) {

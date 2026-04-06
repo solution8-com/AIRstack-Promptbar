@@ -50,8 +50,8 @@ export async function DELETE(
     await db.tag.delete({
       where: { id },
     });
-    revalidateTag("tags", "max");
-    revalidateTag("prompts", "max");
+    revalidateTag("tags");
+    revalidateTag("prompts");
 
     return NextResponse.json({ success: true });
   } catch (error) {
