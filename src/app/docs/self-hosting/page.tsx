@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getTranslations } from "next-intl/server";
 import { Server, Database, Key, Palette, Globe, Settings, Cpu } from "lucide-react";
 import DeepWikiIcon from "@/../public/deepwiki.svg";
 import Context7Icon from "@/../public/context7.svg";
@@ -18,9 +17,7 @@ export const metadata = {
   description: "Deploy your own prompts.chat instance with customizable branding, themes, and authentication",
 };
 
-export default async function SelfHostingPage() {
-  const t = await getTranslations("selfHosting");
-
+export default function SelfHostingPage() {
   return (
     <div className="container max-w-4xl py-10">
       <h1 className="text-2xl font-bold mb-2">Self-Hosting Guide</h1>
@@ -113,9 +110,9 @@ export default async function SelfHostingPage() {
               Prerequisites
             </h3>
             <ul className="list-disc list-inside text-muted-foreground space-y-1">
-              <li>{t("prerequisites.nodeJs")}</li>
-              <li>{t("prerequisites.postgresql")}</li>
-              <li>{t("prerequisites.npm")}</li>
+              <li>Node.js 18+</li>
+              <li>PostgreSQL database</li>
+              <li>npm or yarn</li>
             </ul>
           </div>
 

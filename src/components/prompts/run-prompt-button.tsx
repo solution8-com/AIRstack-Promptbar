@@ -77,7 +77,6 @@ const videoPlatforms: Platform[] = [
 
 // Code platforms (IDEs + code generation tools)
 const codePlatforms: Platform[] = [
-  { id: "commandcode", name: "Command Code", baseUrl: "https://commandcode.ai/?utm_source=prompts.chat", supportsQuerystring: false, sponsor: true },
   { id: "windsurf", name: "Windsurf", baseUrl: "windsurf://", isDeeplink: true, supportsQuerystring: false, sponsor: true },
   { id: "vscode", name: "VS Code", baseUrl: "vscode://", isDeeplink: true, supportsQuerystring: false },
   { id: "vscode-insiders", name: "VS Code Insiders", baseUrl: "vscode-insiders://", isDeeplink: true, supportsQuerystring: false },
@@ -92,7 +91,6 @@ const codePlatforms: Platform[] = [
       { name: "Copilot Agents", baseUrl: "https://github.com/copilot/agents" },
     ],
   },
-  { id: "netlify", name: "Netlify", baseUrl: "https://app.netlify.com/run" },
   { id: "bolt", name: "Bolt", baseUrl: "https://bolt.new" },
   { id: "lovable", name: "Lovable", baseUrl: "https://lovable.dev" },
   { id: "v0", name: "v0", baseUrl: "https://v0.dev/chat" },
@@ -175,8 +173,6 @@ function buildUrl(platformId: string, baseUrl: string, promptText: string, promp
       return `${baseUrl}/?prompt=${encoded}`;
     case "lovable":
       return `${baseUrl}/?autosubmit=true#prompt=${encoded}`;
-    case "netlify":
-      return `${baseUrl}?prompt=${encoded}&ref=prompts-chat`;
     case "mistral":
       return `${baseUrl}?q=${encoded}`;
     case "perplexity":

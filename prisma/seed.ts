@@ -3,15 +3,14 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-const PROMPTS_JSON_URL = "https://prompts.chat/prompts.json?full_content=true";
+const PROMPTS_JSON_URL = "https://prompts.chat/prompts.json";
 
-/** Raw shape returned by the remote API — content may be absent. */
-interface RemotePromptRaw {
+interface RemotePrompt {
   id: string;
   title: string;
   slug: string;
   description: string | null;
-  content?: string;
+  content: string;
   type: string;
   structuredFormat: string | null;
   mediaUrl: string | null;
@@ -53,20 +52,11 @@ interface RemotePromptRaw {
   }>;
 }
 
-/** Validated prompt with required content field. */
-type RemotePrompt = RemotePromptRaw & { content: string };
-
-/** Type guard that narrows a raw API prompt to a validated RemotePrompt. */
-function hasContent(prompt: RemotePromptRaw): prompt is RemotePrompt {
-  return typeof prompt.content === "string" && prompt.content.length > 0;
-}
-
 interface RemotePromptsResponse {
   count: number;
-  prompts: RemotePromptRaw[];
+  prompts: RemotePrompt[];
 }
 
-/** Fetches all prompts from the remote prompts.chat API with full content. */
 async function fetchPrompts(): Promise<RemotePromptsResponse> {
   console.log(`📡 Fetching prompts from ${PROMPTS_JSON_URL}...`);
   const response = await fetch(PROMPTS_JSON_URL);
@@ -78,13 +68,12 @@ async function fetchPrompts(): Promise<RemotePromptsResponse> {
   return data;
 }
 
-/** Seeds the database with users, categories, tags, and prompts from prompts.chat. */
 async function main() {
   console.log("🌱 Seeding database from prompts.chat...");
 
   // Create admin user for assigning prompts
   const password = await bcrypt.hash("password123", 12);
-
+  
   const admin = await prisma.user.upsert({
     where: { email: "admin@prompts.chat" },
     update: {},
@@ -185,7 +174,7 @@ async function main() {
       userIdMap.set(username, admin.id);
       continue;
     }
-
+    
     const user = await prisma.user.upsert({
       where: { username },
       update: { name: author.name, avatar: author.avatar },
@@ -235,13 +224,6 @@ async function main() {
       YAML: "YAML",
     };
     const structuredFormat = remotePrompt.structuredFormat ? formatMap[remotePrompt.structuredFormat] : null;
-
-    // Skip prompts without content
-    if (!hasContent(remotePrompt)) {
-      console.warn(`⚠  Skipping prompt "${remotePrompt.title}" - no content`);
-      promptsSkipped++;
-      continue;
-    }
 
     // Check if prompt already exists
     const existingPrompt = await prisma.prompt.findFirst({
@@ -298,16 +280,6 @@ async function main() {
   }
 
   console.log(`✅ Created ${promptsCreated} prompts (${promptsSkipped} skipped)`);
-
-  // Fail-fast if no prompts were created — likely an upstream API regression
-  const total = promptsCreated + promptsSkipped;
-  if (total > 0 && promptsCreated === 0) {
-    throw new Error(
-      `Seeding failed: 0 prompts created out of ${total} (${promptsSkipped} skipped). ` +
-      `This likely indicates an upstream API regression — check that ${PROMPTS_JSON_URL} returns content.`
-    );
-  }
-
   console.log("\n🎉 Seeding complete!");
   console.log("\n📋 Test credentials (password: password123):");
   console.log("   Admin: admin@prompts.chat");

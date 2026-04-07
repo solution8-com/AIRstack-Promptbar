@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { checkPromptAccess } from "@/lib/prompt-access";
 
 const updateChangeRequestSchema = z.object({
   status: z.enum(["APPROVED", "REJECTED", "PENDING"]),
@@ -197,8 +196,7 @@ export async function GET(
           select: {
             id: true,
             title: true,
-            isPrivate: true,
-            authorId: true,
+            content: true,
           },
         },
       },
@@ -210,9 +208,6 @@ export async function GET(
         { status: 404 }
       );
     }
-
-    const denied = await checkPromptAccess(changeRequest.prompt);
-    if (denied) return denied;
 
     return NextResponse.json(changeRequest);
   } catch (error) {

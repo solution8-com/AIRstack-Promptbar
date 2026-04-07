@@ -27,7 +27,6 @@
     "close": "Κλείσιμο",
     "all": "Όλα",
     "none": "Κανένα",
-    "ad": "Διαφήμιση",
     "moreLines": "+{count} επιπλέον γραμμές",
     "codeView": "Κώδικας",
     "treeView": "Δέντρο",
@@ -2268,12 +2267,5 @@
     "submit": "Υποβολή",
     "communityExamples": "Παραδείγματα Κοινότητας",
     "userExample": "Παράδειγμα Χρήστη"
-  },
-  "selfHosting": {
-    "prerequisites": {
-      "nodeJs": "Node.js 24.x",
-      "postgresql": "PostgreSQL database",
-      "npm": "npm"
-    }
   }
 }

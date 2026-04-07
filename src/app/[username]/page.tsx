@@ -37,8 +37,7 @@ export async function generateMetadata({ params }: UserProfilePageProps): Promis
   const username = decodedUsername.slice(1);
     
   const user = await db.user.findFirst({
-    where: { username: username.toLowerCase() },
-    orderBy: { createdAt: "asc" },
+    where: { username: { equals: username, mode: "insensitive" } },
     select: { name: true, username: true },
   });
 
@@ -72,8 +71,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
   const username = decodedUsername.slice(1);
 
   const user = await db.user.findFirst({
-    where: { username: username.toLowerCase() },
-    orderBy: { createdAt: "asc" },
+    where: { username: { equals: username, mode: "insensitive" } },
     select: {
       id: true,
       name: true,

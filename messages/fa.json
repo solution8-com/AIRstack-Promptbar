@@ -27,7 +27,6 @@
     "close": "بستن",
     "all": "همه",
     "none": "هیچکدام",
-    "ad": "تبلیغ",
     "moreLines": "+{count} خط دیگر",
     "codeView": "کد",
     "treeView": "درختی",
@@ -2261,12 +2260,5 @@
     "submit": "ارسال",
     "communityExamples": "مثال‌های جامعه",
     "userExample": "مثال کاربر"
-  },
-  "selfHosting": {
-    "prerequisites": {
-      "nodeJs": "Node.js 24.x",
-      "postgresql": "PostgreSQL database",
-      "npm": "npm"
-    }
   }
 }

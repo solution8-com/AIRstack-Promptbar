@@ -27,7 +27,6 @@
     "close": "Закрыть",
     "all": "Все",
     "none": "Нет",
-    "ad": "Реклама",
     "moreLines": "+{count} строк",
     "codeView": "Код",
     "treeView": "Дерево",
@@ -2262,12 +2261,5 @@
     "submit": "Отправить",
     "communityExamples": "Примеры сообщества",
     "userExample": "Пример пользователя"
-  },
-  "selfHosting": {
-    "prerequisites": {
-      "nodeJs": "Node.js 24.x",
-      "postgresql": "PostgreSQL database",
-      "npm": "npm"
-    }
   }
 }

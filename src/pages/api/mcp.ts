@@ -10,14 +10,8 @@ import {
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { isValidApiKeyFormat } from "@/lib/api-key";
-import { parseSkillFiles, serializeSkillFiles, sanitizeFilename, DEFAULT_SKILL_FILE } from "@/lib/skill-files";
-import appConfig from "@/../prompts.config";
-import {
-  mcpGeneralLimiter,
-  mcpToolCallLimiter,
-  mcpWriteToolLimiter,
-  mcpAiToolLimiter,
-} from "@/lib/rate-limit";
+import { improvePrompt } from "@/lib/ai/improve-prompt";
+import { parseSkillFiles, serializeSkillFiles, DEFAULT_SKILL_FILE } from "@/lib/skill-files";
 
 interface AuthenticatedUser {
   id: string;
@@ -25,18 +19,9 @@ interface AuthenticatedUser {
   mcpPromptsPublicByDefault: boolean;
 }
 
-// In-memory auth cache for warm function instances (5-min TTL)
-const authCache = new Map<string, { user: AuthenticatedUser | null; expiry: number }>();
-const AUTH_CACHE_TTL = 5 * 60 * 1000;
-
 async function authenticateApiKey(apiKey: string | null): Promise<AuthenticatedUser | null> {
   if (!apiKey || !isValidApiKeyFormat(apiKey)) {
     return null;
-  }
-
-  const cached = authCache.get(apiKey);
-  if (cached && Date.now() < cached.expiry) {
-    return cached.user;
   }
 
   const user = await db.user.findUnique({
@@ -48,7 +33,6 @@ async function authenticateApiKey(apiKey: string | null): Promise<AuthenticatedU
     },
   });
 
-  authCache.set(apiKey, { user, expiry: Date.now() + AUTH_CACHE_TTL });
   return user;
 }
 
@@ -118,7 +102,7 @@ function createServer(options: ServerOptions = {}) {
     {
       capabilities: {
         prompts: { listChanged: false },
-        tools: { listChanged: false },
+        tools: {},
       },
     }
   );
@@ -192,6 +176,7 @@ function createServer(options: ServerOptions = {}) {
         slug: true,
         title: true,
         description: true,
+        content: true,
       },
     });
 
@@ -200,10 +185,16 @@ function createServer(options: ServerOptions = {}) {
 
     return {
       prompts: results.map((p) => {
+        const variables = extractVariables(p.content);
         return {
           name: getPromptName(p),
           title: p.title,
           description: p.description || undefined,
+          arguments: variables.map((v) => ({
+            name: v.name,
+            description: v.defaultValue ? `Default: ${v.defaultValue}` : undefined,
+            required: !v.defaultValue,
+          })),
         };
       }),
       nextCursor: hasMore ? String(page + 1) : undefined,
@@ -214,30 +205,24 @@ function createServer(options: ServerOptions = {}) {
     const promptSlug = request.params.name;
     const args = request.params.arguments || {};
 
-    const promptSelect = { id: true, slug: true, title: true, description: true, content: true };
-
-    // Try direct lookup by slug first
-    let prompt = await db.prompt.findFirst({
-      where: { ...promptFilter, slug: promptSlug },
-      select: promptSelect,
+    // Fetch all matching prompts and find by slug
+    const prompts = await db.prompt.findMany({
+      where: promptFilter,
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        description: true,
+        content: true,
+      },
     });
-    // Fallback: lookup by id
-    if (!prompt) {
-      prompt = await db.prompt.findFirst({
-        where: { ...promptFilter, id: promptSlug },
-        select: promptSelect,
-      });
-    }
-    // Fallback: lookup by title for prompts without stored slug
-    // Uses indexed DB query instead of loading 500 rows into memory
-    // TODO: Backfill slug column for all existing prompts so this fallback can be removed
-    if (!prompt) {
-      const titleGuess = promptSlug.replace(/-/g, " ");
-      prompt = await db.prompt.findFirst({
-        where: { ...promptFilter, slug: null, title: { contains: titleGuess, mode: "insensitive" } },
-        select: promptSelect,
-      });
-    }
+
+    // Find by slug field first, then by slugified title, then by id
+    const prompt = prompts.find((p) => 
+      p.slug === promptSlug || 
+      slugify(p.title) === promptSlug || 
+      p.id === promptSlug
+    );
 
     if (!prompt) {
       throw new Error(`Prompt not found: ${promptSlug}`);
@@ -332,6 +317,7 @@ function createServer(options: ServerOptions = {}) {
             description: true,
             content: true,
             type: true,
+            structuredFormat: true,
             createdAt: true,
             author: { select: { username: true, name: true } },
             category: { select: { name: true, slug: true } },
@@ -345,8 +331,9 @@ function createServer(options: ServerOptions = {}) {
           slug: getPromptName(p),
           title: p.title,
           description: p.description,
-          contentPreview: p.content.substring(0, 300) + (p.content.length > 300 ? '...' : ''),
+          content: p.content,
           type: p.type,
+          structuredFormat: p.structuredFormat,
           author: p.author.name || p.author.username,
           category: p.category?.name || null,
           tags: p.tags.map((t) => t.tag.name),
@@ -358,7 +345,7 @@ function createServer(options: ServerOptions = {}) {
           content: [
             {
               type: "text" as const,
-              text: JSON.stringify({ query, count: results.length, prompts: results }),
+              text: JSON.stringify({ query, count: results.length, prompts: results }, null, 2),
             },
           ],
         };
@@ -380,12 +367,9 @@ function createServer(options: ServerOptions = {}) {
         "Get a prompt by ID and optionally fill in its variables. If the prompt contains template variables (like {{variable}}), you will be asked to provide values for them.",
       inputSchema: {
         id: z.string().describe("The ID of the prompt to retrieve"),
-        fill_variables: z.boolean().default(false).describe(
-          "If true and the prompt has template variables, triggers interactive variable filling. Default false — returns raw prompt with variable metadata."
-        ),
       },
     },
-    async ({ id, fill_variables }, extra) => {
+    async ({ id }, extra) => {
       try {
         const prompt = await db.prompt.findFirst({
           where: {
@@ -417,7 +401,7 @@ function createServer(options: ServerOptions = {}) {
 
         const variables = extractVariables(prompt.content);
 
-        if (fill_variables && variables.length > 0) {
+        if (variables.length > 0) {
           const properties: Record<string, PrimitiveSchemaDefinition> = {};
           const requiredFields: string[] = [];
           for (const variable of variables) {
@@ -451,75 +435,73 @@ function createServer(options: ServerOptions = {}) {
               },
               ElicitResultSchema
             );
+            
+            const timeoutPromise = new Promise<never>((_, reject) => 
+              setTimeout(() => reject(new Error("Elicitation timeout")), timeoutMs)
+            );
+            
+            const result = await Promise.race([elicitationPromise, timeoutPromise]);
 
-            let timeoutId: NodeJS.Timeout;
-            const timeoutPromise = new Promise<never>((_, reject) => {
-              timeoutId = setTimeout(() => reject(new Error("Elicitation timeout")), timeoutMs);
-            });
-
-            try {
-              const elicitResult = await Promise.race([elicitationPromise, timeoutPromise]);
-              clearTimeout(timeoutId!);
-
-              if (elicitResult.action === "accept" && elicitResult.content) {
-                let filledContent = prompt.content;
-                for (const [key, value] of Object.entries(elicitResult.content)) {
-                  // Skip keys that don't match valid variable name format (ReDoS prevention)
-                  if (!/^[a-zA-Z_][a-zA-Z0-9_\s]*$/.test(key)) {
-                    continue;
-                  }
-                  // Replace ${key} or ${key:default} patterns
-                  filledContent = filledContent.replace(
-                    new RegExp(`\\$\\{${key}(?::[^}]*)?\\}`, "g"),
-                    String(value)
-                  );
-                }
-
-                return {
-                  content: [
-                    {
-                      type: "text" as const,
-                      text: JSON.stringify({
-                          ...prompt,
-                          content: filledContent,
-                          originalContent: prompt.content,
-                          variables: elicitResult.content,
-                          author: prompt.author.name || prompt.author.username,
-                          category: prompt.category?.name || null,
-                          tags: prompt.tags.map((t) => t.tag.name),
-                          link: `https://prompts.chat/prompts/${prompt.id}_${getPromptName(prompt)}`,
-                        }),
-                    },
-                  ],
-                };
-              } else {
-                return {
-                  content: [
-                    {
-                      type: "text" as const,
-                      text: JSON.stringify({
-                          ...prompt,
-                          variablesRequired: variables,
-                          message: "User declined to provide variable values. Returning original prompt.",
-                          author: prompt.author.name || prompt.author.username,
-                          category: prompt.category?.name || null,
-                          tags: prompt.tags.map((t) => t.tag.name),
-                          link: `https://prompts.chat/prompts/${prompt.id}_${getPromptName(prompt)}`,
-                        }),
-                    },
-                  ],
-                };
+            if (result.action === "accept" && result.content) {
+              let filledContent = prompt.content;
+              for (const [key, value] of Object.entries(result.content)) {
+                // Replace ${key} or ${key:default} patterns
+                filledContent = filledContent.replace(
+                  new RegExp(`\\$\\{${key}(?::[^}]*)?\\}`, "g"),
+                  String(value)
+                );
               }
-            } catch (e) {
-              clearTimeout(timeoutId!);
-              throw e;
+
+              return {
+                content: [
+                  {
+                    type: "text" as const,
+                    text: JSON.stringify(
+                      {
+                        ...prompt,
+                        content: filledContent,
+                        originalContent: prompt.content,
+                        variables: result.content,
+                        author: prompt.author.name || prompt.author.username,
+                        category: prompt.category?.name || null,
+                        tags: prompt.tags.map((t) => t.tag.name),
+                        link: `https://prompts.chat/prompts/${prompt.id}_${getPromptName(prompt)}`,
+                      },
+                      null,
+                      2
+                    ),
+                  },
+                ],
+              };
+            } else {
+              return {
+                content: [
+                  {
+                    type: "text" as const,
+                    text: JSON.stringify(
+                      {
+                        ...prompt,
+                        variablesRequired: variables,
+                        message: "User declined to provide variable values. Returning original prompt.",
+                        author: prompt.author.name || prompt.author.username,
+                        category: prompt.category?.name || null,
+                        tags: prompt.tags.map((t) => t.tag.name),
+                        link: `https://prompts.chat/prompts/${prompt.id}_${getPromptName(prompt)}`,
+                      },
+                      null,
+                      2
+                    ),
+                  },
+                ],
+              };
             }
           } catch {
             return {
               content: [
                 {
                   type: "text" as const,
-                  text: JSON.stringify({
+                  text: JSON.stringify(
+                    {
                       ...prompt,
                       variablesRequired: variables,
                       message: "Elicitation not supported. Variables need to be filled manually.",
@@ -527,41 +509,31 @@ function createServer(options: ServerOptions = {}) {
                       category: prompt.category?.name || null,
                       tags: prompt.tags.map((t) => t.tag.name),
                       link: `https://prompts.chat/prompts/${prompt.id}_${getPromptName(prompt)}`,
-                    }),
+                    },
+                    null,
+                    2
+                  ),
                 },
               ],
             };
           }
-        } else if (variables.length > 0) {
-          // Return prompt with variable metadata, no timeout
-          return {
-            content: [{ type: "text" as const, text: JSON.stringify({
-              id: prompt.id,
-              slug: getPromptName(prompt),
-              title: prompt.title,
-              description: prompt.description,
-              content: prompt.content,
-              type: prompt.type,
-              author: prompt.author.name || prompt.author.username,
-              category: prompt.category?.name || null,
-              tags: prompt.tags.map((t) => t.tag.name),
-              variables: variables.map(v => ({ name: v.name, defaultValue: v.defaultValue })),
-              hint: "This prompt has template variables. Call get_prompt with fill_variables=true to fill them interactively.",
-            }) }],
-          };
         }
 
         return {
           content: [
             {
               type: "text" as const,
-              text: JSON.stringify({
+              text: JSON.stringify(
+                {
                   ...prompt,
                   author: prompt.author.name || prompt.author.username,
                   category: prompt.category?.name || null,
                   tags: prompt.tags.map((t) => t.tag.name),
                   link: `https://prompts.chat/prompts/${prompt.id}_${getPromptName(prompt)}`,
-                }),
+                },
+                null,
+                2
+              ),
             },
           ],
         };
@@ -666,7 +638,8 @@ function createServer(options: ServerOptions = {}) {
           content: [
             {
               type: "text" as const,
-              text: JSON.stringify({
+              text: JSON.stringify(
+                {
                   success: true,
                   prompt: {
                     ...prompt,
@@ -674,7 +647,10 @@ function createServer(options: ServerOptions = {}) {
                     category: prompt.category?.name || null,
                     link: prompt.isPrivate ? null : `https://prompts.chat/prompts/${prompt.id}_${getPromptName(prompt)}`,
                   },
-                }),
+                },
+                null,
+                2
+              ),
             },
           ],
         };
@@ -716,14 +692,13 @@ function createServer(options: ServerOptions = {}) {
       }
 
       try {
-        const { improvePrompt } = await import("@/lib/ai/improve-prompt");
         const result = await improvePrompt({ prompt, outputType, outputFormat });
 
         return {
           content: [
             {
               type: "text" as const,
-              text: JSON.stringify(result),
+              text: JSON.stringify(result, null, 2),
             },
           ],
         };
@@ -773,16 +748,6 @@ function createServer(options: ServerOptions = {}) {
             content: [{ type: "text" as const, text: JSON.stringify({ error: "SKILL.md file is required" }) }],
             isError: true,
           };
-        }
-
-        // Validate all filenames to prevent path traversal
-        for (const f of files) {
-          if (f.filename !== DEFAULT_SKILL_FILE && !sanitizeFilename(f.filename)) {
-            return {
-              content: [{ type: "text" as const, text: JSON.stringify({ error: `Invalid filename: '${f.filename}'. Filenames must not contain '..', start/end with '/', or use special characters.` }) }],
-              isError: true,
-            };
-          }
         }
 
         // Serialize files to multi-file format
@@ -844,7 +809,8 @@ function createServer(options: ServerOptions = {}) {
           content: [
             {
               type: "text" as const,
-              text: JSON.stringify({
+              text: JSON.stringify(
+                {
                   success: true,
                   skill: {
                     ...skill,
@@ -853,7 +819,10 @@ function createServer(options: ServerOptions = {}) {
                     category: skill.category?.name || null,
                     link: skill.isPrivate ? null : `https://prompts.chat/prompts/${skill.id}_${getPromptName(skill)}`,
                   },
-                }),
+                },
+                null,
+                2
+              ),
             },
           ],
         };
@@ -926,14 +895,6 @@ function createServer(options: ServerOptions = {}) {
           };
         }
 
-        // Validate filename to prevent path traversal
-        if (!sanitizeFilename(filename)) {
-          return {
-            content: [{ type: "text" as const, text: JSON.stringify({ error: `Invalid filename: '${filename}'. Filenames must not contain '..', start/end with '/', or use special characters.` }) }],
-            isError: true,
-          };
-        }
-
         // Add the new file
         files.push({ filename, content });
 
@@ -948,13 +909,17 @@ function createServer(options: ServerOptions = {}) {
           content: [
             {
               type: "text" as const,
-              text: JSON.stringify({
+              text: JSON.stringify(
+                {
                   success: true,
                   message: `File '${filename}' added to skill`,
                   skillId,
                   files: files.map(f => f.filename),
                   link: `https://prompts.chat/prompts/${skill.id}_${getPromptName(skill)}`,
-                }),
+                },
+                null,
+                2
+              ),
             },
           ],
         };
@@ -1008,14 +973,6 @@ function createServer(options: ServerOptions = {}) {
           };
         }
 
-        // Validate filename to prevent path traversal
-        if (filename !== DEFAULT_SKILL_FILE && !sanitizeFilename(filename)) {
-          return {
-            content: [{ type: "text" as const, text: JSON.stringify({ error: `Invalid filename: '${filename}'. Filenames must not contain '..', start/end with '/', or use special characters.` }) }],
-            isError: true,
-          };
-        }
-
         // Parse existing files
         const files = parseSkillFiles(skill.content);
 
@@ -1042,13 +999,17 @@ function createServer(options: ServerOptions = {}) {
           content: [
             {
               type: "text" as const,
-              text: JSON.stringify({
+              text: JSON.stringify(
+                {
                   success: true,
                   message: `File '${filename}' updated in skill`,
                   skillId,
                   files: files.map(f => f.filename),
                   link: `https://prompts.chat/prompts/${skill.id}_${getPromptName(skill)}`,
-                }),
+                },
+                null,
+                2
+              ),
             },
           ],
         };
@@ -1134,13 +1095,17 @@ function createServer(options: ServerOptions = {}) {
           content: [
             {
               type: "text" as const,
-              text: JSON.stringify({
+              text: JSON.stringify(
+                {
                   success: true,
                   message: `File '${filename}' removed from skill`,
                   skillId,
                   files: updatedFiles.map(f => f.filename),
                   link: `https://prompts.chat/prompts/${skill.id}_${getPromptName(skill)}`,
-                }),
+                },
+                null,
+                2
+              ),
             },
           ],
         };
@@ -1215,7 +1180,8 @@ function createServer(options: ServerOptions = {}) {
           content: [
             {
               type: "text" as const,
-              text: JSON.stringify({
+              text: JSON.stringify(
+                {
                   id: skill.id,
                   slug: getPromptName(skill),
                   title: skill.title,
@@ -1232,7 +1198,10 @@ function createServer(options: ServerOptions = {}) {
                     content: f.content,
                   })),
                   link: skill.isPrivate ? null : `https://prompts.chat/prompts/${skill.id}_${getPromptName(skill)}`,
-                }),
+                },
+                null,
+                2
+              ),
             },
           ],
         };
@@ -1324,8 +1293,7 @@ function createServer(options: ServerOptions = {}) {
             category: s.category?.name || null,
             tags: s.tags.map((t) => t.tag.name),
             votes: s._count.votes,
-            fileNames: files.map(f => f.filename),
-            fileCount: files.length,
+            files: files.map(f => f.filename),
             createdAt: s.createdAt.toISOString(),
             link: `https://prompts.chat/prompts/${s.id}_${getPromptName(s)}`,
           };
@@ -1335,7 +1303,7 @@ function createServer(options: ServerOptions = {}) {
           content: [
             {
               type: "text" as const,
-              text: JSON.stringify({ query, count: results.length, skills: results }),
+              text: JSON.stringify({ query, count: results.length, skills: results }, null, 2),
             },
           ],
         };
@@ -1352,27 +1320,10 @@ function createServer(options: ServerOptions = {}) {
   return server;
 }
 
-class PayloadTooLargeError extends Error {
-  constructor() {
-    super("Body too large");
-    this.name = "PayloadTooLargeError";
-  }
-}
-
 async function parseBody(req: NextApiRequest): Promise<unknown> {
-  const MAX_BODY_SIZE = 1024 * 1024; // 1MB
   return new Promise((resolve, reject) => {
     let body = "";
-    let bytesReceived = 0;
-    req.on("data", (chunk: Buffer | string) => {
-      bytesReceived += Buffer.isBuffer(chunk) ? chunk.length : Buffer.byteLength(chunk);
-      body += chunk;
-      if (bytesReceived > MAX_BODY_SIZE) {
-        req.destroy();
-        reject(new PayloadTooLargeError());
-        return;
-      }
-    });
+    req.on("data", (chunk) => (body += chunk));
     req.on("end", () => {
       try {
         resolve(JSON.parse(body));
@@ -1385,22 +1336,63 @@ async function parseBody(req: NextApiRequest): Promise<unknown> {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (!appConfig.features.mcp) {
-    return res.status(404).json({ error: "MCP is not enabled" });
-  }
-
-  // Per MCP Streamable HTTP spec, GET is for opening an SSE stream.
-  // This server is stateless and doesn't push notifications, so return 405.
-  // See: https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#listening-for-messages-from-the-server
   if (req.method === "GET") {
-    res.setHeader('Cache-Control', 'no-store');
-    return res.status(405).json({
-      jsonrpc: "2.0",
-      error: {
-        code: -32000,
-        message: "Method not allowed. This MCP server does not support SSE. Use POST for JSON-RPC requests.",
+    return res.status(200).json({
+      name: "prompts-chat",
+      version: "1.0.0",
+      description: "MCP server for prompts.chat - Search and discover AI prompts",
+      protocol: "Model Context Protocol (MCP)",
+      capabilities: {
+        tools: true,
+        prompts: true,
       },
-      id: null,
+      tools: [
+        {
+          name: "search_prompts",
+          description: "Search for AI prompts by keyword.",
+        },
+        {
+          name: "get_prompt",
+          description: "Get a prompt by ID with variable elicitation support.",
+        },
+        {
+          name: "save_prompt",
+          description: "Save a new prompt (requires API key authentication).",
+        },
+        {
+          name: "improve_prompt",
+          description: "Transform a basic prompt into a well-structured, comprehensive prompt using AI.",
+        },
+        {
+          name: "save_skill",
+          description: "Save a new Agent Skill with multiple files (requires API key authentication).",
+        },
+        {
+          name: "add_file_to_skill",
+          description: "Add a file to an existing Agent Skill (requires API key authentication).",
+        },
+        {
+          name: "update_skill_file",
+          description: "Update an existing file in an Agent Skill (requires API key authentication).",
+        },
+        {
+          name: "remove_file_from_skill",
+          description: "Remove a file from an Agent Skill (requires API key authentication).",
+        },
+        {
+          name: "get_skill",
+          description: "Get an Agent Skill by ID with all its files.",
+        },
+        {
+          name: "search_skills",
+          description: "Search for Agent Skills by keyword.",
+        },
+      ],
+      prompts: {
+        description: "All public prompts are available as MCP prompts. Use prompts/list to browse and prompts/get to retrieve with variable substitution.",
+        usage: "Access via slash commands in MCP clients (e.g., /prompt-id)",
+      },
+      endpoint: "/api/mcp",
     });
   }
 
@@ -1452,55 +1444,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const body = await parseBody(req);
 
-    // --- Rate limiting ---
-    const rateLimitId = apiKey || req.headers["x-forwarded-for"]?.toString().split(",")[0]?.trim() || req.socket.remoteAddress || "unknown";
-
-    const generalCheck = mcpGeneralLimiter.check(rateLimitId);
-    if (!generalCheck.allowed) {
-      return res.status(429).json({
-        jsonrpc: "2.0",
-        error: { code: -32000, message: `Rate limit exceeded. Try again in ${generalCheck.retryAfterSeconds}s.` },
-        id: null,
-      });
-    }
-
-    // Apply stricter limits for tool calls based on tool name
-    const WRITE_TOOLS = new Set(["save_prompt", "save_skill", "add_file_to_skill", "update_skill_file", "remove_file_from_skill"]);
-    const AI_TOOLS = new Set(["improve_prompt"]);
-
-    const rpcBody = body as { method?: string; params?: { name?: string } };
-    if (rpcBody?.method === "tools/call") {
-      const toolCallCheck = mcpToolCallLimiter.check(rateLimitId);
-      if (!toolCallCheck.allowed) {
-        return res.status(429).json({
-          jsonrpc: "2.0",
-          error: { code: -32000, message: `Tool call rate limit exceeded. Try again in ${toolCallCheck.retryAfterSeconds}s.` },
-          id: null,
-        });
-      }
-
-      const toolName = rpcBody.params?.name;
-      if (toolName && AI_TOOLS.has(toolName)) {
-        const aiCheck = mcpAiToolLimiter.check(rateLimitId);
-        if (!aiCheck.allowed) {
-          return res.status(429).json({
-            jsonrpc: "2.0",
-            error: { code: -32000, message: `AI tool rate limit exceeded (${toolName}). Try again in ${aiCheck.retryAfterSeconds}s.` },
-            id: null,
-          });
-        }
-      } else if (toolName && WRITE_TOOLS.has(toolName)) {
-        const writeCheck = mcpWriteToolLimiter.check(rateLimitId);
-        if (!writeCheck.allowed) {
-          return res.status(429).json({
-            jsonrpc: "2.0",
-            error: { code: -32000, message: `Write tool rate limit exceeded (${toolName}). Try again in ${writeCheck.retryAfterSeconds}s.` },
-            id: null,
-          });
-        }
-      }
-    }
-
     await transport.handleRequest(req, res, body);
 
     res.on("close", () => {
@@ -1510,19 +1453,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (error) {
     console.error("MCP error:", error);
     if (!res.headersSent) {
-      if (error instanceof PayloadTooLargeError) {
-        res.status(413).json({
-          jsonrpc: "2.0",
-          error: { code: -32600, message: "Payload too large. Maximum body size is 1MB." },
-          id: null,
-        });
-      } else {
-        res.status(500).json({
-          jsonrpc: "2.0",
-          error: { code: -32603, message: "Internal server error" },
-          id: null,
-        });
-      }
+      res.status(500).json({
+        jsonrpc: "2.0",
+        error: { code: -32603, message: "Internal server error" },
+        id: null,
+      });
     }
   }
 }

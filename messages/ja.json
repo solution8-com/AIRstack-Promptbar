@@ -27,7 +27,6 @@
     "close": "閉じる",
     "all": "すべて",
     "none": "なし",
-    "ad": "広告",
     "moreLines": "+{count}行",
     "codeView": "コード",
     "treeView": "ツリー",
@@ -2265,12 +2264,5 @@
     "submit": "送信",
     "communityExamples": "コミュニティの例",
     "userExample": "ユーザーの例"
-  },
-  "selfHosting": {
-    "prerequisites": {
-      "nodeJs": "Node.js 24.x",
-      "postgresql": "PostgreSQL database",
-      "npm": "npm"
-    }
   }
 }

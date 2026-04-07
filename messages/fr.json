@@ -27,7 +27,6 @@
     "close": "Fermer",
     "all": "Tout",
     "none": "Aucun",
-    "ad": "Publicité",
     "moreLines": "+{count} lignes supplémentaires",
     "codeView": "Code",
     "treeView": "Arborescence",
@@ -2280,12 +2279,5 @@
     "submit": "Soumettre",
     "communityExamples": "Exemples de la Communauté",
     "userExample": "Exemple utilisateur"
-  },
-  "selfHosting": {
-    "prerequisites": {
-      "nodeJs": "Node.js 24.x",
-      "postgresql": "PostgreSQL database",
-      "npm": "npm"
-    }
   }
 }

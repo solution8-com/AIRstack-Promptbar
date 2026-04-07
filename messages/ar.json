@@ -27,7 +27,6 @@
     "close": "إغلاق",
     "all": "الكل",
     "none": "لا شيء",
-    "ad": "إعلان",
     "moreLines": "+{count} سطر إضافي",
     "codeView": "كود",
     "treeView": "شجرة",
@@ -2263,12 +2262,5 @@
     "submit": "إرسال",
     "communityExamples": "أمثلة المجتمع",
     "userExample": "مثال المستخدم"
-  },
-  "selfHosting": {
-    "prerequisites": {
-      "nodeJs": "Node.js 24.x",
-      "postgresql": "PostgreSQL database",
-      "npm": "npm"
-    }
   }
 }

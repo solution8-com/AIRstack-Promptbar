@@ -27,7 +27,6 @@
     "close": "닫기",
     "all": "전체",
     "none": "없음",
-    "ad": "광고",
     "moreLines": "+{count}줄 더",
     "codeView": "코드",
     "treeView": "트리",
@@ -2265,12 +2264,5 @@
     "submit": "제출",
     "communityExamples": "커뮤니티 예제",
     "userExample": "사용자 예제"
-  },
-  "selfHosting": {
-    "prerequisites": {
-      "nodeJs": "Node.js 24.x",
-      "postgresql": "PostgreSQL database",
-      "npm": "npm"
-    }
   }
 }

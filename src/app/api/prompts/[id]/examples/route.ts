@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
-import { checkPromptAccess } from "@/lib/prompt-access";
 
 const addExampleSchema = z.object({
   mediaUrl: z.string().url(),
@@ -17,11 +16,12 @@ export async function GET(
 
   const prompt = await db.prompt.findUnique({
     where: { id: promptId },
-    select: { id: true, type: true, isPrivate: true, authorId: true },
+    select: { id: true, type: true },
   });
 
-  const denied = await checkPromptAccess(prompt);
-  if (denied || !prompt) return denied!;
+  if (!prompt) {
+    return NextResponse.json({ error: "Prompt not found" }, { status: 404 });
+  }
 
   // Only allow examples for IMAGE and VIDEO prompts
   if (prompt.type !== "IMAGE" && prompt.type !== "VIDEO") {

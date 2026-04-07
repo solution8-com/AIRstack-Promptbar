@@ -58,15 +58,12 @@ export interface WidgetPrompt {
   /** Widget positioning configuration */
   positioning?: WidgetPositionConfig;
   shouldInject?: (context: WidgetContext) => boolean;
-  /** Custom render function for completely custom widget designs.
-   * instanceIndex is provided for repeated widgets (0-based) to support unique IDs. */
-  render?: (instanceIndex: number) => ReactNode;
+  /** Custom render function for completely custom widget designs */
+  render?: () => ReactNode;
 }
 
 export interface InjectedWidget extends WidgetPrompt {
   isWidget: true;
-  /** 0-based index for repeated widget instances */
-  instanceIndex: number;
 }
 
 export interface WidgetPlugin {

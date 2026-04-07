@@ -27,7 +27,6 @@
     "close": "סגור",
     "all": "הכל",
     "none": "ללא",
-    "ad": "מודעה",
     "moreLines": "+{count} שורות נוספות",
     "codeView": "קוד",
     "treeView": "עץ",
@@ -2261,12 +2260,5 @@
     "submit": "שלח",
     "communityExamples": "דוגמאות קהילה",
     "userExample": "דוגמת משתמש"
-  },
-  "selfHosting": {
-    "prerequisites": {
-      "nodeJs": "Node.js 24.x",
-      "postgresql": "PostgreSQL database",
-      "npm": "npm"
-    }
   }
 }

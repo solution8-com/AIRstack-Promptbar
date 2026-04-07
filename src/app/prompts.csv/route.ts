@@ -23,8 +23,6 @@ function getUserIdentifier(user: { email: string; username: string; githubUserna
   return user.githubUsername || (isUnclaimedAccount ? user.username : user.email);
 }
 
-export const revalidate = 3600;
-
 export async function GET() {
   try {
     const prompts = await db.prompt.findMany({

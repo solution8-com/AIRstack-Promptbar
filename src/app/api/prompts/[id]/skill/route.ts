@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { parseSkillFiles, sanitizeFilename } from "@/lib/skill-files";
+import { parseSkillFiles } from "@/lib/skill-files";
 import JSZip from "jszip";
 
 /**
@@ -53,18 +53,9 @@ export async function GET(
   // Create a zip file
   const zip = new JSZip();
 
-  // Add each file to the zip (sanitize filenames to prevent Zip Slip)
+  // Add each file to the zip
   for (const file of files) {
-    const candidate = file.filename
-      .replace(/\\/g, "/")
-      .split("/")
-      .filter((segment) => segment && segment !== "." && segment !== "..")
-      .join("/");
-    const safeName = sanitizeFilename(candidate);
-    if (!safeName) {
-      continue;
-    }
-    zip.file(safeName, file.content);
+    zip.file(file.filename, file.content);
   }
 
   // Generate the zip content as blob for Response compatibility

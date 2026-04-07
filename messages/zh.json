@@ -27,7 +27,6 @@
     "close": "关闭",
     "all": "全部",
     "none": "无",
-    "ad": "广告",
     "moreLines": "+{count}行",
     "codeView": "代码",
     "treeView": "树形视图",
@@ -2265,12 +2264,5 @@
     "submit": "提交",
     "communityExamples": "社区示例",
     "userExample": "用户示例"
-  },
-  "selfHosting": {
-    "prerequisites": {
-      "nodeJs": "Node.js 24.x",
-      "postgresql": "PostgreSQL database",
-      "npm": "npm"
-    }
   }
 }

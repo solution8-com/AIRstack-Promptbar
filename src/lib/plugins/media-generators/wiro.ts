@@ -185,9 +185,12 @@ export const wiroGeneratorPlugin: MediaGeneratorPlugin = {
     }
 
     if (request.inputImageUrl) {
-      // Pass the URL to Wiro instead of fetching server-side to avoid SSRF.
-      // Wiro's API natively supports inputImageUrl for fileinput parameters.
-      formData.append("inputImageUrl", request.inputImageUrl);
+      // Fetch the image and add it to the form
+      const imageResponse = await fetch(request.inputImageUrl);
+      if (imageResponse.ok) {
+        const imageBlob = await imageResponse.blob();
+        formData.append("inputImage", imageBlob, "input.jpg");
+      }
     }
 
     const response = await fetch(url, {
