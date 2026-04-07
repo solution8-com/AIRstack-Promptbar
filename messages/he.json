@@ -193,7 +193,8 @@
       "structured": "מובנה",
       "document": "מסמך",
       "skill": "מיומנות",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Guide"
     },
     "inputType": "פרומפט משתמש",
     "outputType": "תגובת AI",

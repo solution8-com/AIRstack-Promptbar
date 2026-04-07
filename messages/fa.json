@@ -193,7 +193,8 @@
       "structured": "ساختارمند",
       "document": "سند",
       "skill": "مهارت",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Guide"
     },
     "inputType": "پرامپت کاربر",
     "outputType": "پاسخ هوش مصنوعی",

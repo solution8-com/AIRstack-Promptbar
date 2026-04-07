@@ -193,7 +193,8 @@
       "structured": "Структурированный",
       "document": "Документ",
       "skill": "Навык",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Guide"
     },
     "inputType": "Промпт пользователя",
     "outputType": "Ответ ИИ",

@@ -193,7 +193,8 @@
       "structured": "Gestructureerd",
       "document": "Document",
       "skill": "Vaardigheid",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Guide"
     },
     "inputType": "Gebruikersprompt",
     "outputType": "AI-antwoord",

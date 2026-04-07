@@ -193,7 +193,8 @@
       "structured": "Yapılandırılmış",
       "document": "Doküman",
       "skill": "Yetenek",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Guide"
     },
     "inputType": "Kullanıcı Promptu",
     "outputType": "AI Yanıtı",

@@ -193,7 +193,8 @@
       "structured": "منظم",
       "document": "مستند",
       "skill": "مهارة",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Guide"
     },
     "inputType": "أمر المستخدم",
     "outputType": "استجابة الذكاء الاصطناعي",

@@ -193,7 +193,8 @@
       "structured": "Δομημένο",
       "document": "Έγγραφο",
       "skill": "Δεξιότητα",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Guide"
     },
     "inputType": "Prompt χρήστη",
     "outputType": "Απάντηση AI",

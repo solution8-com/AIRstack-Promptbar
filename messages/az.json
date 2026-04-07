@@ -193,7 +193,8 @@
       "structured": "Strukturlaşdırılmış",
       "document": "Sənəd",
       "skill": "Bacarıq",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Guide"
     },
     "inputType": "İstifadəçi Promptu",
     "outputType": "AI Cavabı",
