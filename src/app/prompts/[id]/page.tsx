@@ -712,13 +712,10 @@ export default async function PromptPage({ params }: PromptPageProps) {
               title: `v${version.version}`,
               changeNote: version.changeNote,
             }))}
-            comments={prompt.comments.map((comment) => {
+            comments={prompt.comments.flatMap((comment) => {
               const commentContent = comment.content.trim();
-              if (!commentContent) {
-                return "";
-              }
-              return `@${comment.author.username}: ${commentContent}`;
-            }).filter((comment) => comment.length > 0)}
+              return commentContent ? [`@${comment.author.username}: ${commentContent}`] : [];
+            })}
           />
 
           {/* Comments Section */}

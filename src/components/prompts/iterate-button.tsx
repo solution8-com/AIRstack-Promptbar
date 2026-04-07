@@ -92,7 +92,7 @@ Preserve intent while improving clarity, structure, and usefulness.`;
   const iterateResult = t.has("iterateResult") ? t("iterateResult") : t("outputType");
   const iterateCopy = t.has("iterateCopy") ? t("iterateCopy") : tCommon("copy");
 
-  const prompt = (() => {
+  const iteratePromptInput = (() => {
     const safeContent = truncateText(content || "", MAX_CONTENT_LENGTH);
     const versionLines = versions
       .slice(0, MAX_VERSION_ITEMS)
@@ -135,7 +135,7 @@ Preserve intent while improving clarity, structure, and usefulness.`;
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt,
+          prompt: iteratePromptInput,
           systemPrompt,
           model: "openai/gpt-5-nano",
         }),
