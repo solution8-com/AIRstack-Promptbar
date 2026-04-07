@@ -9,7 +9,7 @@ export interface CallGitHubModelsOptions {
 }
 
 interface OpenAIErrorResponse {
-  error?: { code?: string };
+  code?: string;
   status?: number;
 }
 
@@ -45,8 +45,8 @@ export async function callGitHubModels(
     return null;
   }
 
-  const preferredModel = options?.model || "gpt-5-nano";
-  const fallbackModel = "gpt-4o-mini";
+  const preferredModel = options?.model || "openai/gpt-5-nano";
+  const fallbackModel = "openai/gpt-4o-mini";
   const temperature = options?.temperature ?? 0.2;
   const maxTokens = options?.maxTokens ?? 1000;
   const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
@@ -68,7 +68,7 @@ export async function callGitHubModels(
     const err = error as OpenAIErrorResponse;
     if (
       preferredModel !== fallbackModel &&
-      (err?.error?.code === "model_not_found" || err?.status === 404)
+      (err?.code === "model_not_found" || err?.status === 404)
     ) {
       const response = await client.chat.completions.create({
         model: fallbackModel,

@@ -136,7 +136,7 @@ export function DownloadPromptDropdown({ promptId, promptSlug, promptType }: Dow
     return (
       <Button variant="ghost" size="sm" onClick={handleDownloadTasteMd}>
         <Download className="h-4 w-4 mr-1" />
-        AGENT.md
+        {t.has("downloadAgentMd") ? t("downloadAgentMd") : "AGENT.md"}
       </Button>
     );
   }

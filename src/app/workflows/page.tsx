@@ -5,10 +5,14 @@ import { InfinitePromptList } from "@/components/prompts/infinite-prompt-list";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 
-export const metadata: Metadata = {
-  title: "Workflows",
-  description: "This is a future feature. What we will store here will be flow-based multi-step agent workflows like those available on Dify, or — most likely — a much leaner platform we will integrate into the Promptbar.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("workflows");
+
+  return {
+    title: t("title"),
+    description: t("description"),
+  };
+}
 
 // Query for workflows list (cached)
 function getCachedWorkflows(

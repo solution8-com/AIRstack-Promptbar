@@ -24,12 +24,30 @@ interface IterateButtonProps {
   isEnabled: boolean;
   content: string;
   versions: IterateVersion[];
-  comments: string[];
+  comments?: string[];
 }
+
+const MAX_PROMPT_LENGTH = 20000;
+const PROMPT_SAFETY_MARGIN = 250;
+const MAX_CONTENT_LENGTH = 11000;
+const MAX_VERSIONS_LENGTH = 4500;
+const MAX_COMMENTS_LENGTH = 4500;
+const MAX_VERSION_ITEMS = 20;
+const MAX_COMMENT_ITEMS = 30;
 
 function randomMatrixColumn(rows = 16): string {
   const chars = "01ABCDEFGHIJKLMNOPQRSTUVWXYZ#$%&*+-<>[]{}";
   return Array.from({ length: rows }, () => chars[Math.floor(Math.random() * chars.length)]).join("\n");
+}
+
+function truncateText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) {
+    return text;
+  }
+  if (maxLength <= 16) {
+    return text.slice(0, maxLength);
+  }
+  return `${text.slice(0, maxLength - 16)}\n...[truncated]`;
 }
 
 export function IterateButton({ isEnabled, content, versions, comments }: IterateButtonProps) {
@@ -64,20 +82,49 @@ Return only the improved prompt text.
 Preserve intent while improving clarity, structure, and usefulness.`;
   const defaultIterateError = t.has("iterateError")
     ? t("iterateError")
-    : "Failed to generate result.";
+    : tCommon("error");
+  const iterateButtonLabel = t.has("iterateButton") ? t("iterateButton") : t("run");
+  const iterateTitle = t.has("iterateTitle") ? t("iterateTitle") : iterateButtonLabel;
+  const iterateDescription = t.has("iterateDescription")
+    ? t("iterateDescription")
+    : t("description");
+  const iterateLoading = t.has("iterateLoading") ? t("iterateLoading") : tCommon("loading");
+  const iterateResult = t.has("iterateResult") ? t("iterateResult") : t("outputType");
+  const iterateCopy = t.has("iterateCopy") ? t("iterateCopy") : tCommon("copy");
 
-  const prompt = [
-    "Current prompt content:",
-    content,
-    "",
-    "Prompt version history (title + changeNote):",
-    versions.length > 0
-      ? versions.map((v) => `- ${v.title}: ${v.changeNote || "No change note"}`).join("\n")
-      : "- None",
-    "",
-    "Prompt comments:",
-    comments.length > 0 ? comments.map((c) => `- ${c}`).join("\n") : "- None",
-  ].join("\n");
+  const prompt = (() => {
+    const safeContent = truncateText(content || "", MAX_CONTENT_LENGTH);
+    const versionLines = versions
+      .slice(0, MAX_VERSION_ITEMS)
+      .map((version) => `- ${version.title}: ${version.changeNote || "No change note"}`)
+      .join("\n");
+    const commentLines = (comments || [])
+      .map((comment) => comment?.trim())
+      .filter((comment): comment is string => Boolean(comment))
+      .slice(0, MAX_COMMENT_ITEMS)
+      .map((comment) => `- ${comment}`)
+      .join("\n");
+
+    const safeVersions = versionLines.length > 0
+      ? truncateText(versionLines, MAX_VERSIONS_LENGTH)
+      : "- None";
+    const safeComments = commentLines.length > 0
+      ? truncateText(commentLines, MAX_COMMENTS_LENGTH)
+      : "- None";
+
+    const composedPrompt = [
+      "Current prompt content:",
+      safeContent,
+      "",
+      "Prompt version history (title + changeNote):",
+      safeVersions,
+      "",
+      "Prompt comments:",
+      safeComments,
+    ].join("\n");
+
+    return truncateText(composedPrompt, MAX_PROMPT_LENGTH - PROMPT_SAFETY_MARGIN);
+  })();
 
   const handleGenerate = async () => {
     setIsLoading(true);
@@ -90,7 +137,7 @@ Preserve intent while improving clarity, structure, and usefulness.`;
         body: JSON.stringify({
           prompt,
           systemPrompt,
-          model: "gpt-5-nano",
+          model: "openai/gpt-5-nano",
         }),
       });
 
@@ -138,16 +185,14 @@ Preserve intent while improving clarity, structure, and usefulness.`;
         <DialogTrigger asChild>
           <Button variant="outline" size="sm" className="gap-1.5">
             <WandSparkles className="h-4 w-4" />
-            {t.has("iterateButton") ? t("iterateButton") : "Click to Iterate"}
+            {iterateButtonLabel}
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{t.has("iterateTitle") ? t("iterateTitle") : "Click to Iterate"}</DialogTitle>
+            <DialogTitle>{iterateTitle}</DialogTitle>
             <DialogDescription>
-              {t.has("iterateDescription")
-                ? t("iterateDescription")
-                : "Generate an improved starting prompt from the current prompt content, versions, and discussion context."}
+              {iterateDescription}
             </DialogDescription>
           </DialogHeader>
 
@@ -156,7 +201,7 @@ Preserve intent while improving clarity, structure, and usefulness.`;
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>{t.has("iterateLoading") ? t("iterateLoading") : "Generating improved prompt..."}</span>
+                  <span>{iterateLoading}</span>
                 </div>
                 <div className="h-52 overflow-hidden rounded-md border bg-black p-3">
                   <div className="grid grid-cols-7 gap-2 text-[10px] leading-3 text-green-400 sm:grid-cols-14">
@@ -173,7 +218,7 @@ Preserve intent while improving clarity, structure, and usefulness.`;
             ) : (
               <div className="space-y-2">
                 <p className="text-xs text-muted-foreground">
-                  {t.has("iterateResult") ? t("iterateResult") : "Generated Prompt"}
+                  {iterateResult}
                 </p>
                 <div className="max-h-[50vh] overflow-y-auto rounded-md border bg-muted/20 p-3">
                   <pre className="whitespace-pre-wrap text-sm">{result}</pre>
@@ -189,7 +234,7 @@ Preserve intent while improving clarity, structure, and usefulness.`;
             {!isLoading && !!result && (
               <Button onClick={handleCopy} className="gap-1.5">
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                {t.has("iterateCopy") ? t("iterateCopy") : "Copy generated prompt"}
+                {iterateCopy}
               </Button>
             )}
           </DialogFooter>

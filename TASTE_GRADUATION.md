@@ -32,7 +32,7 @@ This document captures the deferred implementation plan for graduating a TASTE p
 
 ## Deferred Scope
 
-- No Graduate button UI added yet.
-- No graduation modal added yet.
-- No graduation audit/version creation behavior added yet.
+- Graduate button UI not yet implemented.
+- Graduation modal is still to be added.
+- Graduation audit/version creation behavior is pending implementation.
 - This document is the tracked analysis artifact for future implementation.

@@ -135,6 +135,19 @@ export default async function PromptPage({ params }: PromptPageProps) {
           avatar: true,
         },
       },
+      comments: {
+        where: { deletedAt: null },
+        orderBy: { createdAt: "desc" },
+        select: {
+          content: true,
+          parentId: true,
+          author: {
+            select: {
+              username: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -699,9 +712,14 @@ export default async function PromptPage({ params }: PromptPageProps) {
               title: `v${version.version}`,
               changeNote: version.changeNote,
             }))}
-            comments={
-              [] // TODO: thread comment data through when CommentSection exposes it.
-            }
+            comments={prompt.comments.map((comment) => {
+              const commentContent = comment.content.trim();
+              if (!commentContent) {
+                return "";
+              }
+              const commentPrefix = comment.parentId ? "Reply" : "Comment";
+              return `${commentPrefix} by @${comment.author.username}: ${commentContent}`;
+            }).filter((comment) => comment.length > 0)}
           />
 
           {/* Comments Section */}

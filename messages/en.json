@@ -263,6 +263,7 @@
     "downloadYaml": "Download YAML",
     "downloadSkillMd": "Download SKILL.md",
     "downloadSkill": "Download .skill",
+    "downloadAgentMd": "AGENT.md",
     "skillFiles": "Skill Files",
     "copy": "Copy",
     "download": "Download",

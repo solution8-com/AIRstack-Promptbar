@@ -61,7 +61,7 @@ ${implementationGuide}
 Generate a concise description (2-3 sentences, under 500 characters) that explains what this hack does and why it's valuable.`;
 
     const generatedDescription = await callGitHubModels(userPrompt, systemPrompt, {
-      model: "gpt-5-nano",
+      model: "openai/gpt-5-nano",
       temperature: 0.3,
       maxTokens: 150,
     });
