@@ -24,7 +24,7 @@ interface IterateButtonProps {
   isEnabled: boolean;
   content: string;
   versions: IterateVersion[];
-  comments?: string[];
+  comments: string[];
 }
 
 const MAX_PROMPT_LENGTH = 20000;
@@ -50,7 +50,7 @@ function truncateText(text: string, maxLength: number): string {
   return `${text.slice(0, maxLength - 16)}\n...[truncated]`;
 }
 
-export function IterateButton({ isEnabled, content, versions, comments = [] }: IterateButtonProps) {
+export function IterateButton({ isEnabled, content, versions, comments }: IterateButtonProps) {
   const t = useTranslations("prompts");
   const tCommon = useTranslations("common");
   const [open, setOpen] = useState(false);

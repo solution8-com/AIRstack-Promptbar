@@ -67,11 +67,11 @@ export async function callGitHubModels(
     return response.choices[0]?.message?.content?.trim() || null;
   } catch (error: unknown) {
     const err = error as OpenAIErrorResponse;
+    const errorCode = err?.code || err?.error?.code;
     if (
       preferredModel !== fallbackModel &&
       (
-        err?.code === "model_not_found" ||
-        err?.error?.code === "model_not_found" ||
+        errorCode === "model_not_found" ||
         err?.status === 404
       )
     ) {
