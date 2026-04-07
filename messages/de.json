@@ -194,7 +194,7 @@
       "document": "Dokument",
       "skill": "Skill",
       "taste": "Taste",
-      "guide": "Guide"
+      "guide": "Leitfaden"
     },
     "inputType": "Benutzer-Prompt",
     "outputType": "KI-Antwort",

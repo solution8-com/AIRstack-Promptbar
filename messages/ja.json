@@ -194,7 +194,7 @@
       "document": "ドキュメント",
       "skill": "スキル",
       "taste": "Taste",
-      "guide": "Guide"
+      "guide": "ガイド"
     },
     "inputType": "ユーザープロンプト",
     "outputType": "AI応答",

@@ -194,7 +194,7 @@
       "document": "文档",
       "skill": "技能",
       "taste": "Taste",
-      "guide": "Guide"
+      "guide": "指南"
     },
     "inputType": "用户提示词",
     "outputType": "AI 响应",

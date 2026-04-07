@@ -194,7 +194,7 @@
       "document": "Document",
       "skill": "Vaardigheid",
       "taste": "Taste",
-      "guide": "Guide"
+      "guide": "Gids"
     },
     "inputType": "Gebruikersprompt",
     "outputType": "AI-antwoord",

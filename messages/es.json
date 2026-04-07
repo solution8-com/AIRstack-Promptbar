@@ -194,7 +194,7 @@
       "document": "Documento",
       "skill": "Habilidad",
       "taste": "Taste",
-      "guide": "Guide"
+      "guide": "Guía"
     },
     "inputType": "Prompt del Usuario",
     "outputType": "Respuesta de IA",

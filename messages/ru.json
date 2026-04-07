@@ -194,7 +194,7 @@
       "document": "Документ",
       "skill": "Навык",
       "taste": "Taste",
-      "guide": "Guide"
+      "guide": "Руководство"
     },
     "inputType": "Промпт пользователя",
     "outputType": "Ответ ИИ",
