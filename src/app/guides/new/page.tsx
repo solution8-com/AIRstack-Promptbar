@@ -5,9 +5,10 @@ import { auth } from "@/lib/auth";
 import { GuideForm } from "@/components/guides/guide-form";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("prompts");
   return {
-    title: "Create AIR Guide",
-    description: "Write a new AIR Guide in Markdown format",
+    title: t("createGuideTitle"),
+    description: t("createGuideDescription"),
   };
 }
 

@@ -37,6 +37,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
   const session = await auth();
   const isAdmin = session?.user?.role === "ADMIN";
   const tNav = await getTranslations("nav");
+  const t = await getTranslations("prompts");
 
   const guide = await db.prompt.findUnique({
     where: { id, type: "GUIDE", deletedAt: null },
@@ -72,7 +73,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
           <Button variant="outline" size="sm" asChild className="gap-1.5">
             <Link href={`/prompts/${guide.id}/edit`}>
               <Edit className="h-4 w-4" />
-              Edit
+              {t("editGuide")}
             </Link>
           </Button>
         )}
