@@ -98,7 +98,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
               {guide.author.name || guide.author.username}
             </Link>
             <p className="text-xs text-muted-foreground">
-              <AnimatedDate date={guide.createdAt} fallback={timeAgo} />
+              <AnimatedDate date={guide.createdAt} relativeText={timeAgo} />
             </p>
           </div>
         </div>
