@@ -29,6 +29,7 @@ import { CommentSection } from "@/components/comments";
 import { PromptFlowSection } from "@/components/prompts/prompt-flow-section";
 import { RelatedPrompts } from "@/components/prompts/related-prompts";
 import { AddToCollectionButton } from "@/components/prompts/add-to-collection-button";
+import { IterateButton } from "@/components/prompts/iterate-button";
 import { getConfig } from "@/lib/config";
 import { StructuredData } from "@/components/seo/structured-data";
 import { AI_MODELS } from "@/lib/works-best-with";
@@ -573,7 +574,7 @@ export default async function PromptPage({ params }: PromptPageProps) {
             ) : prompt.type === "TASTE" ? (
               <InteractivePromptContent 
                 content={prompt.content} 
-                title="taste.md"
+                title="AGENT.md"
                 isLoggedIn={!!session?.user}
                 promptId={prompt.id}
                 promptSlug={prompt.slug ?? undefined}
@@ -690,6 +691,18 @@ export default async function PromptPage({ params }: PromptPageProps) {
           {relatedPrompts.length > 0 && (
             <RelatedPrompts prompts={relatedPrompts} />
           )}
+
+          <IterateButton
+            isEnabled={config.features.clickToIterate === true}
+            content={prompt.content}
+            versions={prompt.versions.map((version) => ({
+              title: `v${version.version}`,
+              changeNote: version.changeNote,
+            }))}
+            comments={
+              [] // TODO: thread comment data through when CommentSection exposes it.
+            }
+          />
 
           {/* Comments Section */}
           {config.features.comments !== false && !prompt.isPrivate && (

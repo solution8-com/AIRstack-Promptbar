@@ -7,7 +7,7 @@ import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Workflows",
-  description: "Browse prompts with sequential flows and connections",
+  description: "This is a future feature. What we will store here will be flow-based multi-step agent workflows like those available on Dify, or — most likely — a much leaner platform we will integrate into the Promptbar.",
 };
 
 // Query for workflows list (cached)

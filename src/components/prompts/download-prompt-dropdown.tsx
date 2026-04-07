@@ -109,7 +109,7 @@ export function DownloadPromptDropdown({ promptId, promptSlug, promptType }: Dow
       const downloadUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = downloadUrl;
-      a.download = "taste.md";
+      a.download = "AGENT.md";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -131,12 +131,12 @@ export function DownloadPromptDropdown({ promptId, promptSlug, promptType }: Dow
     );
   }
 
-  // For TASTE type, show a simple button that downloads taste.md
+  // For TASTE type, show a simple button that downloads AGENT.md
   if (isTaste) {
     return (
       <Button variant="ghost" size="sm" onClick={handleDownloadTasteMd}>
         <Download className="h-4 w-4 mr-1" />
-        taste.md
+        AGENT.md
       </Button>
     );
   }

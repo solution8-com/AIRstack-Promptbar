@@ -39,7 +39,7 @@
     "promptmasters": "Promptmasters",
     "prompts": "Prompts",
     "skills": "Skills",
-    "taste": "Agent Basic Instructions",
+    "taste": "AIR Agent Prompts",
     "workflows": "Workflows",
     "categories": "Categories",
     "tags": "Tags",
@@ -112,9 +112,9 @@
     "createInternalHackDescription": "Create internal documentation for Solution8 team",
     "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode",
     "createSkill": "Create Skill",
-    "createTaste": "Create Agent Basic Instructions",
+    "createTaste": "Create AIR Agent Prompts",
     "skillsDescription": "Agent Skills are multi-file prompts that give AI agents specialized capabilities. They include instructions, configurations, and supporting files that can be used with Claude, Cursor, Windsurf, and other AI coding assistants.",
-    "tastesDescription": "Agent Basic Instructions are single markdown files that define your coding style and preferences. They help AI coding agents learn how you write code, so they can match your conventions, patterns, and taste.",
+    "tastesDescription": "AIR Agent Prompts (AIRSPs) are single markdown files that define your coding style and preferences. They help AI coding agents learn how you write code, so they can match your conventions, patterns, and style.",
     "createInfo": "This platform doesn't run or execute prompts — it's a community-driven library for sharing and discovering AI prompts. Create your prompt here, and others can copy and use it in their preferred AI tools like ChatGPT, Claude, Gemini, or any other LLM. The community can also comment on your prompts and suggest improvements through change requests.",
     "markdownPreview": "Markdown Preview",
     "edit": "Edit Prompt",
@@ -200,7 +200,7 @@
       "structured": "Structured",
       "document": "Document",
       "skill": "Skill",
-      "taste": "Agent Basic Instructions"
+      "taste": "AIR Agent Prompts"
     },
     "inputType": "User Prompt",
     "inputTypeHack": "Hack Implementation Guide",
@@ -212,8 +212,15 @@
       "text": "Text Prompt",
       "structured": "Structured (JSON/YAML)",
       "skill": "Skill (Agent Skills)",
-      "taste": "Agent Basic Instructions (Coding Taste)"
+      "taste": "AIR Agent Prompts (AIRSPs)"
     },
+    "iterateButton": "Click to Iterate",
+    "iterateTitle": "Click to Iterate",
+    "iterateDescription": "Generate an improved starting prompt from the current prompt content, versions, and discussion context.",
+    "iterateLoading": "Generating improved prompt...",
+    "iterateResult": "Generated Prompt",
+    "iterateError": "Failed to generate an improved prompt. Please try again.",
+    "iterateCopy": "Copy generated prompt",
     "outputTypes": {
       "text": "Text",
       "image": "Image",
@@ -914,7 +921,7 @@
   },
   "workflows": {
     "title": "Workflows",
-    "description": "Prompts with sequential flows and connections",
+    "description": "This is a future feature. What we will store here will be flow-based multi-step agent workflows like those available on Dify, or — most likely — a much leaner platform we will integrate into the Promptbar.",
     "noWorkflows": "No workflows yet",
     "noWorkflowsDescription": "Workflows are prompts that connect to other prompts in a sequence. Create a prompt and add connections to build a workflow.",
     "browsePrompts": "Browse Prompts"
