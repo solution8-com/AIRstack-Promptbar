@@ -62,6 +62,9 @@ export function IterateButton({ isEnabled, content, versions, comments }: Iterat
   const systemPrompt = `Generate an improved starting prompt based on the context below.
 Return only the improved prompt text.
 Preserve intent while improving clarity, structure, and usefulness.`;
+  const defaultIterateError = t.has("iterateError")
+    ? t("iterateError")
+    : "Failed to generate result.";
 
   const prompt = [
     "Current prompt content:",
@@ -95,19 +98,17 @@ Preserve intent while improving clarity, structure, and usefulness.`;
         const responseBody = await response.json().catch(() => null);
         throw new Error(
           responseBody?.error ||
-            (t.has("iterateError")
-              ? t("iterateError")
-              : "Failed to generate result.")
+            defaultIterateError
         );
       }
 
       const data = await response.json();
       if (!data?.result || typeof data.result !== "string") {
-        throw new Error(t.has("iterateError") ? t("iterateError") : "Failed to generate result.");
+        throw new Error(defaultIterateError);
       }
       setResult(data.result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : (t.has("iterateError") ? t("iterateError") : "Failed to generate result."));
+      setError(err instanceof Error ? err.message : defaultIterateError);
     } finally {
       setIsLoading(false);
     }

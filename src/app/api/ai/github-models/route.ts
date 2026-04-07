@@ -4,8 +4,8 @@ import { auth } from "@/lib/auth";
 import { callGitHubModels, isGitHubModelsAvailable } from "@/lib/ai/github-models";
 
 const requestSchema = z.object({
-  prompt: z.string().min(1, "Prompt is required").max(20000, "Prompt too long"),
-  systemPrompt: z.string().max(10000, "System prompt too long").optional(),
+  prompt: z.string().min(1).max(20000),
+  systemPrompt: z.string().max(10000).optional(),
   model: z.string().min(1).max(100).optional(),
 });
 
