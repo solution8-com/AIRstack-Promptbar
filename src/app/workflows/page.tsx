@@ -5,10 +5,14 @@ import { InfinitePromptList } from "@/components/prompts/infinite-prompt-list";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 
-export const metadata: Metadata = {
-  title: "Workflows",
-  description: "Browse prompts with sequential flows and connections",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("workflows");
+
+  return {
+    title: t("title"),
+    description: t("description"),
+  };
+}
 
 // Query for workflows list (cached)
 function getCachedWorkflows(

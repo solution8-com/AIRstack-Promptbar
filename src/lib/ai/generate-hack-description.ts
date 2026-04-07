@@ -1,34 +1,9 @@
-import OpenAI from "openai";
+import { callGitHubModels, isGitHubModelsAvailable } from "@/lib/ai/github-models";
 
 /**
  * Generate a description for an internal hack based on the implementation guide
  * Uses GitHub Models API (OpenAI-compatible) with gpt-5-nano as the primary model
  */
-
-let githubModelsClient: OpenAI | null = null;
-
-function getGitHubModelsClient(): OpenAI {
-  if (githubModelsClient) {
-    return githubModelsClient;
-  }
-
-  // GitHub Models API uses a GitHub token for authentication
-  const githubToken = process.env.GITHUB_MODELS_TOKEN;
-
-  if (!githubToken) {
-    throw new Error(
-      "GITHUB_MODELS_TOKEN environment variable is required for internal hack description generation. " +
-      "Get a token from https://github.com/marketplace/models and add it to your .env file."
-    );
-  }
-
-  githubModelsClient = new OpenAI({
-    baseURL: "https://models.inference.ai.azure.com",
-    apiKey: githubToken,
-  });
-
-  return githubModelsClient;
-}
 
 /**
  * Generate a description for an internal hack from its implementation guide
@@ -41,7 +16,12 @@ export async function generateHackDescription(
   implementationGuide: string
 ): Promise<string | null> {
   try {
-    const client = getGitHubModelsClient();
+    if (!isGitHubModelsAvailable()) {
+      throw new Error(
+        "GITHUB_MODELS_TOKEN environment variable is required for internal hack description generation. " +
+          "Get a token from https://github.com/marketplace/models and add it to your .env file."
+      );
+    }
 
     // Optimized system prompt following OSTA (Optimized System Task Assignment) best practices
     // Based on 2026 AI prompt engineering guidelines for technical documentation
@@ -80,43 +60,11 @@ ${implementationGuide}
 
 Generate a concise description (2-3 sentences, under 500 characters) that explains what this hack does and why it's valuable.`;
 
-    // Try gpt-5-nano first (optimized for speed and cost), fallback to gpt-4o-mini if unavailable
-    let model = "gpt-5-nano";
-    let response;
-
-    try {
-      response = await client.chat.completions.create({
-        model: model,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        temperature: 0.3,
-        max_tokens: 150,
-      });
-    } catch (error: unknown) {
-      const err = error as OpenAIErrorResponse;
-      // If gpt-5-nano is not available, fallback to gpt-4o-mini
-      if (err?.error?.code === "model_not_found" || err?.status === 404) {
-        console.log("[generateHackDescription] gpt-5-nano not available, falling back to gpt-4o-mini");
-        model = "gpt-4o-mini";
-        response = await client.chat.completions.create({
-          model: model,
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt }
-          ],
-          temperature: 0.3,
-          max_tokens: 150,
-        });
-      } else {
-        throw error;
-      }
-    }
-
-    console.log(`[generateHackDescription] Used model: ${model}`);
-
-    const generatedDescription = response.choices[0]?.message?.content?.trim();
+    const generatedDescription = await callGitHubModels(userPrompt, systemPrompt, {
+      model: "openai/gpt-5-nano",
+      temperature: 0.3,
+      maxTokens: 150,
+    });
 
     if (!generatedDescription) {
       return null;
@@ -143,9 +91,5 @@ Generate a concise description (2-3 sentences, under 500 characters) that explai
  * Check if hack description generation is enabled
  */
 export function isHackDescriptionGenerationEnabled(): boolean {
-  return !!process.env.GITHUB_MODELS_TOKEN;
-}
-interface OpenAIErrorResponse {
-  error?: { code?: string };
-  status?: number;
+  return isGitHubModelsAvailable();
 }

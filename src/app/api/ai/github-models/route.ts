@@ -1,0 +1,56 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { auth } from "@/lib/auth";
+import { callGitHubModels, isGitHubModelsAvailable } from "@/lib/ai/github-models";
+
+const requestSchema = z.object({
+  prompt: z.string().min(1).max(20000),
+  systemPrompt: z.string().max(10000).optional(),
+  model: z.string().min(1).max(100).optional(),
+});
+
+export async function POST(request: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
+    if (!isGitHubModelsAvailable()) {
+      return NextResponse.json(
+        { error: "GitHub Models is not configured" },
+        { status: 503 }
+      );
+    }
+
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Malformed JSON" }, { status: 400 });
+    }
+
+    const validation = requestSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: "Invalid request", details: validation.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const { prompt, systemPrompt, model } = validation.data;
+    const result = await callGitHubModels(prompt, systemPrompt, { model });
+
+    if (!result) {
+      return NextResponse.json(
+        { error: "Failed to generate response from GitHub Models" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ result });
+  } catch (error) {
+    console.error("[POST /api/ai/github-models] Error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

@@ -101,6 +101,7 @@ export function DiscoverTabs({
   const t = useTranslations("feed");
   const tDiscovery = useTranslations("discovery");
   const tCommon = useTranslations("common");
+  const tPrompts = useTranslations("prompts");
 
   const [activeTab, setActiveTab] = useState("featured");
   
@@ -277,14 +278,14 @@ export function DiscoverTabs({
               <SelectTrigger id="type" className="h-9">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{tCommon("all")}</SelectItem>
-                <SelectItem value="text">Text</SelectItem>
-                <SelectItem value="image">Image</SelectItem>
-                <SelectItem value="video">Video</SelectItem>
-                <SelectItem value="skill">Skill</SelectItem>
-                <SelectItem value="taste">Agent Basic Instructions</SelectItem>
-              </SelectContent>
+                <SelectContent>
+                  <SelectItem value="all">{tCommon("all")}</SelectItem>
+                  <SelectItem value="text">{tPrompts("types.text")}</SelectItem>
+                  <SelectItem value="image">{tPrompts("types.image")}</SelectItem>
+                  <SelectItem value="video">{tPrompts("types.video")}</SelectItem>
+                  <SelectItem value="skill">{tPrompts("types.skill")}</SelectItem>
+                  <SelectItem value="taste">{tPrompts("types.taste")}</SelectItem>
+                </SelectContent>
             </Select>
           </div>
 

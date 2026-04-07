@@ -64,6 +64,8 @@ export default defineConfig({
     mcp: true,
     // Enable comments on prompts
     comments: true,
+    // Enable Click to Iterate prompt refinement feature
+    clickToIterate: false,
   },
 
   // Homepage customization

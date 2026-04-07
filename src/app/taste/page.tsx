@@ -1,4 +1,3 @@
-import { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { unstable_cache } from "next/cache";
@@ -8,10 +7,15 @@ import { InfinitePromptList } from "@/components/prompts/infinite-prompt-list";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 
-export const metadata: Metadata = {
-  title: "Taste",
-  description: "Browse and discover coding taste profiles",
-};
+export async function generateMetadata() {
+  const tPrompts = await getTranslations("prompts");
+  const tNav = await getTranslations("nav");
+
+  return {
+    title: tNav("taste"),
+    description: tPrompts("tastesDescription"),
+  };
+}
 
 // Query for tastes list (cached)
 function getCachedTastes(
