@@ -9,8 +9,8 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
-  title: "AIR Agent Prompts",
-  description: "Browse and discover AIR Agent Prompts (AIRSPs)",
+  title: "AIR Toolkit",
+  description: "Browse and discover AIR Toolkit (AIRTool Entry)",
 };
 
 // Query for tastes list (cached)
