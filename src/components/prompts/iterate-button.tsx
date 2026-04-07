@@ -98,9 +98,11 @@ Preserve intent while improving clarity, structure, and usefulness.`;
       .slice(0, MAX_VERSION_ITEMS)
       .map((version) => `- ${version.title}: ${version.changeNote || "No change note"}`)
       .join("\n");
-    const commentLines = comments
-      .map((comment) => comment.trim())
-      .filter((comment) => comment.length > 0)
+    const normalizedComments = comments.flatMap((comment) => {
+      const trimmedComment = comment.trim();
+      return trimmedComment.length > 0 ? [trimmedComment] : [];
+    });
+    const commentLines = normalizedComments
       .slice(0, MAX_COMMENT_ITEMS)
       .map((comment) => `- ${comment}`)
       .join("\n");
