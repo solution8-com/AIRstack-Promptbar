@@ -413,6 +413,7 @@ enum PromptType {
   SKILL
   TASTE
   HACK
+  GUIDE
 }
 
 enum StructuredFormat {

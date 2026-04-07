@@ -14,7 +14,7 @@ const promptSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(500).optional(),
   content: z.string().min(1),
-  type: z.enum(["TEXT", "IMAGE", "VIDEO", "AUDIO", "SKILL", "TASTE"]), // Output type, SKILL, or TASTE
+  type: z.enum(["TEXT", "IMAGE", "VIDEO", "AUDIO", "SKILL", "TASTE", "GUIDE"]), // Output type, SKILL, TASTE, or GUIDE
   structuredFormat: z.enum(["JSON", "YAML"]).nullish(), // Input type indicator
   categoryId: z.string().optional(),
   tagIds: z.array(z.string()),
@@ -54,6 +54,14 @@ export async function POST(request: Request) {
     }
 
     const { title, description, content, type, structuredFormat, categoryId, tagIds, contributorIds, isPrivate, mediaUrl, requiresMediaUpload, requiredMediaType, requiredMediaCount, bestWithModels, bestWithMCP, workflowLink } = parsed.data;
+
+    // Only admins can create GUIDE prompts
+    if (type === "GUIDE" && session.user.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "forbidden", message: "Only admins can create GUIDE prompts" },
+        { status: 403 }
+      );
+    }
 
     // Check if user is flagged (for auto-delisting and daily limit)
     const currentUser = await db.user.findUnique({

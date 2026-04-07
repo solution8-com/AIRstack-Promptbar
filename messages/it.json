@@ -394,7 +394,9 @@
     "structuredFormatWarningDescription": "Il contenuto del tuo prompt sembra essere dati strutturati. Considera di passare alla modalità strutturata per una migliore evidenziazione della sintassi e validazione.",
     "switchToStructured": "Passa a {format}",
     "createTag": "Create \"{name}\"",
-    "creatingTag": "Creating..."
+    "creatingTag": "Creating...",
+    "guideNotFound": "Guida Non Trovata",
+    "readTheGuide": "Leggi la guida: {title}"
   },
   "changeRequests": {
     "title": "Richieste di Modifica",

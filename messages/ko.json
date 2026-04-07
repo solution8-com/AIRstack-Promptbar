@@ -394,7 +394,9 @@
     "structuredFormatWarningDescription": "프롬프트 내용이 구조화된 데이터처럼 보입니다. 더 나은 구문 강조 표시 및 유효성 검사를 위해 구조화 모드로 전환하는 것을 고려해 보세요.",
     "switchToStructured": "{format}으로 전환",
     "createTag": "Create \"{name}\"",
-    "creatingTag": "Creating..."
+    "creatingTag": "Creating...",
+    "guideNotFound": "가이드를 찾을 수 없습니다",
+    "readTheGuide": "가이드 읽기: {title}"
   },
   "changeRequests": {
     "title": "변경 요청",

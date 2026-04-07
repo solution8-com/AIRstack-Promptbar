@@ -399,7 +399,9 @@
     "createButtonHack": "Publish Your Hack",
     "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode",
     "createTag": "Create \"{name}\"",
-    "creatingTag": "Creating..."
+    "creatingTag": "Creating...",
+    "guideNotFound": "未找到指南",
+    "readTheGuide": "阅读指南：{title}"
   },
   "changeRequests": {
     "title": "变更请求",

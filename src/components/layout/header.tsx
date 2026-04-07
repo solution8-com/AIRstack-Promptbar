@@ -224,6 +224,13 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                         {t("nav.taste")}
                       </Link>
                       <Link 
+                        href="/guides" 
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      >
+                        {t("nav.guides")}
+                      </Link>
+                      <Link 
                         href="/workflows" 
                         onClick={() => setMobileMenuOpen(false)}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
@@ -396,6 +403,12 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                 {t("nav.taste")}
               </Link>
               <Link
+                href="/guides"
+                className="hidden xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
+              >
+                {t("nav.guides")}
+              </Link>
+              <Link
                 href="/workflows"
                 className="hidden xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
               >
@@ -437,6 +450,11 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                   <DropdownMenuItem asChild className="xl:hidden">
                     <Link href="/taste">
                       {t("nav.taste")}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="xl:hidden">
+                    <Link href="/guides">
+                      {t("nav.guides")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="xl:hidden">

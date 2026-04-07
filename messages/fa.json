@@ -394,7 +394,9 @@
     "structuredFormatWarningDescription": "محتوای پرامپت شما شبیه داده ساختارمند است. برای هایلایت نحو و اعتبارسنجی بهتر، به حالت ساختارمند تغییر دهید.",
     "switchToStructured": "تغییر به {format}",
     "createTag": "Create \"{name}\"",
-    "creatingTag": "Creating..."
+    "creatingTag": "Creating...",
+    "guideNotFound": "راهنما یافت نشد",
+    "readTheGuide": "راهنما را بخوانید: {title}"
   },
   "changeRequests": {
     "title": "درخواست‌های تغییر",

@@ -394,7 +394,9 @@
     "structuredFormatWarningDescription": "يبدو أن محتوى الأمر الخاص بك يشبه بيانات منظمة. فكر في التبديل إلى الوضع المنظم للحصول على تمييز بنائي وتحقق أفضل.",
     "switchToStructured": "التبديل إلى {format}",
     "createTag": "Create \"{name}\"",
-    "creatingTag": "Creating..."
+    "creatingTag": "Creating...",
+    "guideNotFound": "الدليل غير موجود",
+    "readTheGuide": "اقرأ الدليل: {title}"
   },
   "changeRequests": {
     "title": "طلبات التغيير",
