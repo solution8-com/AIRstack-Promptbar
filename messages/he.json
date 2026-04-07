@@ -394,7 +394,9 @@
     "structuredFormatWarningDescription": "תוכן הפרומפט שלך נראה כמו נתונים מובנים. שקול לעבור למצב מובנה להדגשת תחביר ואימות טובים יותר.",
     "switchToStructured": "לעבור ל-{format}",
     "createTag": "Create \"{name}\"",
-    "creatingTag": "Creating..."
+    "creatingTag": "Creating...",
+    "guideNotFound": "המדריך לא נמצא",
+    "readTheGuide": "קרא את המדריך: {title}"
   },
   "changeRequests": {
     "title": "בקשות שינוי",

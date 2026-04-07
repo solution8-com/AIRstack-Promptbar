@@ -394,7 +394,9 @@
     "structuredFormatWarningDescription": "Prompt məzmununuz strukturlaşdırılmış məlumata bənzəyir. Daha yaxşı sintaksis vurğulama və doğrulama üçün strukturlaşdırılmış rejimə keçməyi düşünün.",
     "switchToStructured": "{format}-a keçin",
     "createTag": "Create \"{name}\"",
-    "creatingTag": "Creating..."
+    "creatingTag": "Creating...",
+    "guideNotFound": "Bələdçi Tapılmadı",
+    "readTheGuide": "Bələdçini oxuyun: {title}"
   },
   "changeRequests": {
     "title": "Dəyişiklik Sorğuları",

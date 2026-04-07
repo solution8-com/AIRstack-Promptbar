@@ -394,7 +394,9 @@
     "structuredFormatWarningDescription": "Το περιεχόμενο του prompt σας μοιάζει με δομημένα δεδομένα. Σκεφτείτε να αλλάξετε σε δομημένη λειτουργία για καλύτερη επισήμανση σύνταξης και επικύρωση.",
     "switchToStructured": "Αλλαγή σε {format}",
     "createTag": "Create \"{name}\"",
-    "creatingTag": "Creating..."
+    "creatingTag": "Creating...",
+    "guideNotFound": "Ο Οδηγός Δεν Βρέθηκε",
+    "readTheGuide": "Διαβάστε τον οδηγό: {title}"
   },
   "changeRequests": {
     "title": "Αιτήσεις αλλαγής",

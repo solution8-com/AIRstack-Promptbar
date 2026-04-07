@@ -431,7 +431,9 @@
     "guideDescription": "Guide Description",
     "createGuideTitle": "Create AIR Guide",
     "createGuideDescription": "Write a new guide in Markdown format",
-    "editGuide": "Edit"
+    "editGuide": "Edit",
+    "guideNotFound": "Guide Not Found",
+    "readTheGuide": "Read the guide: {title}"
   },
   "changeRequests": {
     "title": "Change Requests",

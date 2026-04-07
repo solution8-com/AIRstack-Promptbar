@@ -394,7 +394,9 @@
     "structuredFormatWarningDescription": "Содержимое вашего промпта похоже на структурированные данные. Рассмотрите переключение в структурированный режим для лучшей подсветки синтаксиса и валидации.",
     "switchToStructured": "Переключить на {format}",
     "createTag": "Create \"{name}\"",
-    "creatingTag": "Creating..."
+    "creatingTag": "Creating...",
+    "guideNotFound": "Руководство Не Найдено",
+    "readTheGuide": "Прочитать руководство: {title}"
   },
   "changeRequests": {
     "title": "Запросы на изменение",

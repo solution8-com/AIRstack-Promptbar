@@ -17,18 +17,26 @@ interface GuidePageProps {
 
 export async function generateMetadata({ params }: GuidePageProps): Promise<Metadata> {
   const { id } = await params;
+  const t = await getTranslations("prompts");
+  const session = await auth();
+  const isAdmin = session?.user?.role === "ADMIN";
+
   const guide = await db.prompt.findUnique({
-    where: { id, type: "GUIDE" },
+    where: {
+      id,
+      type: "GUIDE",
+      ...(isAdmin ? {} : { deletedAt: null, isPrivate: false, isUnlisted: false })
+    },
     select: { title: true, description: true },
   });
 
   if (!guide) {
-    return { title: "Guide Not Found" };
+    return { title: t("guideNotFound") };
   }
 
   return {
     title: guide.title,
-    description: guide.description || `Read the guide: ${guide.title}`,
+    description: guide.description || t("readTheGuide", { title: guide.title }),
   };
 }
 
@@ -40,7 +48,11 @@ export default async function GuidePage({ params }: GuidePageProps) {
   const t = await getTranslations("prompts");
 
   const guide = await db.prompt.findUnique({
-    where: { id, type: "GUIDE", deletedAt: null },
+    where: {
+      id,
+      type: "GUIDE",
+      ...(isAdmin ? {} : { deletedAt: null, isPrivate: false, isUnlisted: false })
+    },
     include: {
       author: {
         select: {

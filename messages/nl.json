@@ -394,7 +394,9 @@
     "structuredFormatWarningDescription": "Je promptinhoud lijkt op gestructureerde data. Overweeg om naar gestructureerde modus te wisselen voor betere syntax-highlighting en validatie.",
     "switchToStructured": "Wisselen naar {format}",
     "createTag": "Create \"{name}\"",
-    "creatingTag": "Creating..."
+    "creatingTag": "Creating...",
+    "guideNotFound": "Gids Niet Gevonden",
+    "readTheGuide": "Lees de gids: {title}"
   },
   "changeRequests": {
     "title": "Wijzigingsverzoeken",
