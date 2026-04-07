@@ -11,7 +11,7 @@ const updatePromptSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   description: z.string().max(500).optional(),
   content: z.string().min(1).optional(),
-  type: z.enum(["TEXT", "IMAGE", "VIDEO", "AUDIO", "SKILL", "TASTE"]).optional(), // Output type, SKILL, or TASTE
+  type: z.enum(["TEXT", "IMAGE", "VIDEO", "AUDIO", "SKILL", "TASTE", "GUIDE"]).optional(), // Output type, SKILL, TASTE, or GUIDE
   structuredFormat: z.enum(["JSON", "YAML"]).optional().nullable(),
   categoryId: z.string().optional().nullable(),
   tagIds: z.array(z.string()).optional(),
@@ -135,7 +135,7 @@ export async function PATCH(
     // Check if prompt exists and user owns it
     const existing = await db.prompt.findUnique({
       where: { id },
-      select: { authorId: true, content: true },
+      select: { authorId: true, content: true, type: true },
     });
 
     if (!existing) {
@@ -152,6 +152,14 @@ export async function PATCH(
       );
     }
 
+    // Only admins can create or edit GUIDE prompts
+    if (existing.type === "GUIDE" && session.user.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "forbidden", message: "Only admins can edit GUIDE prompts" },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const parsed = updatePromptSchema.safeParse(body);
 
@@ -159,6 +167,14 @@ export async function PATCH(
       return NextResponse.json(
         { error: "validation_error", message: "Invalid input", details: parsed.error.issues },
         { status: 400 }
+      );
+    }
+
+    // Also block non-admins from changing type to GUIDE
+    if (parsed.data.type === "GUIDE" && session.user.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "forbidden", message: "Only admins can create GUIDE prompts" },
+        { status: 403 }
       );
     }
 
