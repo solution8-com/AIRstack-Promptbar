@@ -10,6 +10,7 @@ export interface CallGitHubModelsOptions {
 
 interface OpenAIErrorResponse {
   code?: string;
+  error?: { code?: string };
   status?: number;
 }
 
@@ -68,7 +69,11 @@ export async function callGitHubModels(
     const err = error as OpenAIErrorResponse;
     if (
       preferredModel !== fallbackModel &&
-      (err?.code === "model_not_found" || err?.status === 404)
+      (
+        err?.code === "model_not_found" ||
+        err?.error?.code === "model_not_found" ||
+        err?.status === 404
+      )
     ) {
       const response = await client.chat.completions.create({
         model: fallbackModel,

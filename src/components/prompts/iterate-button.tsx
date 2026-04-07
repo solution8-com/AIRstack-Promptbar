@@ -50,7 +50,7 @@ function truncateText(text: string, maxLength: number): string {
   return `${text.slice(0, maxLength - 16)}\n...[truncated]`;
 }
 
-export function IterateButton({ isEnabled, content, versions, comments }: IterateButtonProps) {
+export function IterateButton({ isEnabled, content, versions, comments = [] }: IterateButtonProps) {
   const t = useTranslations("prompts");
   const tCommon = useTranslations("common");
   const [open, setOpen] = useState(false);
@@ -98,9 +98,9 @@ Preserve intent while improving clarity, structure, and usefulness.`;
       .slice(0, MAX_VERSION_ITEMS)
       .map((version) => `- ${version.title}: ${version.changeNote || "No change note"}`)
       .join("\n");
-    const commentLines = (comments || [])
-      .map((comment) => comment?.trim())
-      .filter((comment): comment is string => Boolean(comment))
+    const commentLines = comments
+      .map((comment) => comment.trim())
+      .filter((comment) => comment.length > 0)
       .slice(0, MAX_COMMENT_ITEMS)
       .map((comment) => `- ${comment}`)
       .join("\n");

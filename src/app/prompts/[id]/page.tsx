@@ -717,8 +717,7 @@ export default async function PromptPage({ params }: PromptPageProps) {
               if (!commentContent) {
                 return "";
               }
-              const commentPrefix = comment.parentId ? "Reply" : "Comment";
-              return `${commentPrefix} by @${comment.author.username}: ${commentContent}`;
+              return `@${comment.author.username}: ${commentContent}`;
             }).filter((comment) => comment.length > 0)}
           />
 
