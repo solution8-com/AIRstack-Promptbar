@@ -104,10 +104,22 @@ function getCachedGuides(
           total: totalCount,
         };
       } catch (error) {
-        // If the GUIDE enum doesn't exist in the database yet (migration pending),
-        // return an empty result instead of a 500 error.
-        console.error("Failed to fetch guides:", error);
-        return { guides: [], total: 0 };
+        // Only swallow errors caused by a missing GUIDE enum value in the DB
+        // (i.e. the migration adding GUIDE to PromptType hasn't been applied yet).
+        // Re-throw everything else so transient DB/network failures are not
+        // cached as a permanently-empty result by unstable_cache.
+        const message = error instanceof Error ? error.message : String(error);
+        if (
+          message.includes("invalid input value for enum") ||
+          message.includes("does not exist in the enum")
+        ) {
+          console.error(
+            "GUIDE enum not yet in DB (migration pending) — returning empty list:",
+            message
+          );
+          return { guides: [], total: 0 };
+        }
+        throw error;
       }
     },
     ["guides", cacheKey],
