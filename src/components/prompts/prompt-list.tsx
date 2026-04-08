@@ -13,9 +13,10 @@ export interface PromptListProps {
   totalPages: number;
   pinnedIds?: Set<string>;
   showPinButton?: boolean;
+  isAdmin?: boolean;
 }
 
-export function PromptList({ prompts, currentPage, totalPages, pinnedIds, showPinButton = false }: PromptListProps) {
+export function PromptList({ prompts, currentPage, totalPages, pinnedIds, showPinButton = false, isAdmin = false }: PromptListProps) {
   const t = useTranslations("prompts");
 
   if (prompts.length === 0) {
@@ -41,6 +42,7 @@ export function PromptList({ prompts, currentPage, totalPages, pinnedIds, showPi
             prompt={prompt} 
             showPinButton={showPinButton}
             isPinned={pinnedIds?.has(prompt.id) ?? false}
+            isAdmin={isAdmin}
           />
         ))}
       </Masonry>

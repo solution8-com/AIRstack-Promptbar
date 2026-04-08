@@ -1,12 +1,9 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
-import { Info } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { PromptForm } from "@/components/prompts/prompt-form";
 import { db } from "@/lib/db";
 import { isAIGenerationEnabled, getAIModelName } from "@/lib/ai/generation";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const metadata: Metadata = {
   title: "Create Prompt",
@@ -20,13 +17,15 @@ interface PageProps {
     content?: string;
     type?: "TEXT" | "IMAGE" | "VIDEO" | "AUDIO" | "SKILL" | "TASTE";
     format?: "JSON" | "YAML";
+    mode?: "prompt" | "internal-hack";
   }>;
 }
 
 export default async function NewPromptPage({ searchParams }: PageProps) {
   const session = await auth();
-  const t = await getTranslations("prompts");
-  const { prompt: initialPromptRequest, title, content, type, format } = await searchParams;
+  const { prompt: initialPromptRequest, title, content, type, format, mode } = await searchParams;
+  
+  const isInternalHackMode = mode === "internal-hack";
 
   if (!session?.user) {
     redirect("/login");
@@ -53,19 +52,14 @@ export default async function NewPromptPage({ searchParams }: PageProps) {
   const aiModelName = getAIModelName();
 
   return (
-    <div className="container max-w-3xl py-8">
-      <Alert className="mb-6">
-        <Info className="h-4 w-4" />
-        <AlertDescription>
-          {t("createInfo")}
-        </AlertDescription>
-      </Alert>
+    <div className="container max-w-6xl py-8">
       <PromptForm 
         categories={categories} 
         tags={tags} 
         aiGenerationEnabled={aiGenerationEnabled}
         aiModelName={aiModelName}
         initialPromptRequest={initialPromptRequest}
+        isInternalHackMode={isInternalHackMode}
         initialData={(title || content || type || format) ? { 
           title: title || "", 
           content: content || "",

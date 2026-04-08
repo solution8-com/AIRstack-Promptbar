@@ -9,9 +9,9 @@ import type { Adapter, AdapterUser } from "next-auth/adapters";
 initializePlugins();
 
 // Generate a unique username from email or name
-async function generateUsername(email: string, name?: string | null): Promise<string> {
+async function generateUsername(email: string | null | undefined, name?: string | null): Promise<string> {
   // Try to use the part before @ in email
-  let baseUsername = email.split("@")[0].toLowerCase().replace(/[^a-z0-9_]/g, "");
+  let baseUsername = email ? email.split("@")[0].toLowerCase().replace(/[^a-z0-9_]/g, "") : "";
   
   // If too short, use name
   if (baseUsername.length < 3 && name) {
@@ -121,6 +121,69 @@ function getConfiguredProviders(config: Awaited<ReturnType<typeof getConfig>>): 
   return ["credentials"];
 }
 
+// Helper to check if a username is in the admin list
+function isAdminUser(username: string | null | undefined): boolean {
+  if (!username) return false;
+  
+  const adminList = process.env.S8_ADMINS;
+  if (!adminList) {
+    // If S8_ADMINS is not set, allow all users (backwards compatible)
+    return true;
+  }
+  
+  // Parse the admin list (comma-separated or JSON array)
+  let admins: string[] = [];
+  try {
+    // Try to parse as JSON array first
+    admins = JSON.parse(adminList);
+  } catch {
+    // Fall back to comma-separated list
+    admins = adminList.split(',').map(u => u.trim()).filter(Boolean);
+  }
+  
+  return admins.includes(username);
+}
+
+const REQUIRED_ORG = process.env.S8_REQUIRED_ORG || "solution8-com";
+const ENFORCE_GITHUB_ORG = process.env.S8_ENFORCE_GITHUB_ORG !== "false";
+
+async function isGithubOrgMember(username: string | null | undefined, accessToken?: string | null): Promise<boolean> {
+  if (!username || !accessToken) return false;
+
+  try {
+    const res = await fetch(`https://api.github.com/orgs/${REQUIRED_ORG}/members/${username}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/vnd.github+json",
+      },
+    });
+
+    if (res.status !== 204) {
+      const bodyText = await res.text();
+      console.log(`[AUTH] SIGNIN_DENIED`, JSON.stringify({
+        reason: "NOT_ORG_MEMBER",
+        org: REQUIRED_ORG,
+        username,
+        githubStatus: res.status,
+        githubStatusText: res.statusText,
+        githubBody: bodyText.slice(0, 200),
+      }));
+      return false;
+    }
+
+    console.log(`[AUTH] SIGNIN_ORG_OK`, JSON.stringify({ org: REQUIRED_ORG, username }));
+    return true;
+  } catch (error) {
+    console.error(`[AUTH] SIGNIN_ORG_CHECK_ERROR`, JSON.stringify({
+      reason: "GITHUB_API_EXCEPTION",
+      org: REQUIRED_ORG,
+      username,
+      error: String(error),
+    }));
+    return false;
+  }
+}
+
 // Build auth config dynamically based on prompts.config.ts
 async function buildAuthConfig() {
   const config = await getConfig();
@@ -153,22 +216,51 @@ async function buildAuthConfig() {
       error: "/login",
     },
     callbacks: {
+      async signIn({ account, profile }): Promise<boolean> {
+        if (account?.provider !== "github") {
+          return true;
+        }
+
+        const githubUsername = (profile as { login?: string })?.login;
+        const accessToken = account.access_token as string | undefined;
+
+        if (!ENFORCE_GITHUB_ORG) {
+          console.log(`[AUTH] SIGNIN_ORG_SKIPPED`, JSON.stringify({ reason: "ENFORCE_GITHUB_ORG=false", username: githubUsername }));
+          return true;
+        }
+
+        return isGithubOrgMember(githubUsername, accessToken);
+      },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       async jwt({ token, user, trigger }: { token: any; user?: any; trigger?: string }) {
         // On sign in, look up the actual database user by email to ensure correct ID
         if (user && user.email) {
           const dbUser = await db.user.findUnique({
             where: { email: user.email },
-            select: { id: true, role: true, username: true, locale: true, name: true, avatar: true },
+            select: { id: true, role: true, username: true, locale: true, name: true, avatar: true, githubUsername: true },
           });
 
           if (dbUser) {
+            // Check if user is in admin list (if S8_ADMINS is configured)
+            // Evaluate both the exact GitHub username and the sanitized DB username
+            if (!isAdminUser(dbUser.githubUsername) && !isAdminUser(dbUser.username)) {
+              // User not in admin list - deny access
+              console.log(`[AUTH] JWT_SIGNIN_DENIED`, JSON.stringify({
+                reason: "NOT_IN_ADMIN_LIST",
+                username: dbUser.username,
+                s8AdminsConfigured: Boolean(process.env.S8_ADMINS),
+              }));
+              return null;
+            }
+            
             token.id = dbUser.id;
             token.role = dbUser.role;
             token.username = dbUser.username;
             token.locale = dbUser.locale;
             token.name = dbUser.name;
             token.picture = dbUser.avatar;
+            token.orgMember = true;
+            token.org = REQUIRED_ORG;
           }
         }
 
@@ -176,11 +268,28 @@ async function buildAuthConfig() {
         if (token.id && !user) {
           const dbUser = await db.user.findUnique({
             where: { id: token.id as string },
-            select: { id: true, role: true, username: true, locale: true, name: true, avatar: true },
+            select: { id: true, role: true, username: true, locale: true, name: true, avatar: true, githubUsername: true },
           });
 
           // User no longer exists - invalidate token
           if (!dbUser) {
+            console.log(`[AUTH] JWT_TOKEN_INVALIDATED`, JSON.stringify({
+              reason: "USER_NOT_IN_DB",
+              tokenUserId: token.id,
+              tokenUsername: token.username ?? null,
+            }));
+            return null;
+          }
+          
+          // Check if user is still in admin list
+          // Evaluate both the exact GitHub username and the sanitized DB username
+          if (!isAdminUser(dbUser.githubUsername) && !isAdminUser(dbUser.username)) {
+            // User no longer in admin list - invalidate token
+            console.log(`[AUTH] JWT_TOKEN_INVALIDATED`, JSON.stringify({
+              reason: "REMOVED_FROM_ADMIN_LIST",
+              username: dbUser.username,
+              s8AdminsConfigured: Boolean(process.env.S8_ADMINS),
+            }));
             return null;
           }
 
@@ -192,6 +301,9 @@ async function buildAuthConfig() {
             token.name = dbUser.name;
             token.picture = dbUser.avatar;
           }
+
+          token.orgMember = token.orgMember ?? false;
+          token.org = REQUIRED_ORG;
         }
 
         return token;
@@ -209,6 +321,8 @@ async function buildAuthConfig() {
           session.user.locale = token.locale as string;
           session.user.name = token.name ?? null;
           session.user.image = token.picture ?? null;
+          session.user.orgMember = Boolean(token.orgMember);
+          session.user.org = token.org as string;
         }
         return session;
       },
@@ -221,6 +335,21 @@ const authConfig = await buildAuthConfig();
 
 export const { handlers, signIn, signOut, auth } = NextAuth(authConfig);
 
+// Export admin helper for use in other components
+export { isAdminUser };
+
+// Helper to get all admin usernames from environment
+export function getAdminUsernames(): string[] {
+  const adminList = process.env.S8_ADMINS;
+  if (!adminList) return [];
+  
+  try {
+    return JSON.parse(adminList);
+  } catch {
+    return adminList.split(',').map(u => u.trim()).filter(Boolean);
+  }
+}
+
 // Extended session type
 declare module "next-auth" {
   interface Session {
@@ -232,6 +361,8 @@ declare module "next-auth" {
       role: string;
       username: string;
       locale: string;
+      orgMember: boolean;
+      org: string;
     };
   }
 }
@@ -244,5 +375,7 @@ declare module "@auth/core/jwt" {
     locale: string;
     name?: string | null;
     picture?: string | null;
+    orgMember?: boolean;
+    org?: string;
   }
 }

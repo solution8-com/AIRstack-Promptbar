@@ -21,6 +21,7 @@ import Image from "next/image";
 import DeepWikiIcon from "@/../public/deepwiki.svg";
 import config from "@/../prompts.config";
 import { analyticsSearch } from "@/lib/analytics";
+import { AdminTagBadge } from "./admin-tag-badge";
 
 interface PromptFiltersProps {
   categories: Array<{
@@ -44,11 +45,12 @@ interface PromptFiltersProps {
     ai?: string;
   };
   aiSearchEnabled?: boolean;
+  isAdmin?: boolean;
 }
 
 const promptTypes = ["TEXT", "STRUCTURED", "IMAGE", "VIDEO", "AUDIO"];
 
-export function PromptFilters({ categories, tags, currentFilters, aiSearchEnabled }: PromptFiltersProps) {
+export function PromptFilters({ categories, tags, currentFilters, aiSearchEnabled, isAdmin = false }: PromptFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations();
@@ -86,6 +88,10 @@ export function PromptFilters({ categories, tags, currentFilters, aiSearchEnable
   const hasFilters = currentFilters.q || currentFilters.type || currentFilters.category || currentFilters.tag || currentFilters.sort;
 
   const activeFilterCount = [currentFilters.type, currentFilters.category, currentFilters.tag, currentFilters.sort && currentFilters.sort !== "newest"].filter(Boolean).length;
+
+  const handleTagDeleted = () => {
+    router.refresh();
+  };
 
   return (
     <div className="space-y-4">
@@ -323,14 +329,13 @@ export function PromptFilters({ categories, tags, currentFilters, aiSearchEnable
             {filteredTags.filter((tag) => tag.id && tag.slug).map((tag) => {
               const isSelected = selectedTags.includes(tag.slug);
               return (
-                <button
+                <AdminTagBadge
                   key={tag.id}
-                  className="px-2 py-0.5 text-[11px] rounded border transition-colors"
-                  style={
-                    isSelected
-                      ? { backgroundColor: tag.color, color: "white", borderColor: tag.color }
-                      : { borderColor: tag.color + "40", color: tag.color }
-                  }
+                  tag={tag}
+                  variant="filter-button"
+                  isSelected={isSelected}
+                  isAdmin={isAdmin}
+                  onDelete={handleTagDeleted}
                   onClick={() => {
                     let newTags: string[];
                     if (isSelected) {
@@ -343,9 +348,7 @@ export function PromptFilters({ categories, tags, currentFilters, aiSearchEnable
                     }
                     updateFilter("tag", newTags.length > 0 ? newTags.join(",") : null);
                   }}
-                >
-                  {tag.name}
-                </button>
+                />
               );
             })}
             {filteredTags.length === 0 && tagSearch && (

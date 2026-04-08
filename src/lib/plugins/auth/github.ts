@@ -8,6 +8,11 @@ export const githubPlugin: AuthPlugin = {
     GitHub({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: "read:user read:org user:email",
+        },
+      },
       profile(profile) {
         return {
           id: profile.id.toString(),

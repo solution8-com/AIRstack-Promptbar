@@ -193,7 +193,8 @@
       "structured": "Gestructureerd",
       "document": "Document",
       "skill": "Vaardigheid",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Gids"
     },
     "inputType": "Gebruikersprompt",
     "outputType": "AI-antwoord",
@@ -392,7 +393,11 @@
     "learnHowToWritePrompts": "Leer hoe je effectieve prompts schrijft →",
     "structuredFormatDetected": "{format}-formaat gedetecteerd",
     "structuredFormatWarningDescription": "Je promptinhoud lijkt op gestructureerde data. Overweeg om naar gestructureerde modus te wisselen voor betere syntax-highlighting en validatie.",
-    "switchToStructured": "Wisselen naar {format}"
+    "switchToStructured": "Wisselen naar {format}",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating...",
+    "guideNotFound": "Gids Niet Gevonden",
+    "readTheGuide": "Lees de gids: {title}"
   },
   "changeRequests": {
     "title": "Wijzigingsverzoeken",
@@ -629,7 +634,9 @@
       "currentCredits": "Huidig: {remaining}/{limit} credits resterend",
       "creditsUpdated": "Credits succesvol bijgewerkt",
       "creditsUpdateFailed": "Kon credits niet bijwerken",
-      "save": "Opslaan"
+      "save": "Opslaan",
+      "adminZone": "Beheerderszone",
+      "deleteUser": "Gebruiker verwijderen"
     },
     "categories": {
       "title": "Categoriebeheer",
@@ -695,7 +702,8 @@
       "editTitle": "Tag bewerken",
       "editDescription": "Tagdetails bijwerken",
       "deleteConfirmTitle": "Tag verwijderen?",
-      "deleteConfirmDescription": "Dit verwijdert de tag van alle prompts."
+      "deleteConfirmDescription": "Dit verwijdert de tag van alle prompts.",
+      "deleteHoverHint": "Tag verwijderen"
     },
     "webhooks": {
       "title": "Webhookbeheer",
@@ -2266,6 +2274,10 @@
     "cancel": "Annuleren",
     "submit": "Versturen",
     "communityExamples": "Community Voorbeelden",
-    "userExample": "Gebruikers Voorbeeld"
+    "userExample": "Gebruikers Voorbeeld",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

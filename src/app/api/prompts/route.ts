@@ -8,12 +8,13 @@ import { generatePromptEmbedding, findAndSaveRelatedPrompts } from "@/lib/ai/emb
 import { generatePromptSlug } from "@/lib/slug";
 import { checkPromptQuality } from "@/lib/ai/quality-check";
 import { isSimilarContent, normalizeContent } from "@/lib/similarity";
+import { generateHackDescription } from "@/lib/ai/generate-hack-description";
 
 const promptSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(500).optional(),
   content: z.string().min(1),
-  type: z.enum(["TEXT", "IMAGE", "VIDEO", "AUDIO", "SKILL", "TASTE"]), // Output type, SKILL, or TASTE
+  type: z.enum(["TEXT", "IMAGE", "VIDEO", "AUDIO", "SKILL", "TASTE", "GUIDE"]), // Output type, SKILL, TASTE, or GUIDE
   structuredFormat: z.enum(["JSON", "YAML"]).nullish(), // Input type indicator
   categoryId: z.string().optional(),
   tagIds: z.array(z.string()),
@@ -53,6 +54,14 @@ export async function POST(request: Request) {
     }
 
     const { title, description, content, type, structuredFormat, categoryId, tagIds, contributorIds, isPrivate, mediaUrl, requiresMediaUpload, requiredMediaType, requiredMediaCount, bestWithModels, bestWithMCP, workflowLink } = parsed.data;
+
+    // Only admins can create GUIDE prompts
+    if (type === "GUIDE" && session.user.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "forbidden", message: "Only admins can create GUIDE prompts" },
+        { status: 403 }
+      );
+    }
 
     // Check if user is flagged (for auto-delisting and daily limit)
     const currentUser = await db.user.findUnique({
@@ -166,6 +175,12 @@ export async function POST(request: Request) {
 
     // Generate slug from title (translated to English)
     const slug = await generatePromptSlug(title);
+    const existingTagIds = await db.tag.findMany({
+      where: { id: { in: tagIds } },
+      select: { id: true },
+    });
+    const validTagIdSet = new Set(existingTagIds.map((tag) => tag.id));
+    const validTagIds = tagIds.filter((tagId) => validTagIdSet.has(tagId));
 
     // Create prompt with tags
     // Auto-delist if user is flagged
@@ -194,7 +209,7 @@ export async function POST(request: Request) {
           delistReason: "UNUSUAL_ACTIVITY",
         }),
         tags: {
-          create: tagIds.map((tagId) => ({
+          create: validTagIds.map((tagId) => ({
             tagId,
           })),
         },
@@ -263,6 +278,30 @@ export async function POST(request: Request) {
         .catch((err) =>
           console.error("Failed to generate embedding/related prompts for:", prompt.id, err)
         );
+    }
+
+    // Generate description for internal hacks (non-blocking)
+    // Only if: Internal hack (non-private prompts from internal hack mode) AND no manual description provided
+    if (!isPrivate && !description) {
+      console.log(`[Hack Description] Generating description for hack ${prompt.id}`);
+      generateHackDescription(title, content)
+        .then(async (generatedDescription) => {
+          if (generatedDescription) {
+            console.log(
+              `[Hack Description] Generated for hack ${prompt.id} (length: ${generatedDescription.length} characters)`
+            );
+            await db.prompt.update({
+              where: { id: prompt.id },
+              data: { description: generatedDescription },
+            });
+            console.log(`[Hack Description] Description saved for hack ${prompt.id}`);
+          } else {
+            console.log(`[Hack Description] Generation returned null for hack ${prompt.id}`);
+          }
+        })
+        .catch((err) => {
+          console.error("[Hack Description] Failed to generate description for hack:", prompt.id, err);
+        });
     }
 
     // Run quality check for auto-delist (non-blocking for public prompts)

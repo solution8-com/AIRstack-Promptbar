@@ -193,7 +193,8 @@
       "structured": "Структурированный",
       "document": "Документ",
       "skill": "Навык",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Руководство"
     },
     "inputType": "Промпт пользователя",
     "outputType": "Ответ ИИ",
@@ -392,7 +393,11 @@
     "learnHowToWritePrompts": "Узнайте, как писать эффективные промпты →",
     "structuredFormatDetected": "Обнаружен формат {format}",
     "structuredFormatWarningDescription": "Содержимое вашего промпта похоже на структурированные данные. Рассмотрите переключение в структурированный режим для лучшей подсветки синтаксиса и валидации.",
-    "switchToStructured": "Переключить на {format}"
+    "switchToStructured": "Переключить на {format}",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating...",
+    "guideNotFound": "Руководство Не Найдено",
+    "readTheGuide": "Прочитать руководство: {title}"
   },
   "changeRequests": {
     "title": "Запросы на изменение",
@@ -629,7 +634,9 @@
       "currentCredits": "Сейчас: {remaining}/{limit} кредитов осталось",
       "creditsUpdated": "Кредиты успешно обновлены",
       "creditsUpdateFailed": "Не удалось обновить кредиты",
-      "save": "Сохранить"
+      "save": "Сохранить",
+      "adminZone": "Зона администратора",
+      "deleteUser": "Удалить пользователя"
     },
     "categories": {
       "title": "Управление категориями",
@@ -695,7 +702,8 @@
       "editTitle": "Редактировать тег",
       "editDescription": "Обновить данные тега",
       "deleteConfirmTitle": "Удалить тег?",
-      "deleteConfirmDescription": "Это удалит тег со всех промптов."
+      "deleteConfirmDescription": "Это удалит тег со всех промптов.",
+      "deleteHoverHint": "Удалить тег"
     },
     "webhooks": {
       "title": "Управление вебхуками",
@@ -2260,6 +2268,10 @@
     "cancel": "Отмена",
     "submit": "Отправить",
     "communityExamples": "Примеры сообщества",
-    "userExample": "Пример пользователя"
+    "userExample": "Пример пользователя",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

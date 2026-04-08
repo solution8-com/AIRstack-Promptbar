@@ -179,11 +179,11 @@ export function PromptmastersContent({ translations }: PromptmastersContentProps
 
   return (
     <div className="container py-8">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Trophy className="h-8 w-8 text-yellow-500" />
-            <h1 className="text-3xl font-bold">{translations.title}</h1>
+            <h1 className="text-6xl font-bold">{translations.title}</h1>
           </div>
           <p className="text-muted-foreground">{translations.description}</p>
         </div>

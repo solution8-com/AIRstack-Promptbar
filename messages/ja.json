@@ -193,7 +193,8 @@
       "structured": "構造化",
       "document": "ドキュメント",
       "skill": "スキル",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "ガイド"
     },
     "inputType": "ユーザープロンプト",
     "outputType": "AI応答",
@@ -366,7 +367,7 @@
       "errorProcessing": "処理エラー..."
     },
     "update": "更新",
-    "createButton": "作成",
+    "createButton": "Create Prompt",
     "pin": "プロフィールに固定",
     "unpin": "固定解除",
     "pinned": "プロフィールに固定しました",
@@ -392,7 +393,16 @@
     "learnHowToWritePrompts": "効果的なプロンプトの書き方を学ぶ →",
     "structuredFormatDetected": "{format}形式が検出されました",
     "structuredFormatWarningDescription": "プロンプトの内容が構造化データのようです。より良い構文ハイライトと検証のために構造化モードへの切り替えを検討してください。",
-    "switchToStructured": "{format}に切り替え"
+    "switchToStructured": "{format}に切り替え",
+    "titlePlaceholderHack": "Enter a title for your hack",
+    "descriptionPlaceholderHack": "Optional description of your hack",
+    "inputTypeHack": "Hack Implementation Guide",
+    "createButtonHack": "Publish Your Hack",
+    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating...",
+    "guideNotFound": "ガイドが見つかりません",
+    "readTheGuide": "ガイドを読む：{title}"
   },
   "changeRequests": {
     "title": "変更リクエスト",
@@ -629,7 +639,9 @@
       "currentCredits": "現在: {remaining}/{limit} クレジット残り",
       "creditsUpdated": "クレジットが正常に更新されました",
       "creditsUpdateFailed": "クレジットの更新に失敗しました",
-      "save": "保存"
+      "save": "保存",
+      "adminZone": "管理者ゾーン",
+      "deleteUser": "ユーザーを削除"
     },
     "categories": {
       "title": "カテゴリー管理",
@@ -695,7 +707,8 @@
       "editTitle": "タグを編集",
       "editDescription": "タグの詳細を更新",
       "deleteConfirmTitle": "タグを削除しますか？",
-      "deleteConfirmDescription": "すべてのプロンプトからこのタグが削除されます。"
+      "deleteConfirmDescription": "すべてのプロンプトからこのタグが削除されます。",
+      "deleteHoverHint": "タグを削除"
     },
     "webhooks": {
       "title": "Webhook管理",
@@ -2263,6 +2276,10 @@
     "cancel": "キャンセル",
     "submit": "送信",
     "communityExamples": "コミュニティの例",
-    "userExample": "ユーザーの例"
+    "userExample": "ユーザーの例",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

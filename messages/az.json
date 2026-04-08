@@ -193,7 +193,8 @@
       "structured": "Strukturlaşdırılmış",
       "document": "Sənəd",
       "skill": "Bacarıq",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Bələdçi"
     },
     "inputType": "İstifadəçi Promptu",
     "outputType": "AI Cavabı",
@@ -392,7 +393,11 @@
     "learnHowToWritePrompts": "Effektiv promptlar yazmağı öyrənin →",
     "structuredFormatDetected": "{format} formatı aşkarlandı",
     "structuredFormatWarningDescription": "Prompt məzmununuz strukturlaşdırılmış məlumata bənzəyir. Daha yaxşı sintaksis vurğulama və doğrulama üçün strukturlaşdırılmış rejimə keçməyi düşünün.",
-    "switchToStructured": "{format}-a keçin"
+    "switchToStructured": "{format}-a keçin",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating...",
+    "guideNotFound": "Bələdçi Tapılmadı",
+    "readTheGuide": "Bələdçini oxuyun: {title}"
   },
   "changeRequests": {
     "title": "Dəyişiklik Sorğuları",
@@ -629,7 +634,9 @@
       "currentCredits": "Hazırda: {remaining}/{limit} kredit qalıb",
       "creditsUpdated": "Kreditlər uğurla yeniləndi",
       "creditsUpdateFailed": "Kreditlər yenilənmədi",
-      "save": "Saxla"
+      "save": "Saxla",
+      "adminZone": "İdarəçi Zonası",
+      "deleteUser": "İstifadəçini Sil"
     },
     "categories": {
       "title": "Kateqoriya İdarəetməsi",
@@ -695,7 +702,8 @@
       "editTitle": "Etiketi Redaktə et",
       "editDescription": "Etiket detallarını yeniləyin",
       "deleteConfirmTitle": "Etiket Silinsin?",
-      "deleteConfirmDescription": "Bu etiket bütün promptlardan silinəcək."
+      "deleteConfirmDescription": "Bu etiket bütün promptlardan silinəcək.",
+      "deleteHoverHint": "Teqi sil"
     },
     "webhooks": {
       "title": "Webhook İdarəetməsi",
@@ -2275,6 +2283,10 @@
     "cancel": "Ləğv et",
     "submit": "Göndər",
     "communityExamples": "İcma Nümunələri",
-    "userExample": "İstifadəçi nümunəsi"
+    "userExample": "İstifadəçi nümunəsi",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

@@ -193,7 +193,8 @@
       "structured": "Structuré",
       "document": "Document",
       "skill": "Compétence",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Guide"
     },
     "inputType": "Prompt Utilisateur",
     "outputType": "Réponse IA",
@@ -366,7 +367,7 @@
     "requiresVideo": "Nécessite {count} {count, plural, one {vidéo} other {vidéos}}",
     "requiresDocument": "Nécessite {count} {count, plural, one {document} other {documents}}",
     "update": "Mettre à jour",
-    "createButton": "Créer",
+    "createButton": "Create Prompt",
     "pin": "Épingler au Profil",
     "unpin": "Désépingler",
     "pinned": "Épinglé au profil",
@@ -392,7 +393,16 @@
     "learnHowToWritePrompts": "Apprenez à écrire des prompts efficaces →",
     "structuredFormatDetected": "Format {format} détecté",
     "structuredFormatWarningDescription": "Le contenu de votre prompt ressemble à des données structurées. Envisagez de passer en mode structuré pour une meilleure coloration syntaxique et validation.",
-    "switchToStructured": "Passer à {format}"
+    "switchToStructured": "Passer à {format}",
+    "titlePlaceholderHack": "Enter a title for your hack",
+    "descriptionPlaceholderHack": "Optional description of your hack",
+    "inputTypeHack": "Hack Implementation Guide",
+    "createButtonHack": "Publish Your Hack",
+    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating...",
+    "guideNotFound": "Guide Non Trouvé",
+    "readTheGuide": "Lire le guide: {title}"
   },
   "changeRequests": {
     "title": "Demandes de Modification",
@@ -629,7 +639,9 @@
       "currentCredits": "Actuellement: {remaining}/{limit} crédits restants",
       "creditsUpdated": "Crédits mis à jour avec succès",
       "creditsUpdateFailed": "Échec de la mise à jour des crédits",
-      "save": "Enregistrer"
+      "save": "Enregistrer",
+      "adminZone": "Zone Administrateur",
+      "deleteUser": "Supprimer l'utilisateur"
     },
     "categories": {
       "title": "Gestion des Catégories",
@@ -695,7 +707,8 @@
       "editTitle": "Modifier le Tag",
       "editDescription": "Mettez à jour les détails du tag",
       "deleteConfirmTitle": "Supprimer le Tag ?",
-      "deleteConfirmDescription": "Cela retirera le tag de tous les prompts."
+      "deleteConfirmDescription": "Cela retirera le tag de tous les prompts.",
+      "deleteHoverHint": "Supprimer l’étiquette"
     },
     "webhooks": {
       "title": "Gestion des Webhooks",
@@ -2278,6 +2291,10 @@
     "cancel": "Annuler",
     "submit": "Soumettre",
     "communityExamples": "Exemples de la Communauté",
-    "userExample": "Exemple utilisateur"
+    "userExample": "Exemple utilisateur",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

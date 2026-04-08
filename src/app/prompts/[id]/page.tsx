@@ -29,6 +29,7 @@ import { CommentSection } from "@/components/comments";
 import { PromptFlowSection } from "@/components/prompts/prompt-flow-section";
 import { RelatedPrompts } from "@/components/prompts/related-prompts";
 import { AddToCollectionButton } from "@/components/prompts/add-to-collection-button";
+import { IterateButton } from "@/components/prompts/iterate-button";
 import { getConfig } from "@/lib/config";
 import { StructuredData } from "@/components/seo/structured-data";
 import { AI_MODELS } from "@/lib/works-best-with";
@@ -132,6 +133,19 @@ export default async function PromptPage({ params }: PromptPageProps) {
           username: true,
           name: true,
           avatar: true,
+        },
+      },
+      comments: {
+        where: { deletedAt: null },
+        orderBy: { createdAt: "desc" },
+        select: {
+          content: true,
+          parentId: true,
+          author: {
+            select: {
+              username: true,
+            },
+          },
         },
       },
     },
@@ -287,7 +301,7 @@ export default async function PromptPage({ params }: PromptPageProps) {
             description: prompt.description || `AI prompt: ${prompt.title}`,
             content: prompt.content,
             author: prompt.author.name || prompt.author.username,
-            authorUrl: `${process.env.NEXTAUTH_URL || "https://prompts.chat"}/@${prompt.author.username}`,
+            authorUrl: `${process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://prompts.chat"}/@${prompt.author.username}`,
             datePublished: prompt.createdAt.toISOString(),
             dateModified: prompt.updatedAt.toISOString(),
             category: prompt.category?.name,
@@ -573,7 +587,7 @@ export default async function PromptPage({ params }: PromptPageProps) {
             ) : prompt.type === "TASTE" ? (
               <InteractivePromptContent 
                 content={prompt.content} 
-                title="taste.md"
+                title="AGENT.md"
                 isLoggedIn={!!session?.user}
                 promptId={prompt.id}
                 promptSlug={prompt.slug ?? undefined}
@@ -690,6 +704,21 @@ export default async function PromptPage({ params }: PromptPageProps) {
           {relatedPrompts.length > 0 && (
             <RelatedPrompts prompts={relatedPrompts} />
           )}
+
+          <IterateButton
+            isEnabled={config.features.clickToIterate === true}
+            content={prompt.content}
+            versions={prompt.versions.map((version) => ({
+              title: `v${version.version}`,
+              changeNote: version.changeNote,
+            }))}
+            comments={prompt.comments.flatMap((comment) => {
+              const trimmedContent = comment.content.trim();
+              return trimmedContent.length > 0
+                ? [`@${comment.author.username}: ${trimmedContent}`]
+                : [];
+            })}
+          />
 
           {/* Comments Section */}
           {config.features.comments !== false && !prompt.isPrivate && (

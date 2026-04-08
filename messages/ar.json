@@ -193,7 +193,8 @@
       "structured": "منظم",
       "document": "مستند",
       "skill": "مهارة",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "دليل"
     },
     "inputType": "أمر المستخدم",
     "outputType": "استجابة الذكاء الاصطناعي",
@@ -392,7 +393,11 @@
     "learnHowToWritePrompts": "تعلم كيفية كتابة أوامر فعالة ←",
     "structuredFormatDetected": "تم اكتشاف تنسيق {format}",
     "structuredFormatWarningDescription": "يبدو أن محتوى الأمر الخاص بك يشبه بيانات منظمة. فكر في التبديل إلى الوضع المنظم للحصول على تمييز بنائي وتحقق أفضل.",
-    "switchToStructured": "التبديل إلى {format}"
+    "switchToStructured": "التبديل إلى {format}",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating...",
+    "guideNotFound": "الدليل غير موجود",
+    "readTheGuide": "اقرأ الدليل: {title}"
   },
   "changeRequests": {
     "title": "طلبات التغيير",
@@ -629,7 +634,9 @@
       "currentCredits": "حالياً: {remaining}/{limit} رصيد متبقي",
       "creditsUpdated": "تم تحديث الرصيد بنجاح",
       "creditsUpdateFailed": "فشل تحديث الرصيد",
-      "save": "حفظ"
+      "save": "حفظ",
+      "adminZone": "منطقة المشرف",
+      "deleteUser": "حذف المستخدم"
     },
     "categories": {
       "title": "إدارة التصنيفات",
@@ -695,7 +702,8 @@
       "editTitle": "تعديل الوسم",
       "editDescription": "تحديث تفاصيل الوسم",
       "deleteConfirmTitle": "حذف الوسم؟",
-      "deleteConfirmDescription": "سيؤدي هذا إلى إزالة الوسم من جميع الأوامر."
+      "deleteConfirmDescription": "سيؤدي هذا إلى إزالة الوسم من جميع الأوامر.",
+      "deleteHoverHint": "حذف الوسم"
     },
     "webhooks": {
       "title": "إدارة الويب هوك",
@@ -2261,6 +2269,10 @@
     "cancel": "إلغاء",
     "submit": "إرسال",
     "communityExamples": "أمثلة المجتمع",
-    "userExample": "مثال المستخدم"
+    "userExample": "مثال المستخدم",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

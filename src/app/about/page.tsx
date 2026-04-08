@@ -289,7 +289,7 @@ export default async function AboutPage() {
   const contributors = await getContributors();
 
   return (
-    <div className="container max-w-3xl py-10">
+    <div className="container max-w-6xl py-10">
       <div className="mb-8">
         <p className="text-sm text-muted-foreground mb-2">{t("releasedOn")}</p>
         <h1 className="text-2xl font-bold mb-2">{t("title")}</h1>

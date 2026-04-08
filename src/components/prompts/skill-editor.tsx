@@ -13,6 +13,8 @@ import {
   ChevronDown,
   Folder,
   FolderOpen,
+  AlertCircle,
+  UploadCloud,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -34,6 +36,102 @@ import {
   DEFAULT_SKILL_FILE,
   type SkillFile,
 } from "@/lib/skill-files";
+
+// ---------------------------------------------------------------------------
+// Drag-and-drop constants
+// ---------------------------------------------------------------------------
+
+/** Maximum number of files allowed in a dropped folder (pre-flight guard). */
+const DROP_MAX_FILES = 100;
+
+/** Maximum total size (bytes) of all files in a dropped folder (5 MB). */
+const DROP_MAX_BYTES = 5 * 1024 * 1024;
+
+/** File extensions accepted from a dropped folder. */
+const ALLOWED_DROP_EXTENSIONS = new Set([
+  ".md",
+  ".yml",
+  ".yaml",
+  ".py",
+  ".ts",
+  ".tsx",
+  ".json",
+  ".js",
+  ".jsx",
+  ".mjs",
+  ".go",
+  ".html",
+  ".css",
+  ".txt",
+  ".csv",
+  ".sh",
+  ".bat",
+  ".ini",
+  ".env",
+  ".toml",
+  ".xml",
+  ".rs",
+  ".mojo",
+]);
+
+// ---------------------------------------------------------------------------
+// Drag-and-drop helpers
+// ---------------------------------------------------------------------------
+
+/** Return the lowercased file extension including the dot, or "" if none. */
+function getExtension(filename: string): string {
+  const dot = filename.lastIndexOf(".");
+  if (dot === -1 || dot === 0) return "";
+  return filename.slice(dot).toLowerCase();
+}
+
+interface CollectedFile {
+  file: File;
+  /** Full path relative to the DataTransferItem root (includes root folder name). */
+  relativePath: string;
+}
+
+/**
+ * Recursively collect all File objects from a FileSystemDirectoryEntry.
+ * Mutates `result`, `totalFiles`, and `totalBytes` counters and throws a
+ * `"LIMIT_EXCEEDED"` string-error as soon as a limit is breached so we can
+ * bail out of the recursion early without reading any file contents.
+ */
+async function collectEntries(
+  entry: FileSystemEntry,
+  result: CollectedFile[],
+  counters: { files: number; bytes: number }
+): Promise<void> {
+  if (entry.isFile) {
+    const fileEntry = entry as FileSystemFileEntry;
+    const file = await new Promise<File>((resolve, reject) =>
+      fileEntry.file(resolve, reject)
+    );
+
+    counters.files += 1;
+    counters.bytes += file.size;
+
+    if (counters.files > DROP_MAX_FILES || counters.bytes > DROP_MAX_BYTES) {
+      throw new Error("LIMIT_EXCEEDED");
+    }
+
+    result.push({ file, relativePath: entry.fullPath });
+  } else if (entry.isDirectory) {
+    const dirEntry = entry as FileSystemDirectoryEntry;
+    const reader = dirEntry.createReader();
+
+    // readEntries may return results in batches; keep reading until empty.
+    let batch: FileSystemEntry[] = [];
+    do {
+      batch = await new Promise<FileSystemEntry[]>((resolve, reject) =>
+        reader.readEntries(resolve, reject)
+      );
+      for (const child of batch) {
+        await collectEntries(child, result, counters);
+      }
+    } while (batch.length > 0);
+  }
+}
 
 interface SkillEditorProps {
   value: string;
@@ -212,6 +310,13 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
   // Expanded folders state
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 
+  // Drag-and-drop state
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [dropError, setDropError] = useState<string | null>(null);
+  const [isProcessingDrop, setIsProcessingDrop] = useState(false);
+  // Track nested drag events so dragLeave doesn't fire on child elements
+  const dragCounterRef = useRef(0);
+
   // Build tree structure from files
   const fileTree = useMemo(() => buildFileTree(files), [files]);
 
@@ -370,6 +475,145 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
     editorRef.current = editor;
   }, []);
 
+  // ---------------------------------------------------------------------------
+  // Drag-and-drop handlers
+  // ---------------------------------------------------------------------------
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current += 1;
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = "copy";
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current -= 1;
+    if (dragCounterRef.current === 0) {
+      setIsDragOver(false);
+    }
+  }, []);
+
+  const handleDrop = useCallback(
+    async (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounterRef.current = 0;
+      setIsDragOver(false);
+      setDropError(null);
+
+      const items = Array.from(e.dataTransfer.items);
+      if (items.length === 0) return;
+
+      // Expect exactly one dropped item which must be a directory.
+      const rootItem = items[0];
+      if (!rootItem || rootItem.kind !== "file") return;
+
+      const rootEntry = rootItem.webkitGetAsEntry?.();
+      if (!rootEntry) return;
+
+      if (!rootEntry.isDirectory) {
+        setDropError(t("dropErrorNotFolder"));
+        return;
+      }
+
+      setIsProcessingDrop(true);
+      try {
+        // Pre-flight: recursively collect all entries, aborting on limit.
+        const collected: CollectedFile[] = [];
+        const counters = { files: 0, bytes: 0 };
+
+        try {
+          await collectEntries(rootEntry, collected, counters);
+        } catch (err) {
+          if (err instanceof Error && err.message === "LIMIT_EXCEEDED") {
+            setDropError(t("dropErrorTooLarge"));
+            return;
+          }
+          throw err;
+        }
+
+        // The root folder name is the first path segment (e.g. "my-skill").
+        const rootFolderName = rootEntry.name;
+
+        // Validate: skill.nd.json must exist directly in the root folder.
+        const hasSkillManifest = collected.some(
+          ({ relativePath }) =>
+            relativePath === `/${rootFolderName}/skill.nd.json`
+        );
+        if (!hasSkillManifest) {
+          setDropError(t("dropErrorNoManifest"));
+          return;
+        }
+
+        // Filter by allowed extensions.
+        const validFiles = collected.filter(({ file }) => {
+          const ext = getExtension(file.name);
+          // For dotfiles like ".env" getExtension returns ""; fall back to
+          // checking the whole filename (lowercased) against the allowed set.
+          return ext !== "" ? ALLOWED_DROP_EXTENSIONS.has(ext) : ALLOWED_DROP_EXTENSIONS.has(file.name.toLowerCase());
+        });
+
+        // Read contents in parallel.
+        const rootPrefix = `/${rootFolderName}/`;
+        const skillFiles: SkillFile[] = await Promise.all(
+          validFiles.map(async ({ file, relativePath }) => {
+            // Strip leading "/" and root folder name to get relative path.
+            // e.g. "/my-skill/src/index.ts" → "src/index.ts"
+            const withoutRoot = relativePath.startsWith(rootPrefix)
+              ? relativePath.slice(rootPrefix.length)
+              : relativePath.replace(/^\//, "");
+
+            // Map SKILL.md (if present) → DEFAULT_SKILL_FILE constant.
+            const filename =
+              withoutRoot.toLowerCase() === DEFAULT_SKILL_FILE.toLowerCase()
+                ? DEFAULT_SKILL_FILE
+                : withoutRoot;
+
+            const content = await file.text();
+            return { filename, content };
+          })
+        );
+
+        // Ensure SKILL.md is always present (add empty one if not dropped).
+        const hasSkillMd = skillFiles.some(
+          (f) => f.filename === DEFAULT_SKILL_FILE
+        );
+        if (!hasSkillMd) {
+          skillFiles.unshift({ filename: DEFAULT_SKILL_FILE, content: "" });
+        }
+
+        // Replace all existing files.
+        updateFiles(skillFiles);
+        // Reset tab state to SKILL.md.
+        setActiveFile(DEFAULT_SKILL_FILE);
+        setOpenTabs([DEFAULT_SKILL_FILE]);
+        // Expand top-level folders automatically.
+        const topLevelFolders = new Set(
+          skillFiles
+            .map((f) => {
+              const parts = f.filename.split("/");
+              return parts.length > 1 ? parts[0] : null;
+            })
+            .filter((p): p is string => p !== null)
+        );
+        setExpandedFolders(topLevelFolders);
+      } catch {
+        setDropError(t("dropErrorGeneric"));
+      } finally {
+        setIsProcessingDrop(false);
+      }
+    },
+    [t, updateFiles]
+  );
+
   // File icon based on extension
   const getFileIcon = (filename: string) => {
     const _ext = filename.split(".").pop()?.toLowerCase();
@@ -380,13 +624,66 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
   return (
     <div
       className={cn(
-        "flex border rounded-lg overflow-hidden bg-background",
+        "flex border rounded-lg overflow-hidden bg-background relative",
         className
       )}
       style={{ height: "500px" }}
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
     >
+      {/* Drag-over overlay */}
+      {isDragOver && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-background/80 border-2 border-dashed border-primary rounded-lg pointer-events-none"
+        >
+          <UploadCloud className="h-10 w-10 text-primary" />
+          <p className="text-sm font-medium text-primary">{t("dropFolderHere")}</p>
+        </div>
+      )}
+
+      {/* Processing overlay */}
+      {isProcessingDrop && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-background/80 rounded-lg pointer-events-none"
+        >
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" aria-hidden="true" />
+          <p className="text-sm text-muted-foreground">{t("dropProcessing")}</p>
+        </div>
+      )}
+
+      {/* Drop error overlay */}
+      {dropError && (
+        <div
+          role="alert"
+          className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-background/95 rounded-lg p-6"
+        >
+          <AlertCircle className="h-10 w-10 text-destructive shrink-0" aria-hidden="true" />
+          <p className="text-center text-sm font-medium text-destructive max-w-xs">
+            {dropError}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setDropError(null)}
+          >
+            {tCommon("close")}
+          </Button>
+        </div>
+      )}
+
       {/* Sidebar - File Tree */}
-      <div className="w-56 border-r bg-muted/30 flex flex-col">
+      <div
+        className={cn(
+          "w-56 border-r bg-muted/30 flex flex-col transition-colors",
+          isDragOver && "bg-primary/5"
+        )}
+      >
         {/* Sidebar Header */}
         <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/50">
           <div className="flex items-center gap-2 text-sm font-medium">
@@ -424,7 +721,8 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
 
         {/* Sidebar Footer - File Count */}
         <div className="px-3 py-2 border-t bg-muted/50 text-xs text-muted-foreground">
-          {files.length} {files.length === 1 ? t("file") : t("files")}
+          <div>{files.length} {files.length === 1 ? t("file") : t("files")}</div>
+          <div className="mt-0.5 text-[10px] opacity-60 leading-tight">{t("dropHint")}</div>
         </div>
       </div>
 

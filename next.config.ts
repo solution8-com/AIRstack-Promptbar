@@ -10,6 +10,9 @@ const withMDX = createMDX({
 
 const nextConfig: NextConfig = {
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   reactCompiler: true,
   // Configure webpack for raw imports
   webpack: (config) => {

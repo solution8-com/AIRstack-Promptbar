@@ -193,7 +193,8 @@
       "structured": "Estruturado",
       "document": "Documento",
       "skill": "Habilidade",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Guia"
     },
     "inputType": "Prompt do Usuário",
     "outputType": "Resposta da IA",
@@ -392,7 +393,11 @@
     "learnHowToWritePrompts": "Aprenda a escrever prompts eficazes →",
     "structuredFormatDetected": "Formato {format} detectado",
     "structuredFormatWarningDescription": "O conteúdo do seu prompt parece ser dados estruturados. Considere mudar para o modo estruturado para melhor destaque de sintaxe e validação.",
-    "switchToStructured": "Mudar para {format}"
+    "switchToStructured": "Mudar para {format}",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating...",
+    "guideNotFound": "Guia Não Encontrado",
+    "readTheGuide": "Leia o guia: {title}"
   },
   "changeRequests": {
     "title": "Solicitações de Alteração",
@@ -629,7 +634,9 @@
       "currentCredits": "Atualmente: {remaining}/{limit} créditos restantes",
       "creditsUpdated": "Créditos atualizados com sucesso",
       "creditsUpdateFailed": "Falha ao atualizar créditos",
-      "save": "Salvar"
+      "save": "Salvar",
+      "adminZone": "Zona do Administrador",
+      "deleteUser": "Excluir Usuário"
     },
     "categories": {
       "title": "Gerenciamento de Categorias",
@@ -695,7 +702,8 @@
       "editTitle": "Editar Tag",
       "editDescription": "Atualize os detalhes da tag",
       "deleteConfirmTitle": "Excluir Tag?",
-      "deleteConfirmDescription": "Isso removerá a tag de todos os prompts."
+      "deleteConfirmDescription": "Isso removerá a tag de todos os prompts.",
+      "deleteHoverHint": "Excluir tag"
     },
     "webhooks": {
       "title": "Gerenciamento de Webhooks",
@@ -2277,6 +2285,10 @@
     "cancel": "Cancelar",
     "submit": "Enviar",
     "communityExamples": "Exemplos da Comunidade",
-    "userExample": "Exemplo do usuário"
+    "userExample": "Exemplo do usuário",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

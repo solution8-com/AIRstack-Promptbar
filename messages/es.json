@@ -193,7 +193,8 @@
       "structured": "Estructurado",
       "document": "Documento",
       "skill": "Habilidad",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Guía"
     },
     "inputType": "Prompt del Usuario",
     "outputType": "Respuesta de IA",
@@ -366,7 +367,7 @@
       "errorProcessing": "Error de procesamiento..."
     },
     "update": "Actualizar",
-    "createButton": "Crear",
+    "createButton": "Create Prompt",
     "pin": "Fijar en Perfil",
     "unpin": "Desfijar",
     "pinned": "Fijado en el perfil",
@@ -392,7 +393,16 @@
     "learnHowToWritePrompts": "Aprende a escribir prompts efectivos →",
     "structuredFormatDetected": "Formato {format} detectado",
     "structuredFormatWarningDescription": "El contenido de tu prompt parece ser datos estructurados. Considera cambiar al modo estructurado para mejor resaltado de sintaxis y validación.",
-    "switchToStructured": "Cambiar a {format}"
+    "switchToStructured": "Cambiar a {format}",
+    "titlePlaceholderHack": "Enter a title for your hack",
+    "descriptionPlaceholderHack": "Optional description of your hack",
+    "inputTypeHack": "Hack Implementation Guide",
+    "createButtonHack": "Publish Your Hack",
+    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating...",
+    "guideNotFound": "Guía No Encontrada",
+    "readTheGuide": "Leer la guía: {title}"
   },
   "changeRequests": {
     "title": "Solicitudes de Cambio",
@@ -629,7 +639,9 @@
       "currentCredits": "Actualmente: {remaining}/{limit} créditos restantes",
       "creditsUpdated": "Créditos actualizados correctamente",
       "creditsUpdateFailed": "Error al actualizar créditos",
-      "save": "Guardar"
+      "save": "Guardar",
+      "adminZone": "Zona de Administrador",
+      "deleteUser": "Eliminar Usuario"
     },
     "categories": {
       "title": "Gestión de Categorías",
@@ -695,7 +707,8 @@
       "editTitle": "Editar Etiqueta",
       "editDescription": "Actualizar detalles de la etiqueta",
       "deleteConfirmTitle": "¿Eliminar Etiqueta?",
-      "deleteConfirmDescription": "Esto eliminará la etiqueta de todos los prompts."
+      "deleteConfirmDescription": "Esto eliminará la etiqueta de todos los prompts.",
+      "deleteHoverHint": "Eliminar etiqueta"
     },
     "webhooks": {
       "title": "Gestión de Webhooks",
@@ -2278,6 +2291,10 @@
     "cancel": "Cancelar",
     "submit": "Enviar",
     "communityExamples": "Ejemplos de la Comunidad",
-    "userExample": "Ejemplo de usuario"
+    "userExample": "Ejemplo de usuario",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

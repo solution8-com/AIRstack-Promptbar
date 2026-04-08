@@ -6,13 +6,14 @@ import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, Upload, X, ArrowDown, Image as ImageIcon, Video, Volume2, Paperclip, Search, Sparkles, BookOpen, ExternalLink, ChevronDown, Settings2 } from "lucide-react";
+import { Loader2, Upload, X, ArrowDown, Image as ImageIcon, Video, Volume2, Paperclip, Search, Sparkles, BookOpen, ExternalLink, ChevronDown, Settings2, Info } from "lucide-react";
 import Link from "next/link";
 import { VariableToolbar } from "./variable-toolbar";
 import { VariableWarning } from "./variable-warning";
 import { VariableHint } from "./variable-hint";
 import { StructuredFormatWarning } from "./structured-format-warning";
 import { ContributorSearch } from "./contributor-search";
+import { MarkdownPreview } from "./markdown-preview";
 import { PromptBuilder, type PromptBuilderHandle } from "./prompt-builder";
 import { MediaGenerator } from "./media-generator";
 import { SkillEditor } from "./skill-editor";
@@ -20,11 +21,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   generateSkillContentWithFrontmatter,
   updateSkillFrontmatter,
   validateSkillFrontmatter,
-  DEFAULT_SKILL_FILE,
 } from "@/lib/skill-files";
 import {
   Form,
@@ -381,6 +382,15 @@ interface Contributor {
   avatar: string | null;
 }
 
+interface TagCreationResponse {
+  id?: string;
+  name?: string;
+  slug?: string;
+  color?: string;
+  message?: string;
+  error?: string;
+}
+
 interface PromptFormProps {
   categories: Array<{
     id: string;
@@ -401,6 +411,7 @@ interface PromptFormProps {
   aiGenerationEnabled?: boolean;
   aiModelName?: string;
   initialPromptRequest?: string;
+  isInternalHackMode?: boolean;
 }
 
 // Read builder data from sessionStorage before form initialization
@@ -420,11 +431,13 @@ function getBuilderData(): { content?: string; type?: string; format?: string } 
   }
 }
 
-export function PromptForm({ categories, tags, initialData, initialContributors = [], promptId, mode = "create", aiGenerationEnabled = false, aiModelName, initialPromptRequest }: PromptFormProps) {
+export function PromptForm({ categories, tags, initialData, initialContributors = [], promptId, mode = "create", aiGenerationEnabled = false, aiModelName, initialPromptRequest, isInternalHackMode = false }: PromptFormProps) {
   const router = useRouter();
   const t = useTranslations("prompts");
   const tCommon = useTranslations("common");
   const [isLoading, setIsLoading] = useState(false);
+  const [availableTags, setAvailableTags] = useState(tags);
+  const [isCreatingTag, setIsCreatingTag] = useState(false);
   const [contributors, setContributors] = useState<Contributor[]>(initialContributors);
   const [usedAiButtons, setUsedAiButtons] = useState<Set<string>>(new Set());
   const builderRef = useRef<PromptBuilderHandle>(null);
@@ -432,6 +445,13 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
 
   // Get builder data on first render
   const [builderData] = useState(() => getBuilderData());
+
+  // Helper function to get page heading based on mode
+  const getPageHeading = () => {
+    if (mode === "edit") return t("edit");
+    if (isInternalHackMode) return t("createInternalHack");
+    return t("create");
+  };
 
   const promptSchema = createPromptSchema(t);
   const form = useForm<PromptFormValues>({
@@ -443,10 +463,10 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
         ? prettifyJson(initialData.content) 
         : (initialData?.content || "")),
       type: builderData?.format ? "TEXT" : (builderData?.type as "TEXT" | "IMAGE" | "VIDEO" | "AUDIO" || initialData?.type || "TEXT"),
-      structuredFormat: (builderData?.format as "JSON" | "YAML") || initialData?.structuredFormat || undefined,
+      structuredFormat: isInternalHackMode ? "YAML" : ((builderData?.format as "JSON" | "YAML") || initialData?.structuredFormat || undefined),
       categoryId: initialData?.categoryId || "",
       tagIds: initialData?.tagIds || [],
-      isPrivate: initialData?.isPrivate || false,
+      isPrivate: isInternalHackMode ? false : (initialData?.isPrivate || false),
       mediaUrl: initialData?.mediaUrl || "",
       requiresMediaUpload: initialData?.requiresMediaUpload || false,
       requiredMediaType: initialData?.requiredMediaType || "IMAGE",
@@ -476,6 +496,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
   const promptContent = form.watch("content");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const codeEditorRef = useRef<CodeEditorHandle>(null);
+  const previewSectionRef = useRef<HTMLDivElement>(null);
 
   // Warn user before leaving page with unsaved changes
   const isDirty = form.formState.isDirty;
@@ -592,17 +613,17 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
       codeEditorRef.current.insertAtCursor(variable);
       return;
     }
-    
+
     // For text prompts using textarea
     const textarea = textareaRef.current;
     const currentContent = form.getValues("content");
-    
+
     if (textarea) {
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
       const newContent = currentContent.slice(0, start) + variable + currentContent.slice(end);
       form.setValue("content", newContent);
-      
+
       // Set cursor position after inserted variable
       setTimeout(() => {
         textarea.focus();
@@ -611,6 +632,193 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
     } else {
       // Fallback: append to end
       form.setValue("content", currentContent + variable);
+    }
+  };
+
+  // Helper function to convert HTML to markdown
+  const htmlToMarkdown = (html: string): string => {
+    // Simple HTML to Markdown converter
+    let markdown = html;
+
+    // Handle headings
+    markdown = markdown.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n');
+    markdown = markdown.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n');
+    markdown = markdown.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n');
+    markdown = markdown.replace(/<h4[^>]*>(.*?)<\/h4>/gi, '#### $1\n');
+    markdown = markdown.replace(/<h5[^>]*>(.*?)<\/h5>/gi, '##### $1\n');
+    markdown = markdown.replace(/<h6[^>]*>(.*?)<\/h6>/gi, '###### $1\n');
+
+    // Handle bold and italic
+    markdown = markdown.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**');
+    markdown = markdown.replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**');
+    markdown = markdown.replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*');
+    markdown = markdown.replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*');
+
+    // Handle links
+    markdown = markdown.replace(/<a[^>]*href=["']([^"']*)["'][^>]*>(.*?)<\/a>/gi, '[$2]($1)');
+
+    // Handle lists
+    markdown = markdown.replace(/<ul[^>]*>(.*?)<\/ul>/gi, (match, content) => {
+      const items = content.match(/<li[^>]*>(.*?)<\/li>/gi);
+      if (!items) return match;
+      return items.map((item: string) => {
+        const text = item.replace(/<li[^>]*>(.*?)<\/li>/i, '$1').trim();
+        return `- ${text}`;
+      }).join('\n') + '\n';
+    });
+
+    markdown = markdown.replace(/<ol[^>]*>(.*?)<\/ol>/gi, (match, content) => {
+      const items = content.match(/<li[^>]*>(.*?)<\/li>/gi);
+      if (!items) return match;
+      return items.map((item: string, index: number) => {
+        const text = item.replace(/<li[^>]*>(.*?)<\/li>/i, '$1').trim();
+        return `${index + 1}. ${text}`;
+      }).join('\n') + '\n';
+    });
+
+    // Handle code blocks
+    markdown = markdown.replace(/<pre[^>]*><code[^>]*>([\s\S]*?)<\/code><\/pre>/gi, '```\n$1\n```\n');
+    markdown = markdown.replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`');
+
+    // Handle blockquotes
+    markdown = markdown.replace(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi, (match, content) => {
+      return content.split('\n').map((line: string) => `> ${line.trim()}`).join('\n') + '\n';
+    });
+
+    // Handle paragraphs and line breaks
+    markdown = markdown.replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n');
+    markdown = markdown.replace(/<br\s*\/?>/gi, '\n');
+    markdown = markdown.replace(/<div[^>]*>(.*?)<\/div>/gi, '$1\n');
+
+    // Remove remaining HTML tags
+    markdown = markdown.replace(/<[^>]+>/g, '');
+
+    // Decode HTML entities
+    markdown = markdown.replace(/&nbsp;/g, ' ');
+    markdown = markdown.replace(/&lt;/g, '<');
+    markdown = markdown.replace(/&gt;/g, '>');
+    markdown = markdown.replace(/&quot;/g, '"');
+    markdown = markdown.replace(/&#39;/g, "'");
+    markdown = markdown.replace(/&amp;/g, '&');
+
+    // Clean up excessive newlines (but preserve intentional blank lines)
+    markdown = markdown.replace(/\n{3,}/g, '\n\n');
+
+    return markdown.trim();
+  };
+
+  // Helper to beautify markdown
+  const beautifyMarkdown = (text: string): string => {
+    // Normalize line endings
+    let beautified = text.replace(/\r\n/g, '\n');
+
+    // Preserve code blocks and their formatting
+    const codeBlocks: string[] = [];
+    beautified = beautified.replace(/(```[\s\S]*?```)/g, (match) => {
+      codeBlocks.push(match);
+      return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+    });
+
+    // Add blank lines around headings
+    const headingLines = beautified.split('\n');
+    const processedLines: string[] = [];
+    for (let i = 0; i < headingLines.length; i++) {
+      const line = headingLines[i];
+      const isHeading = /^#{1,6}\s/.test(line);
+
+      if (isHeading) {
+        const hasPrevious = processedLines.length > 0;
+        const previousLine = hasPrevious ? processedLines[processedLines.length - 1] : "";
+
+        // Ensure a blank line before the heading if the previous line is non-empty
+        if (hasPrevious && previousLine.trim() !== "") {
+          processedLines.push("");
+        }
+
+        processedLines.push(line);
+
+        const nextLine = i + 1 < headingLines.length ? headingLines[i + 1] : undefined;
+
+        // Ensure a blank line after the heading if the next line exists and is non-empty
+        if (nextLine !== undefined && nextLine.trim() !== "") {
+          processedLines.push("");
+        }
+      } else {
+        processedLines.push(line);
+      }
+    }
+    beautified = processedLines.join('\n');
+    // Ensure consistent list formatting
+    beautified = beautified.replace(/^([*\-+])\s*/gm, '- ');
+    beautified = beautified.replace(/^(\d+\.)\s*/gm, '$1 ');
+
+    // Restore code blocks
+    codeBlocks.forEach((block, index) => {
+      beautified = beautified.replace(`__CODE_BLOCK_${index}__`, block);
+    });
+
+    // Clean up excessive blank lines
+    beautified = beautified.replace(/\n{3,}/g, '\n\n');
+
+    return beautified.trim();
+  };
+
+  // Handle paste events for internal hack mode
+  const handlePaste = (e: React.ClipboardEvent) => {
+    if (!isInternalHackMode) return;
+
+    const clipboardData = e.clipboardData;
+    if (!clipboardData) return;
+
+    // Check if HTML content is available (rich text)
+    const htmlData = clipboardData.getData('text/html');
+    const plainData = clipboardData.getData('text/plain');
+
+    if (htmlData) {
+      // Convert HTML to markdown
+      e.preventDefault();
+      const markdown = htmlToMarkdown(htmlData);
+      const beautified = beautifyMarkdown(markdown);
+
+      const currentContent = form.getValues("content");
+      const textarea = textareaRef.current;
+
+      if (textarea) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const newContent = currentContent.slice(0, start) + beautified + currentContent.slice(end);
+        form.setValue("content", newContent, { shouldDirty: true });
+
+        // Set cursor position after pasted content
+        setTimeout(() => {
+          textarea.focus();
+          textarea.setSelectionRange(start + beautified.length, start + beautified.length);
+        }, 0);
+      } else {
+        form.setValue("content", currentContent + beautified, { shouldDirty: true });
+      }
+    } else if (plainData) {
+      // Beautify plain markdown
+      e.preventDefault();
+      const beautified = beautifyMarkdown(plainData);
+
+      const currentContent = form.getValues("content");
+      const textarea = textareaRef.current;
+
+      if (textarea) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const newContent = currentContent.slice(0, start) + beautified + currentContent.slice(end);
+        form.setValue("content", newContent, { shouldDirty: true });
+
+        // Set cursor position after pasted content
+        setTimeout(() => {
+          textarea.focus();
+          textarea.setSelectionRange(start + beautified.length, start + beautified.length);
+        }, 0);
+      } else {
+        form.setValue("content", currentContent + beautified, { shouldDirty: true });
+      }
     }
   };
 
@@ -681,6 +889,50 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
     }
   };
 
+  const addTagIfNotPresent = (tagId: string) => {
+    const currentTagIds = form.getValues("tagIds");
+    if (!currentTagIds.includes(tagId)) {
+      form.setValue("tagIds", [...currentTagIds, tagId]);
+    }
+  };
+
+  const handleCreateTag = async () => {
+    const name = tagSearch.trim();
+    if (!name || isCreatingTag) return;
+
+    setIsCreatingTag(true);
+    try {
+      const response = await fetch("/api/tags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      const result: TagCreationResponse = await response.json();
+
+      if (!response.ok || !result?.id) {
+        if (result?.error === "slug_conflict") {
+          toast.error(result.message || tCommon("somethingWentWrong"));
+          return;
+        }
+        throw new Error(result?.message || result?.error || "Failed to create tag");
+      }
+
+      setAvailableTags((prev) => {
+        if (prev.some((tag) => tag.id === result.id)) {
+          return prev;
+        }
+        return [...prev, result].sort((a, b) => a.name.localeCompare(b.name));
+      });
+      addTagIfNotPresent(result.id);
+      setTagSearch("");
+      tagInputRef.current?.focus();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : tCommon("somethingWentWrong"));
+    } finally {
+      setIsCreatingTag(false);
+    }
+  };
+
   const handleAiGenerate = (field: string, label: string) => {
     if (usedAiButtons.has(field) || !builderRef.current) return;
     setUsedAiButtons(prev => new Set(prev).add(field));
@@ -711,14 +963,47 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Header: Page title + Private Switch */}
+          {/* Header: Page title + Mode Toggle + Private Switch */}
           <div className="flex items-center justify-between mb-2">
-            <h1 className="text-lg font-semibold">{mode === "edit" ? t("edit") : t("create")}</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg font-semibold">
+                {getPageHeading()}
+              </h1>
+              {/* Inline Mode Toggle for Internal Hack */}
+              {mode === "create" && (
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="mode-toggle-inline"
+                    checked={isInternalHackMode}
+                    onCheckedChange={(checked) => {
+                      const params = new URLSearchParams(window.location.search);
+                      if (checked) {
+                        params.set("mode", "internal-hack");
+                      } else {
+                        params.delete("mode");
+                      }
+                      const queryString = params.toString();
+                      router.push(`/prompts/new${queryString ? `?${queryString}` : ""}`);
+                    }}
+                  />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="inline-flex items-center justify-center h-4 w-4 rounded-full border border-muted-foreground/40 text-muted-foreground/60 hover:text-muted-foreground cursor-help">
+                        <Info className="h-3 w-3" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs text-xs">{t("modeToggleTooltip")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              )}
+            </div>
             <div className="flex items-center gap-3">
               {aiGenerationEnabled && (
                 <PromptBuilder
                   ref={builderRef}
-                  availableTags={tags}
+                  availableTags={availableTags}
                   availableCategories={categories}
                   currentState={currentBuilderState}
                   onStateChange={handleBuilderStateChange}
@@ -726,34 +1011,38 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                   initialPromptRequest={initialPromptRequest}
                 />
               )}
-              <FormField
-                control={form.control}
-                name="isPrivate"
-                render={({ field }) => (
-                  <FormItem className="flex items-center gap-2">
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel className="!mt-0 text-sm font-normal">{t("promptPrivate")}</FormLabel>
-                  </FormItem>
-                )}
-              />
+              {!isInternalHackMode && (
+                <FormField
+                  control={form.control}
+                  name="isPrivate"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center gap-2">
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel className="!mt-0 text-sm font-normal">{t("promptPrivate")}</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
           </div>
 
         {/* ===== PROMPT WRITING GUIDE LINK ===== */}
-        <Link
-          href="/how_to_write_effective_prompts"
-          target="_blank"
-          className="flex items-center gap-2 p-3 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors text-sm text-muted-foreground hover:text-foreground"
-        >
-          <BookOpen className="h-4 w-4 text-primary" />
-          <span>{t("learnHowToWritePrompts")}</span>
-          <ExternalLink className="h-3 w-3 ml-auto" />
-        </Link>
+        {!isInternalHackMode && (
+          <Link
+            href="/how_to_write_effective_prompts"
+            target="_blank"
+            className="flex items-center gap-2 p-3 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors text-sm text-muted-foreground hover:text-foreground"
+          >
+            <BookOpen className="h-4 w-4 text-primary" />
+            <span>{t("learnHowToWritePrompts")}</span>
+            <ExternalLink className="h-3 w-3 ml-auto" />
+          </Link>
+        )}
 
         {/* ===== METADATA SECTION ===== */}
         <div className="space-y-4 pb-6 border-b">
@@ -769,7 +1058,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                     <AiGenerateButton field="title" label="Title" />
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder={t("titlePlaceholder")} {...field} />
+                    <Input placeholder={isInternalHackMode ? t("titlePlaceholderHack") : t("titlePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -831,7 +1120,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                 </FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder={t("descriptionPlaceholder")}
+                    placeholder={isInternalHackMode ? t("descriptionPlaceholderHack") : t("descriptionPlaceholder")}
                     className="resize-none"
                     rows={2}
                     {...field}
@@ -847,12 +1136,12 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
             control={form.control}
             name="tagIds"
             render={() => {
-              const filteredTags = tags.filter(
+              const filteredTags = availableTags.filter(
                 (tag) =>
                   !selectedTags.includes(tag.id) &&
                   tag.name.toLowerCase().includes(tagSearch.toLowerCase())
               );
-              const selectedTagObjects = tags.filter((tag) => selectedTags.includes(tag.id));
+              const selectedTagObjects = availableTags.filter((tag) => selectedTags.includes(tag.id));
 
               return (
                 <FormItem>
@@ -931,7 +1220,14 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                     )}
                     {tagDropdownOpen && tagSearch && filteredTags.length === 0 && (
                       <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-md p-3 text-sm text-muted-foreground">
-                        {t("noTagsFound")}
+                        <button
+                          type="button"
+                          onClick={handleCreateTag}
+                          disabled={isCreatingTag}
+                          className="w-full text-left hover:text-foreground disabled:opacity-70"
+                        >
+                          {isCreatingTag ? t("creatingTag") : t("createTag", { name: tagSearch.trim() })}
+                        </button>
                       </div>
                     )}
                   </div>
@@ -942,223 +1238,235 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
           />
 
           {/* Contributors */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium block">{t("promptContributors")}</label>
-            <p className="text-xs text-muted-foreground">{t("contributorsDescription")}</p>
-            <ContributorSearch
-              selectedUsers={contributors}
-              onSelect={(user) => setContributors((prev) => [...prev, user])}
-              onRemove={(userId) => setContributors((prev) => prev.filter((u) => u.id !== userId))}
-            />
-          </div>
+          {!isInternalHackMode && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium block">{t("promptContributors")}</label>
+              <p className="text-xs text-muted-foreground">{t("contributorsDescription")}</p>
+              <ContributorSearch
+                selectedUsers={contributors}
+                onSelect={(user) => setContributors((prev) => [...prev, user])}
+                onRemove={(userId) => setContributors((prev) => prev.filter((u) => u.id !== userId))}
+                adminOnly={isInternalHackMode}
+              />
+            </div>
+          )}
 
-          {/* Advanced Section */}
-          <div className="border rounded-lg">
-            <button
-              type="button"
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="flex items-center justify-between w-full p-3 text-sm font-medium text-left hover:bg-muted/50 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <Settings2 className="h-4 w-4 text-muted-foreground" />
-                {t("advancedOptions")}
-                {(bestWithModels.length > 0 || bestWithMCP.length > 0) && (
-                  <Badge variant="secondary" className="text-[10px] h-5">{bestWithModels.length + bestWithMCP.length}</Badge>
-                )}
-              </span>
-              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
-            </button>
-            {showAdvanced && (
-              <div className="p-3 space-y-4 border-t">
-                {/* Works Best With Models */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium block">{t("worksBestWithModels")}</label>
-                  <p className="text-xs text-muted-foreground">{t("worksBestWithModelsDescription")}</p>
-                  {bestWithModels.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {bestWithModels.map((slug) => {
-                        const model = AI_MODELS[slug as keyof typeof AI_MODELS];
-                        return (
-                          <Badge key={slug} variant="secondary" className="pr-1 flex items-center gap-1">
-                            {model?.name || slug}
+          {/* Advanced Section - Hidden in Internal Hack Mode */}
+          {!isInternalHackMode && (
+            <div className="border rounded-lg">
+              <button
+                type="button"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="flex items-center justify-between w-full p-3 text-sm font-medium text-left hover:bg-muted/50 transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <Settings2 className="h-4 w-4 text-muted-foreground" />
+                  {t("advancedOptions")}
+                  {(bestWithModels.length > 0 || bestWithMCP.length > 0) && (
+                    <Badge variant="secondary" className="text-[10px] h-5">{bestWithModels.length + bestWithMCP.length}</Badge>
+                  )}
+                </span>
+                <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
+              </button>
+              {showAdvanced && (
+                <div className="p-3 space-y-4 border-t">
+                  {/* Works Best With Models */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium block">{t("worksBestWithModels")}</label>
+                    <p className="text-xs text-muted-foreground">{t("worksBestWithModelsDescription")}</p>
+                    {bestWithModels.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {bestWithModels.map((slug) => {
+                          const model = AI_MODELS[slug as keyof typeof AI_MODELS];
+                          return (
+                            <Badge key={slug} variant="secondary" className="pr-1 flex items-center gap-1">
+                              {model?.name || slug}
+                              <button
+                                type="button"
+                                onClick={() => form.setValue("bestWithModels", bestWithModels.filter((s) => s !== slug))}
+                                className="ml-1 rounded-full hover:bg-muted p-0.5"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {bestWithModels.length < 3 && (
+                      <Select
+                        value=""
+                        onValueChange={(slug) => {
+                          if (slug && !bestWithModels.includes(slug)) {
+                            form.setValue("bestWithModels", [...bestWithModels, slug]);
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="w-full sm:w-64 h-8 text-xs">
+                          <SelectValue placeholder={t("selectModel")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(modelsByProvider).map(([provider, models]) => (
+                            <div key={provider}>
+                              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{provider}</div>
+                              {models
+                                .filter((m) => !bestWithModels.includes(m.slug))
+                                .map((model) => (
+                                  <SelectItem key={model.slug} value={model.slug}>
+                                    {model.name}
+                                  </SelectItem>
+                                ))}
+                            </div>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
+                  {/* Works Best With MCP */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium block">{t("worksBestWithMCP")}</label>
+                    <p className="text-xs text-muted-foreground">{t("worksBestWithMCPDescription")}</p>
+                    {bestWithMCP.length > 0 && (
+                      <div className="space-y-1.5">
+                        {bestWithMCP.map((mcp, index) => (
+                          <div key={index} className="flex items-center gap-2 p-2 rounded border bg-muted/30 text-xs">
+                            <code className="flex-1 break-all">{mcp.command}</code>
+                            {mcp.tools && mcp.tools.length > 0 && (
+                              <span className="text-muted-foreground">({mcp.tools.join(", ")})</span>
+                            )}
                             <button
                               type="button"
-                              onClick={() => form.setValue("bestWithModels", bestWithModels.filter((s) => s !== slug))}
-                              className="ml-1 rounded-full hover:bg-muted p-0.5"
+                              onClick={() => form.setValue("bestWithMCP", bestWithMCP.filter((_, i) => i !== index))}
+                              className="p-1 hover:bg-muted rounded"
                             >
                               <X className="h-3 w-3" />
                             </button>
-                          </Badge>
-                        );
-                      })}
-                    </div>
-                  )}
-                  {bestWithModels.length < 3 && (
-                    <Select
-                      value=""
-                      onValueChange={(slug) => {
-                        if (slug && !bestWithModels.includes(slug)) {
-                          form.setValue("bestWithModels", [...bestWithModels, slug]);
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="w-full sm:w-64 h-8 text-xs">
-                        <SelectValue placeholder={t("selectModel")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(modelsByProvider).map(([provider, models]) => (
-                          <div key={provider}>
-                            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{provider}</div>
-                            {models
-                              .filter((m) => !bestWithModels.includes(m.slug))
-                              .map((model) => (
-                                <SelectItem key={model.slug} value={model.slug}>
-                                  {model.name}
-                                </SelectItem>
-                              ))}
                           </div>
                         ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                </div>
-
-                {/* Works Best With MCP */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium block">{t("worksBestWithMCP")}</label>
-                  <p className="text-xs text-muted-foreground">{t("worksBestWithMCPDescription")}</p>
-                  {bestWithMCP.length > 0 && (
-                    <div className="space-y-1.5">
-                      {bestWithMCP.map((mcp, index) => (
-                        <div key={index} className="flex items-center gap-2 p-2 rounded border bg-muted/30 text-xs">
-                          <code className="flex-1 break-all">{mcp.command}</code>
-                          {mcp.tools && mcp.tools.length > 0 && (
-                            <span className="text-muted-foreground">({mcp.tools.join(", ")})</span>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => form.setValue("bestWithMCP", bestWithMCP.filter((_, i) => i !== index))}
-                            className="p-1 hover:bg-muted rounded"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ))}
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder={t("mcpCommandPlaceholder")}
+                        value={newMcpCommand}
+                        onChange={(e) => setNewMcpCommand(e.target.value)}
+                        className="flex-1 text-xs h-8"
+                      />
+                      <Input
+                        placeholder={t("mcpToolsPlaceholder")}
+                        value={newMcpTools}
+                        onChange={(e) => setNewMcpTools(e.target.value)}
+                        className="w-28 text-xs h-8"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-2 text-xs"
+                        disabled={!newMcpCommand.trim()}
+                        onClick={() => {
+                          if (newMcpCommand.trim()) {
+                            const tools = newMcpTools.trim() ? newMcpTools.split(",").map(t => t.trim()).filter(Boolean) : undefined;
+                            form.setValue("bestWithMCP", [...bestWithMCP, { command: newMcpCommand.trim(), tools }]);
+                            setNewMcpCommand("");
+                            setNewMcpTools("");
+                          }
+                        }}
+                      >
+                        {t("add")}
+                      </Button>
                     </div>
-                  )}
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder={t("mcpCommandPlaceholder")}
-                      value={newMcpCommand}
-                      onChange={(e) => setNewMcpCommand(e.target.value)}
-                      className="flex-1 text-xs h-8"
-                    />
-                    <Input
-                      placeholder={t("mcpToolsPlaceholder")}
-                      value={newMcpTools}
-                      onChange={(e) => setNewMcpTools(e.target.value)}
-                      className="w-28 text-xs h-8"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-8 px-2 text-xs"
-                      disabled={!newMcpCommand.trim()}
-                      onClick={() => {
-                        if (newMcpCommand.trim()) {
-                          const tools = newMcpTools.trim() ? newMcpTools.split(",").map(t => t.trim()).filter(Boolean) : undefined;
-                          form.setValue("bestWithMCP", [...bestWithMCP, { command: newMcpCommand.trim(), tools }]);
-                          setNewMcpCommand("");
-                          setNewMcpTools("");
-                        }
-                      }}
-                    >
-                      {t("add")}
-                    </Button>
                   </div>
-                </div>
 
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* ===== INPUT SECTION ===== */}
         <div className="space-y-4 py-6">
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-semibold">{t("inputType")}</h2>
+            <h2 className="text-base font-semibold">{isInternalHackMode ? t("inputTypeHack") : t("inputType")}</h2>
           </div>
           
           {/* Input Type & Format selectors */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex items-center gap-3">
-              <Select 
-                value={promptType === "SKILL" ? "SKILL" : promptType === "TASTE" ? "TASTE" : (isStructuredInput ? "STRUCTURED" : "TEXT")} 
-                onValueChange={(v) => {
-                  if (v === "STRUCTURED") {
-                    form.setValue("structuredFormat", "JSON");
-                    form.setValue("type", "TEXT");
-                  } else if (v === "SKILL") {
-                    form.setValue("structuredFormat", undefined);
-                    form.setValue("type", "SKILL");
-                    // Auto-generate frontmatter from title and description
-                    const currentContent = form.getValues("content");
-                    const title = form.getValues("title");
-                    const description = form.getValues("description") || "";
-                    // Only generate if content is empty or doesn't look like skill content
-                    if (!currentContent || !currentContent.startsWith("---")) {
-                      form.setValue("content", generateSkillContentWithFrontmatter(title, description));
+          {isInternalHackMode ? (
+            // Internal Hack Mode: Show fixed "Hack Instructions" label only
+            <div className="px-4 py-2 rounded-md border bg-muted/20">
+              <span className="text-sm font-medium">{t("hackInstructionsLabel")}</span>
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="flex items-center gap-3">
+                <Select
+                  value={promptType === "SKILL" ? "SKILL" : promptType === "TASTE" ? "TASTE" : (isStructuredInput ? "STRUCTURED" : "TEXT")}
+                  onValueChange={(v) => {
+                    if (v === "STRUCTURED") {
+                      form.setValue("structuredFormat", "JSON");
+                      form.setValue("type", "TEXT");
+                    } else if (v === "SKILL") {
+                      form.setValue("structuredFormat", undefined);
+                      form.setValue("type", "SKILL");
+                      // Auto-generate frontmatter from title and description
+                      const currentContent = form.getValues("content");
+                      const title = form.getValues("title");
+                      const description = form.getValues("description") || "";
+                      // Only generate if content is empty or doesn't look like skill content
+                      if (!currentContent || !currentContent.startsWith("---")) {
+                        form.setValue("content", generateSkillContentWithFrontmatter(title, description));
+                      }
+                    } else if (v === "TASTE") {
+                      form.setValue("structuredFormat", undefined);
+                      form.setValue("type", "TASTE");
+                      // Auto-generate placeholder taste content
+                      const currentContent = form.getValues("content");
+                      if (!currentContent || !currentContent.startsWith("# Taste")) {
+                        form.setValue("content", `# Taste\n- Package manager is npm (not pnpm or yarn). Confidence: 0.95\n- Use Next.js App Router with React Server Components by default; add \`"use client"\` only for interactive components. Confidence: 0.95\n`);
+                      }
+                    } else {
+                      form.setValue("structuredFormat", undefined);
+                      form.setValue("type", "TEXT");
                     }
-                  } else if (v === "TASTE") {
-                    form.setValue("structuredFormat", undefined);
-                    form.setValue("type", "TASTE");
-                    // Auto-generate placeholder taste content
-                    const currentContent = form.getValues("content");
-                    if (!currentContent || !currentContent.startsWith("# Taste")) {
-                      form.setValue("content", `# Taste\n- Package manager is npm (not pnpm or yarn). Confidence: 0.95\n- Use Next.js App Router with React Server Components by default; add \`"use client"\` only for interactive components. Confidence: 0.95\n`);
-                    }
-                  } else {
-                    form.setValue("structuredFormat", undefined);
-                    form.setValue("type", "TEXT");
-                  }
-                }}
-              >
-                <SelectTrigger className="h-9 w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="TEXT">{t("inputTypes.text")}</SelectItem>
-                  <SelectItem value="STRUCTURED">{t("inputTypes.structured")}</SelectItem>
-                  <SelectItem value="SKILL">{t("inputTypes.skill")}</SelectItem>
-                  <SelectItem value="TASTE">{t("inputTypes.taste")}</SelectItem>
-                </SelectContent>
-              </Select>
-              {isStructuredInput && (
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                <Select value={structuredFormat || "JSON"} onValueChange={(v) => form.setValue("structuredFormat", v as any)}>
-                  <SelectTrigger className="h-9 w-24">
+                  }}
+                >
+                  <SelectTrigger className="h-9 w-48">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="JSON">JSON</SelectItem>
-                    <SelectItem value="YAML">YAML</SelectItem>
+                    <SelectItem value="TEXT">{t("inputTypes.text")}</SelectItem>
+                    <SelectItem value="STRUCTURED">{t("inputTypes.structured")}</SelectItem>
+                    <SelectItem value="SKILL">{t("inputTypes.skill")}</SelectItem>
+                    <SelectItem value="TASTE">{t("inputTypes.taste")}</SelectItem>
                   </SelectContent>
                 </Select>
-              )}
+                {isStructuredInput && (
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  <Select value={structuredFormat || "JSON"} onValueChange={(v) => form.setValue("structuredFormat", v as any)}>
+                    <SelectTrigger className="h-9 w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="JSON">JSON</SelectItem>
+                      <SelectItem value="YAML">YAML/MD</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+              {/* Media upload toggle */}
+              <div className="flex items-center gap-2 sm:ml-auto">
+                <Switch
+                  id="media-upload"
+                  checked={requiresMediaUpload}
+                  onCheckedChange={(v) => form.setValue("requiresMediaUpload", v)}
+                />
+                <label htmlFor="media-upload" className="text-sm cursor-pointer">
+                  {t("requiresMediaUpload")}
+                </label>
+              </div>
             </div>
-            {/* Media upload toggle */}
-            <div className="flex items-center gap-2 sm:ml-auto">
-              <Switch
-                id="media-upload"
-                checked={requiresMediaUpload}
-                onCheckedChange={(v) => form.setValue("requiresMediaUpload", v)}
-              />
-              <label htmlFor="media-upload" className="text-sm cursor-pointer">
-                {t("requiresMediaUpload")}
-              </label>
-            </div>
-          </div>
+          )}
 
           {/* Media type & count - grouped buttons */}
           {requiresMediaUpload && (
@@ -1212,8 +1520,13 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                       onChange={field.onChange}
                     />
                   ) : isStructuredInput ? (
-                    <div className="rounded-md border overflow-hidden">
-                      <VariableToolbar onInsert={insertVariable} getSelectedText={getSelectedText} />
+                    <div
+                      className="rounded-md border overflow-hidden"
+                      onPaste={isInternalHackMode ? handlePaste : undefined}
+                    >
+                      {!isInternalHackMode && (
+                        <VariableToolbar onInsert={insertVariable} getSelectedText={getSelectedText} />
+                      )}
                       <CodeEditor
                         ref={codeEditorRef}
                         value={field.value}
@@ -1230,7 +1543,9 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                     </div>
                   ) : (
                     <div className="rounded-md border overflow-hidden">
-                      <VariableToolbar onInsert={insertVariable} getSelectedText={getSelectedText} />
+                      {!isInternalHackMode && (
+                        <VariableToolbar onInsert={insertVariable} getSelectedText={getSelectedText} />
+                      )}
                       <Textarea
                         ref={(el) => {
                           textareaRef.current = el;
@@ -1240,6 +1555,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                         value={field.value}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
+                        onPaste={isInternalHackMode ? handlePaste : undefined}
                         placeholder={t("contentPlaceholder")}
                         className="min-h-[150px] font-mono border-0 rounded-none focus-visible:ring-0"
                       />
@@ -1279,6 +1595,13 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
             onConvert={(converted) => form.setValue("content", converted)}
           />
 
+          {/* Markdown Preview for Internal Hack Mode */}
+          {isInternalHackMode && structuredFormat === "YAML" && (
+            <div ref={previewSectionRef}>
+              <MarkdownPreview content={promptContent} />
+            </div>
+          )}
+
           {/* Structured format detection warning - hide for SKILL and TASTE types */}
           {promptType !== "SKILL" && promptType !== "TASTE" && (
             <StructuredFormatWarning
@@ -1293,19 +1616,21 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
         </div>
 
         {/* ===== LLM PROCESSING ARROW ===== */}
-        <div className="flex flex-col items-center py-4">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <div className="h-px w-16 bg-border" />
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-xs font-medium">
-              <ArrowDown className="h-3.5 w-3.5" />
-              <span>{t("afterAiProcessing")}</span>
+        {!isInternalHackMode && (
+          <div className="flex flex-col items-center py-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="h-px w-16 bg-border" />
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-xs font-medium">
+                <ArrowDown className="h-3.5 w-3.5" />
+                <span>{t("afterAiProcessing")}</span>
+              </div>
+              <div className="h-px w-16 bg-border" />
             </div>
-            <div className="h-px w-16 bg-border" />
           </div>
-        </div>
+        )}
 
         {/* ===== OUTPUT SECTION ===== */}
-        {(promptType === "SKILL" || promptType === "TASTE") ? (
+        {!isInternalHackMode && ((promptType === "SKILL" || promptType === "TASTE") ? (
           /* SKILL/TASTE type shows a code output preview - code generated BY the skill/taste */
           <div className="space-y-4 py-6 border-t">
             <div className="space-y-1">
@@ -1437,28 +1762,29 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
               )}
             </div>
           </div>
-        )}
+        ))}
 
         {/* ===== WORKFLOW LINK SECTION ===== */}
-        <div className="space-y-3 py-6 border-t">
-          <FormField
-            control={form.control}
-            name="workflowLink"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("workflowLink")}</FormLabel>
-                <FormDescription className="text-xs">
-                  {mode === "create" 
-                    ? t("workflowLinkCreateNote")
-                    : t("workflowLinkDescription")
-                  }
-                </FormDescription>
-                <FormControl>
-                  <Input 
-                    placeholder={t("workflowLinkPlaceholder")} 
-                    {...field} 
-                    disabled={mode === "create"}
-                    className={mode === "create" ? "opacity-50" : ""}
+        {!isInternalHackMode && (
+          <div className="space-y-3 py-6 border-t">
+            <FormField
+              control={form.control}
+              name="workflowLink"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("workflowLink")}</FormLabel>
+                  <FormDescription className="text-xs">
+                    {mode === "create" 
+                      ? t("workflowLinkCreateNote")
+                      : t("workflowLinkDescription")
+                    }
+                  </FormDescription>
+                  <FormControl>
+                    <Input 
+                      placeholder={t("workflowLinkPlaceholder")} 
+                      {...field} 
+                      disabled={mode === "create"}
+                      className={mode === "create" ? "opacity-50" : ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -1466,14 +1792,27 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
             )}
           />
         </div>
+        )}
 
         <div className="flex justify-end gap-4 pt-2">
           <Button type="button" variant="outline" onClick={() => router.back()}>
             {tCommon("cancel")}
           </Button>
+          {isInternalHackMode && (
+            <Button 
+              type="button" 
+              variant="outline"
+              onClick={() => {
+                previewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }}
+              className="bg-gradient-to-r from-amber-500/20 via-black to-amber-500/20 border-amber-500/50 hover:bg-amber-500/30 text-foreground"
+            >
+              {t("preview")}
+            </Button>
+          )}
           <Button type="submit" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {mode === "edit" ? t("update") : t("createButton")} Prompt
+            {mode === "edit" ? t("update") : (isInternalHackMode ? t("createButtonHack") : t("createButton"))}
           </Button>
         </div>
         </form>

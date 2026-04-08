@@ -34,12 +34,12 @@
     "collapseAll": "Collapse All"
   },
   "nav": {
-    "collection": "My Collection",
-    "feed": "Feed",
+    "collection": "Bookmarks",
+    "feed": "Team Feed",
     "promptmasters": "Promptmasters",
     "prompts": "Prompts",
     "skills": "Skills",
-    "taste": "Taste",
+    "taste": "AIR Toolkit",
     "workflows": "Workflows",
     "categories": "Categories",
     "tags": "Tags",
@@ -53,7 +53,8 @@
     "developers": "Developers",
     "book": "Book",
     "forKids": "For Kids",
-    "more": "More"
+    "more": "More",
+    "guides": "AIR Guides"
   },
   "brand": {
     "copyLogoSvg": "Copy Logo SVG",
@@ -107,11 +108,19 @@
   "prompts": {
     "title": "Prompts",
     "create": "Create Prompt",
+    "createInternalHack": "Create Solution8 Internal Hack",
+    "createPromptDescription": "Create a prompt for the community",
+    "createInternalHackDescription": "Create internal documentation for Solution8 team",
+    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode",
     "createSkill": "Create Skill",
-    "createTaste": "Create Taste",
+    "createTaste": "Create AIR Toolkit",
     "skillsDescription": "Agent Skills are multi-file prompts that give AI agents specialized capabilities. They include instructions, configurations, and supporting files that can be used with Claude, Cursor, Windsurf, and other AI coding assistants.",
-    "tastesDescription": "Tastes are single markdown files that define your coding style and preferences. They help AI coding agents learn how you write code, so they can match your conventions, patterns, and taste.",
+    "tastesDescription": "AIRTool Entry files are single markdown files that define your coding style and preferences. They help AI coding agents learn how you write code, so they can match your conventions, patterns, and style.",
     "createInfo": "This platform doesn't run or execute prompts — it's a community-driven library for sharing and discovering AI prompts. Create your prompt here, and others can copy and use it in their preferred AI tools like ChatGPT, Claude, Gemini, or any other LLM. The community can also comment on your prompts and suggest improvements through change requests.",
+    "markdownPreview": "Markdown Preview",
+    "edit": "Edit Prompt",
+    "preview": "Preview",
+    "noContentToPreview": "No content to preview",
     "hfDataStudio": {
       "button": "HF Data Studio",
       "openDataset": "Open Dataset",
@@ -122,7 +131,6 @@
       "aiPlaceholder": "Describe the SQL query you need...",
       "generateSql": "Generate SQL"
     },
-    "edit": "Edit Prompt",
     "delete": "Delete Prompt",
     "noPrompts": "No prompts found",
     "noPromptsDescription": "Try adjusting your search or filter criteria to find what you're looking for.",
@@ -193,9 +201,11 @@
       "structured": "Structured",
       "document": "Document",
       "skill": "Skill",
-      "taste": "Taste"
+      "taste": "AIR Toolkit",
+      "guide": "AIR Guide"
     },
     "inputType": "User Prompt",
+    "inputTypeHack": "Hack Implementation Guide",
     "outputType": "AI Response",
     "afterAiProcessing": "What your prompt will produce?",
     "outputTypeDescription": "Show the community how this prompt performs when run on AI tools. You can generate outputs yourself using your favorite AI app.",
@@ -204,8 +214,15 @@
       "text": "Text Prompt",
       "structured": "Structured (JSON/YAML)",
       "skill": "Skill (Agent Skills)",
-      "taste": "Taste (Coding Taste)"
+      "taste": "AIR Toolkit (AIRTool Entry)"
     },
+    "iterateButton": "Click to Iterate",
+    "iterateTitle": "Click to Iterate",
+    "iterateDescription": "Generate an improved starting prompt from the current prompt content, versions, and discussion context.",
+    "iterateLoading": "Generating improved prompt...",
+    "iterateResult": "Generated Prompt",
+    "iterateError": "Failed to generate an improved prompt. Please try again.",
+    "iterateCopy": "Copy generated prompt",
     "outputTypes": {
       "text": "Text",
       "image": "Image",
@@ -248,6 +265,7 @@
     "downloadYaml": "Download YAML",
     "downloadSkillMd": "Download SKILL.md",
     "downloadSkill": "Download .skill",
+    "downloadAgentMd": "AGENT.md",
     "skillFiles": "Skill Files",
     "copy": "Copy",
     "download": "Download",
@@ -259,6 +277,13 @@
     "addNewFileDescription": "Enter a filename with extension. Use / for directories (e.g., config.json, src/utils.ts)",
     "deleteFileConfirm": "Delete File?",
     "deleteFileDescription": "Are you sure you want to delete \"{filename}\"? This action cannot be undone.",
+    "dropFolderHere": "Drop skill folder here",
+    "dropHint": "Drop a skill folder to import",
+    "dropProcessing": "Reading files…",
+    "dropErrorNotFolder": "Please drop a folder, not individual files.",
+    "dropErrorTooLarge": "The dropped folder is too large (max 100 files / 5 MB). Try a smaller folder.",
+    "dropErrorNoManifest": "The folder must contain a \"skill.nd.json\" file directly inside the root folder.",
+    "dropErrorGeneric": "An error occurred while reading the folder. Please try again.",
     "validation": {
       "filenameEmpty": "Filename cannot be empty",
       "filenameInvalidChars": "Filename contains invalid characters",
@@ -287,7 +312,10 @@
     "contentRequired": "Content is required",
     "generateFrontmatter": "Generate Frontmatter",
     "titlePlaceholder": "Enter a title for your prompt",
+    "titlePlaceholderHack": "Enter a title for your hack",
     "descriptionPlaceholder": "Optional description of your prompt",
+    "descriptionPlaceholderHack": "Fill in the hack first - description will be autogenerated after posting",
+    "hackInstructionsLabel": "Hack Instructions",
     "contentPlaceholder": "Enter your prompt content here...",
     "insertVariable": "Insert Variable",
     "variableName": "Variable Name",
@@ -366,7 +394,8 @@
     "requiresVideo": "Requires {count} {count, plural, one {video} other {videos}}",
     "requiresDocument": "Requires {count} {count, plural, one {document} other {documents}}",
     "update": "Update",
-    "createButton": "Create",
+    "createButton": "Create Prompt",
+    "createButtonHack": "Publish Your Hack",
     "pin": "Pin to Profile",
     "unpin": "Unpin",
     "pinned": "Pinned to profile",
@@ -392,7 +421,20 @@
     "learnHowToWritePrompts": "Learn how to write effective prompts →",
     "structuredFormatDetected": "{format} format detected",
     "structuredFormatWarningDescription": "Your prompt content looks like structured data. Consider switching to structured mode for better syntax highlighting and validation.",
-    "switchToStructured": "Switch to {format}"
+    "switchToStructured": "Switch to {format}",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating...",
+    "createGuide": "Add guide",
+    "guidesDescription": "AIR Guides are in-depth articles and documentation written by the Solution8 team to help you get the most out of AI coding tools.",
+    "guidePreview": "Preview",
+    "guideMarkdownPlaceholder": "Paste your Markdown content here...",
+    "guideTitle": "Guide Title",
+    "guideDescription": "Guide Description",
+    "createGuideTitle": "Create AIR Guide",
+    "createGuideDescription": "Write a new guide in Markdown format",
+    "editGuide": "Edit",
+    "guideNotFound": "Guide Not Found",
+    "readTheGuide": "Read the guide: {title}"
   },
   "changeRequests": {
     "title": "Change Requests",
@@ -629,7 +671,9 @@
       "currentCredits": "Currently: {remaining}/{limit} credits remaining",
       "creditsUpdated": "Credits updated successfully",
       "creditsUpdateFailed": "Failed to update credits",
-      "save": "Save"
+      "save": "Save",
+      "adminZone": "Admin Zone",
+      "deleteUser": "Delete User"
     },
     "categories": {
       "title": "Category Management",
@@ -695,7 +739,8 @@
       "editTitle": "Edit Tag",
       "editDescription": "Update tag details",
       "deleteConfirmTitle": "Delete Tag?",
-      "deleteConfirmDescription": "This will remove the tag from all prompts."
+      "deleteConfirmDescription": "This will remove the tag from all prompts.",
+      "deleteHoverHint": "Delete tag"
     },
     "webhooks": {
       "title": "Webhook Management",
@@ -890,7 +935,7 @@
   },
   "workflows": {
     "title": "Workflows",
-    "description": "Prompts with sequential flows and connections",
+    "description": "This is a future feature. What we will store here will be flow-based multi-step agent workflows like those available on Dify, or — most likely — a much leaner platform we will integrate into the Promptbar.",
     "noWorkflows": "No workflows yet",
     "noWorkflowsDescription": "Workflows are prompts that connect to other prompts in a sequence. Create a prompt and add connections to build a workflow.",
     "browsePrompts": "Browse Prompts"
@@ -2260,17 +2305,21 @@
     "addMyExample": "Add My Example",
     "addExampleTitle": "Add Your Example",
     "addExampleDescriptionImage": "Share an image you created using this prompt.",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
     "addExampleDescriptionVideo": "Share a video you created using this prompt.",
     "imageUrl": "Image URL",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
     "videoUrl": "Video URL",
     "imagePreview": "Image Preview",
     "videoPreview": "Video Preview",
     "urlTab": "URL",
     "uploadTab": "Upload",
     "clickToUpload": "Click to upload an image",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
     "clickToUploadVideo": "Click to upload a video",
     "uploading": "Uploading...",
     "maxFileSize": "Max 4MB (JPEG, PNG, GIF, WebP)",
+    "maxFileSizeVideo": "Max 4MB (MP4)",
     "fileTooLarge": "File is too large. Maximum size is 4MB.",
     "invalidFileType": "Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.",
     "invalidVideoType": "Invalid file type. Only MP4 videos are allowed.",

@@ -193,7 +193,8 @@
       "structured": "Strukturiert",
       "document": "Dokument",
       "skill": "Skill",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Leitfaden"
     },
     "inputType": "Benutzer-Prompt",
     "outputType": "KI-Antwort",
@@ -366,7 +367,7 @@
     "requiresVideo": "Benötigt {count} {count, plural, one {Video} other {Videos}}",
     "requiresDocument": "Benötigt {count} {count, plural, one {Dokument} other {Dokumente}}",
     "update": "Aktualisieren",
-    "createButton": "Erstellen",
+    "createButton": "Create Prompt",
     "pin": "An Profil anheften",
     "unpin": "Lösen",
     "pinned": "An Profil angeheftet",
@@ -392,7 +393,16 @@
     "learnHowToWritePrompts": "Lernen Sie, effektive Prompts zu schreiben →",
     "structuredFormatDetected": "{format}-Format erkannt",
     "structuredFormatWarningDescription": "Ihr Prompt-Inhalt sieht nach strukturierten Daten aus. Erwägen Sie den Wechsel in den strukturierten Modus für bessere Syntaxhervorhebung und Validierung.",
-    "switchToStructured": "Zu {format} wechseln"
+    "switchToStructured": "Zu {format} wechseln",
+    "titlePlaceholderHack": "Enter a title for your hack",
+    "descriptionPlaceholderHack": "Optional description of your hack",
+    "inputTypeHack": "Hack Implementation Guide",
+    "createButtonHack": "Publish Your Hack",
+    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating...",
+    "guideNotFound": "Anleitung Nicht Gefunden",
+    "readTheGuide": "Lesen Sie die Anleitung: {title}"
   },
   "changeRequests": {
     "title": "Änderungsanfragen",
@@ -629,7 +639,9 @@
       "currentCredits": "Aktuell: {remaining}/{limit} Guthaben verbleibend",
       "creditsUpdated": "Guthaben erfolgreich aktualisiert",
       "creditsUpdateFailed": "Guthaben konnte nicht aktualisiert werden",
-      "save": "Speichern"
+      "save": "Speichern",
+      "adminZone": "Admin-Bereich",
+      "deleteUser": "Benutzer löschen"
     },
     "categories": {
       "title": "Kategorieverwaltung",
@@ -695,7 +707,8 @@
       "editTitle": "Tag bearbeiten",
       "editDescription": "Tag-Details aktualisieren",
       "deleteConfirmTitle": "Tag löschen?",
-      "deleteConfirmDescription": "Dies entfernt den Tag von allen Prompts."
+      "deleteConfirmDescription": "Dies entfernt den Tag von allen Prompts.",
+      "deleteHoverHint": "Tag löschen"
     },
     "webhooks": {
       "title": "Webhook-Verwaltung",
@@ -2275,6 +2288,10 @@
     "cancel": "Abbrechen",
     "submit": "Absenden",
     "communityExamples": "Community-Beispiele",
-    "userExample": "Benutzerbeispiel"
+    "userExample": "Benutzerbeispiel",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

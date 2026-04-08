@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function PromptmastersLoading() {
   return (
     <div className="container py-8">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {/* Header - centered */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-2">

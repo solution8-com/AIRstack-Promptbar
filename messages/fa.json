@@ -193,7 +193,8 @@
       "structured": "ساختارمند",
       "document": "سند",
       "skill": "مهارت",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "راهنما"
     },
     "inputType": "پرامپت کاربر",
     "outputType": "پاسخ هوش مصنوعی",
@@ -392,7 +393,11 @@
     "learnHowToWritePrompts": "یاد بگیرید چگونه پرامپت‌های مؤثر بنویسید →",
     "structuredFormatDetected": "قالب {format} شناسایی شد",
     "structuredFormatWarningDescription": "محتوای پرامپت شما شبیه داده ساختارمند است. برای هایلایت نحو و اعتبارسنجی بهتر، به حالت ساختارمند تغییر دهید.",
-    "switchToStructured": "تغییر به {format}"
+    "switchToStructured": "تغییر به {format}",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating...",
+    "guideNotFound": "راهنما یافت نشد",
+    "readTheGuide": "راهنما را بخوانید: {title}"
   },
   "changeRequests": {
     "title": "درخواست‌های تغییر",
@@ -629,7 +634,9 @@
       "currentCredits": "فعلی: {remaining}/{limit} اعتبار باقی‌مانده",
       "creditsUpdated": "اعتبار با موفقیت به‌روزرسانی شد",
       "creditsUpdateFailed": "به‌روزرسانی اعتبار ناموفق بود",
-      "save": "ذخیره"
+      "save": "ذخیره",
+      "adminZone": "ناحیه مدیر",
+      "deleteUser": "حذف کاربر"
     },
     "categories": {
       "title": "مدیریت دسته‌بندی‌ها",
@@ -695,7 +702,8 @@
       "editTitle": "ویرایش برچسب",
       "editDescription": "جزئیات برچسب را به‌روزرسانی کنید",
       "deleteConfirmTitle": "برچسب حذف شود؟",
-      "deleteConfirmDescription": "این برچسب را از همه پرامپت‌ها حذف می‌کند."
+      "deleteConfirmDescription": "این برچسب را از همه پرامپت‌ها حذف می‌کند.",
+      "deleteHoverHint": "حذف برچسب"
     },
     "webhooks": {
       "title": "مدیریت وب‌هوک‌ها",
@@ -2259,6 +2267,10 @@
     "cancel": "لغو",
     "submit": "ارسال",
     "communityExamples": "مثال‌های جامعه",
-    "userExample": "مثال کاربر"
+    "userExample": "مثال کاربر",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

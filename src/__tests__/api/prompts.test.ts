@@ -5,17 +5,20 @@ import { auth } from "@/lib/auth";
 
 // Mock dependencies
 vi.mock("@/lib/db", () => ({
-  db: {
-    prompt: {
+    db: {
+      prompt: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
       findUnique: vi.fn(),
       create: vi.fn(),
       count: vi.fn(),
-    },
-    promptVersion: {
-      create: vi.fn(),
-    },
+      },
+      tag: {
+        findMany: vi.fn(),
+      },
+      promptVersion: {
+        create: vi.fn(),
+      },
     user: {
       findUnique: vi.fn(),
     },
@@ -165,6 +168,7 @@ describe("POST /api/prompts", () => {
     vi.mocked(db.user.findUnique).mockResolvedValue({ flagged: false } as never);
     vi.mocked(db.prompt.findFirst).mockResolvedValue(null);
     vi.mocked(db.prompt.findMany).mockResolvedValue([]);
+    vi.mocked(db.tag.findMany).mockResolvedValue([]);
   });
 
   const validPromptData = {
@@ -268,6 +272,47 @@ describe("POST /api/prompts", () => {
     expect(data.id).toBe("new-prompt");
     expect(db.prompt.create).toHaveBeenCalled();
     expect(db.promptVersion.create).toHaveBeenCalled();
+  });
+
+  it("should filter tagIds to existing tags before creating prompt", async () => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
+    vi.mocked(db.tag.findMany).mockResolvedValue([{ id: "tag-1" }] as never);
+    vi.mocked(db.prompt.create).mockResolvedValue({
+      id: "new-prompt",
+      slug: "test-prompt",
+      title: "Test Prompt",
+      content: "This is test content",
+      type: "TEXT",
+      isPrivate: false,
+      author: { id: "user1", name: "Test", username: "test" },
+      category: null,
+      tags: [],
+    } as never);
+    vi.mocked(db.promptVersion.create).mockResolvedValue({} as never);
+
+    const request = new Request("http://localhost:3000/api/prompts", {
+      method: "POST",
+      body: JSON.stringify({
+        ...validPromptData,
+        tagIds: ["tag-1", "tag-missing"],
+      }),
+    });
+
+    await POST(request);
+
+    expect(db.tag.findMany).toHaveBeenCalledWith({
+      where: { id: { in: ["tag-1", "tag-missing"] } },
+      select: { id: true },
+    });
+    expect(db.prompt.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          tags: {
+            create: [{ tagId: "tag-1" }],
+          },
+        }),
+      })
+    );
   });
 
   it("should return 429 when flagged user exceeds daily limit", async () => {

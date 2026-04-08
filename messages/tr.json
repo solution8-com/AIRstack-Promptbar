@@ -193,7 +193,8 @@
       "structured": "Yapılandırılmış",
       "document": "Doküman",
       "skill": "Yetenek",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Kılavuz"
     },
     "inputType": "Kullanıcı Promptu",
     "outputType": "AI Yanıtı",
@@ -366,7 +367,7 @@
     "requiresVideo": "{count} {count, plural, one {video} other {video}} gerekli",
     "requiresDocument": "{count} {count, plural, one {doküman} other {doküman}} gerekli",
     "update": "Güncelle",
-    "createButton": "Oluştur",
+    "createButton": "Create Prompt",
     "pin": "Profile Sabitle",
     "unpin": "Sabitlemeyi Kaldır",
     "pinned": "Profile sabitlendi",
@@ -392,7 +393,16 @@
     "learnHowToWritePrompts": "Etkili promptlar nasıl yazılır öğrenin →",
     "structuredFormatDetected": "{format} formatı algılandı",
     "structuredFormatWarningDescription": "Prompt içeriğiniz yapılandırılmış veriye benziyor. Daha iyi sözdizimi vurgulama ve doğrulama için yapılandırılmış moda geçmeyi düşünün.",
-    "switchToStructured": "{format}'a geç"
+    "switchToStructured": "{format}'a geç",
+    "titlePlaceholderHack": "Enter a title for your hack",
+    "descriptionPlaceholderHack": "Optional description of your hack",
+    "inputTypeHack": "Hack Implementation Guide",
+    "createButtonHack": "Publish Your Hack",
+    "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating...",
+    "guideNotFound": "Kılavuz Bulunamadı",
+    "readTheGuide": "Kılavuzu okuyun: {title}"
   },
   "changeRequests": {
     "title": "Değişiklik İstekleri",
@@ -629,7 +639,9 @@
       "currentCredits": "Şu an: {remaining}/{limit} kredi kaldı",
       "creditsUpdated": "Krediler başarıyla güncellendi",
       "creditsUpdateFailed": "Krediler güncellenemedi",
-      "save": "Kaydet"
+      "save": "Kaydet",
+      "adminZone": "Yönetici Alanı",
+      "deleteUser": "Kullanıcıyı Sil"
     },
     "categories": {
       "title": "Kategori Yönetimi",
@@ -695,7 +707,8 @@
       "editTitle": "Etiket Düzenle",
       "editDescription": "Etiket detaylarını güncelleyin",
       "deleteConfirmTitle": "Etiket Silinsin mi?",
-      "deleteConfirmDescription": "Bu etiket tüm promptlardan kaldırılacaktır."
+      "deleteConfirmDescription": "Bu etiket tüm promptlardan kaldırılacaktır.",
+      "deleteHoverHint": "Etiketi sil"
     },
     "webhooks": {
       "title": "Webhook Yönetimi",
@@ -2274,6 +2287,10 @@
     "cancel": "İptal",
     "submit": "Gönder",
     "communityExamples": "Topluluk Örnekleri",
-    "userExample": "Kullanıcı örneği"
+    "userExample": "Kullanıcı örneği",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

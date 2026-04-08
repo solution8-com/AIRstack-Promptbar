@@ -3,11 +3,16 @@ import { getTranslations } from "next-intl/server";
 import { unstable_cache } from "next/cache";
 import { InfinitePromptList } from "@/components/prompts/infinite-prompt-list";
 import { db } from "@/lib/db";
+import { auth } from "@/lib/auth";
 
-export const metadata: Metadata = {
-  title: "Workflows",
-  description: "Browse prompts with sequential flows and connections",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("workflows");
+
+  return {
+    title: t("title"),
+    description: t("description"),
+  };
+}
 
 // Query for workflows list (cached)
 function getCachedWorkflows(
@@ -119,6 +124,8 @@ interface WorkflowsPageProps {
 }
 
 export default async function WorkflowsPage({ searchParams }: WorkflowsPageProps) {
+  const session = await auth();
+  const isAdmin = session?.user?.role === "ADMIN";
   const t = await getTranslations("workflows");
   const tNav = await getTranslations("nav");
   const tSearch = await getTranslations("search");
@@ -155,6 +162,7 @@ export default async function WorkflowsPage({ searchParams }: WorkflowsPageProps
       <InfinitePromptList
         initialPrompts={workflows}
         initialTotal={total}
+        isAdmin={isAdmin}
         filters={{
           q: params.q,
           sort: params.sort,

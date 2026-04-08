@@ -193,7 +193,8 @@
       "structured": "מובנה",
       "document": "מסמך",
       "skill": "מיומנות",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "מדריך"
     },
     "inputType": "פרומפט משתמש",
     "outputType": "תגובת AI",
@@ -392,7 +393,11 @@
     "learnHowToWritePrompts": "למדו איך לכתוב פרומפטים יעילים ←",
     "structuredFormatDetected": "זוהה פורמט {format}",
     "structuredFormatWarningDescription": "תוכן הפרומפט שלך נראה כמו נתונים מובנים. שקול לעבור למצב מובנה להדגשת תחביר ואימות טובים יותר.",
-    "switchToStructured": "לעבור ל-{format}"
+    "switchToStructured": "לעבור ל-{format}",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating...",
+    "guideNotFound": "המדריך לא נמצא",
+    "readTheGuide": "קרא את המדריך: {title}"
   },
   "changeRequests": {
     "title": "בקשות שינוי",
@@ -629,7 +634,9 @@
       "currentCredits": "כרגע: {remaining}/{limit} קרדיטים נותרו",
       "creditsUpdated": "הקרדיטים עודכנו בהצלחה",
       "creditsUpdateFailed": "עדכון הקרדיטים נכשל",
-      "save": "שמור"
+      "save": "שמור",
+      "adminZone": "אזור מנהל",
+      "deleteUser": "מחק משתמש"
     },
     "categories": {
       "title": "ניהול קטגוריות",
@@ -695,7 +702,8 @@
       "editTitle": "ערוך תגית",
       "editDescription": "עדכן פרטי תגית",
       "deleteConfirmTitle": "למחוק תגית?",
-      "deleteConfirmDescription": "פעולה זו תסיר את התגית מכל הפרומפטים."
+      "deleteConfirmDescription": "פעולה זו תסיר את התגית מכל הפרומפטים.",
+      "deleteHoverHint": "מחק תגית"
     },
     "webhooks": {
       "title": "ניהול Webhooks",
@@ -2259,6 +2267,10 @@
     "cancel": "ביטול",
     "submit": "שלח",
     "communityExamples": "דוגמאות קהילה",
-    "userExample": "דוגמת משתמש"
+    "userExample": "דוגמת משתמש",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

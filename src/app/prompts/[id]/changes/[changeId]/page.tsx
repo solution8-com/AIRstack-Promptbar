@@ -85,7 +85,7 @@ export default async function ChangeRequestPage({ params }: ChangeRequestPagePro
   const hasTitleChange = changeRequest.proposedTitle && changeRequest.proposedTitle !== changeRequest.originalTitle;
 
   return (
-    <div className="container max-w-3xl py-6">
+    <div className="container max-w-6xl py-6">
       {/* Header */}
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">

@@ -49,10 +49,10 @@ import {
   Sun,
   Copy,
   ExternalLink,
-  Chromium,
   Hammer,
   BookOpen,
   MoreHorizontal,
+  Bookmark,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -188,6 +188,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                         onClick={() => setMobileMenuOpen(false)}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                       >
+                        <Bookmark className="h-4 w-4" />
                         {t("nav.collection")}
                       </Link>
                       <Link 
@@ -199,62 +200,73 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                       </Link>
                     </>
                   )}
-                  <Link 
-                    href="/prompts" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("nav.prompts")}
-                  </Link>
-                  <Link 
-                    href="/skills" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("nav.skills")}
-                  </Link>
-                  <Link 
-                    href="/taste" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("nav.taste")}
-                  </Link>
-                  <Link 
-                    href="/workflows" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("nav.workflows")}
-                  </Link>
-                  <Link 
-                    href="/categories" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("nav.categories")}
-                  </Link>
-                  <Link 
-                    href="/tags" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("nav.tags")}
-                  </Link>
-                  <Link 
-                    href="/discover" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("feed.discover")}
-                  </Link>
-                  <Link 
-                    href="/promptmasters" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("nav.promptmasters")}
-                  </Link>
+                  {user && (
+                    <>
+                      <Link 
+                        href="/prompts" 
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      >
+                        {t("nav.prompts")}
+                      </Link>
+                      <Link 
+                        href="/skills" 
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      >
+                        {t("nav.skills")}
+                      </Link>
+                      <Link 
+                        href="/taste" 
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      >
+                        {t("nav.taste")}
+                      </Link>
+                      <Link 
+                        href="/guides" 
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      >
+                        {t("nav.guides")}
+                      </Link>
+                      <Link 
+                        href="/workflows" 
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      >
+                        {t("nav.workflows")}
+                      </Link>
+                      <Link 
+                        href="/categories" 
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      >
+                        {t("nav.categories")}
+                      </Link>
+                      <Link 
+                        href="/tags" 
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      >
+                        {t("nav.tags")}
+                      </Link>
+                      <Link 
+                        href="/discover" 
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      >
+                        {t("feed.discover")}
+                      </Link>
+                      <Link 
+                        href="/promptmasters" 
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      >
+                        {t("nav.promptmasters")}
+                      </Link>
+                    </>
+                  )}
                   {!branding.useCloneBranding && (
                     <Link 
                       href="https://fka.gumroad.com/l/art-of-chatgpt-prompting" 
@@ -352,13 +364,14 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
         )}
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1 text-sm">
+        <nav className="hidden md:flex items-center gap-0.5 text-sm">
           {user && (
             <>
               <Link
                 href="/collection"
-                className="px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
               >
+                <Bookmark className="h-3.5 w-3.5" />
                 {t("nav.collection")}
               </Link>
               <Link
@@ -369,116 +382,131 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
               </Link>
             </>
           )}
-          <Link
-            href="/prompts"
-            className="px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            {t("nav.prompts")}
-          </Link>
-          <Link
-            href="/skills"
-            className="hidden xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            {t("nav.skills")}
-          </Link>
-          <Link
-            href="/taste"
-            className="hidden xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            {t("nav.taste")}
-          </Link>
-          <Link
-            href="/workflows"
-            className="hidden xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            {t("nav.workflows")}
-          </Link>
-          {/* Categories, Tags, Promptmasters - visible on lg+ screens */}
-          <Link
-            href="/categories"
-            className="hidden 2xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            {t("nav.categories")}
-          </Link>
-          <Link
-            href="/tags"
-            className="hidden 2xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            {t("nav.tags")}
-          </Link>
-          <Link
-            href="/promptmasters"
-            className="hidden 2xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            {t("nav.promptmasters")}
-          </Link>
-          {/* Three-dot dropdown for collapsed nav items */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="2xl:hidden h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">{t("nav.more")}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem asChild className="xl:hidden">
-                <Link href="/skills">
-                  {t("nav.skills")}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="xl:hidden">
-                <Link href="/taste">
-                  {t("nav.taste")}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="xl:hidden">
-                <Link href="/workflows">
-                  {t("nav.workflows")}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="xl:hidden" />
-              <DropdownMenuItem asChild>
-                <Link href="/categories">
-                  {t("nav.categories")}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/tags">
-                  {t("nav.tags")}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/promptmasters">
-                  {t("nav.promptmasters")}
-                </Link>
-              </DropdownMenuItem>
-              {!branding.useCloneBranding && (
-                <>
-                  <DropdownMenuSeparator />
+          {user && (
+            <>
+              <Link
+                href="/prompts"
+                className="px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
+              >
+                {t("nav.prompts")}
+              </Link>
+              <Link
+                href="/skills"
+                className="hidden xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
+              >
+                {t("nav.skills")}
+              </Link>
+              <Link
+                href="/taste"
+                className="hidden xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
+              >
+                {t("nav.taste")}
+              </Link>
+              <Link
+                href="/guides"
+                className="hidden xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
+              >
+                {t("nav.guides")}
+              </Link>
+              <Link
+                href="/workflows"
+                className="hidden xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
+              >
+                {t("nav.workflows")}
+              </Link>
+              {/* Categories, Tags, Promptmasters - visible on lg+ screens */}
+              <Link
+                href="/categories"
+                className="hidden 2xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
+              >
+                {t("nav.categories")}
+              </Link>
+              <Link
+                href="/tags"
+                className="hidden 2xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
+              >
+                {t("nav.tags")}
+              </Link>
+              <Link
+                href="/promptmasters"
+                className="hidden 2xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
+              >
+                {t("nav.promptmasters")}
+              </Link>
+              {/* Three-dot dropdown for collapsed nav items */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="2xl:hidden h-8 w-8">
+                    <MoreHorizontal className="h-4 w-4" />
+                    <span className="sr-only">{t("nav.more")}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem asChild className="xl:hidden">
+                    <Link href="/skills">
+                      {t("nav.skills")}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="xl:hidden">
+                    <Link href="/taste">
+                      {t("nav.taste")}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="xl:hidden">
+                    <Link href="/guides">
+                      {t("nav.guides")}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="xl:hidden">
+                    <Link href="/workflows">
+                      {t("nav.workflows")}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="xl:hidden" />
                   <DropdownMenuItem asChild>
-                    <Link href="https://fka.gumroad.com/l/art-of-chatgpt-prompting">
-                      <BookOpen className="mr-2 h-4 w-4" />
-                      {t("nav.book")}
+                    <Link href="/categories">
+                      {t("nav.categories")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <a href="/kids" className={kidsFont.className}>
-                      <MiniPromi className="mr-2 h-4 w-4" />
-                      <span className="font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
-                        {t("nav.forKids")}
-                      </span>
-                    </a>
+                    <Link href="/tags">
+                      {t("nav.tags")}
+                    </Link>
                   </DropdownMenuItem>
-                </>
-              )}
-              <DropdownMenuItem asChild>
-                <Link href="/developers">
-                  <Hammer className="mr-2 h-4 w-4" />
-                  {t("nav.developers")}
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  <DropdownMenuItem asChild>
+                    <Link href="/promptmasters">
+                      {t("nav.promptmasters")}
+                    </Link>
+                  </DropdownMenuItem>
+                  {!branding.useCloneBranding && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="https://fka.gumroad.com/l/art-of-chatgpt-prompting">
+                          <BookOpen className="mr-2 h-4 w-4" />
+                          {t("nav.book")}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <a href="/kids" className={kidsFont.className}>
+                          <MiniPromi className="mr-2 h-4 w-4" />
+                          <span className="font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
+                            {t("nav.forKids")}
+                          </span>
+                        </a>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuItem asChild>
+                    <Link href="/developers">
+                      <Hammer className="mr-2 h-4 w-4" />
+                      {t("nav.developers")}
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
         </nav>
 
         {/* Spacer */}
@@ -529,31 +557,6 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
 
           {/* Notifications */}
           {user && <NotificationBell />}
-
-          {browserType && branding.chromeExtensionUrl && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              asChild
-            >
-              <a
-                href={browserType === "firefox" ? FIREFOX_ADDON_URL : branding.chromeExtensionUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => analyticsExternal.clickChromeExtension()}
-              >
-                {browserType === "firefox" ? (
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="#FF7139">
-                    <path d="M20.452 3.445a11.002 11.002 0 00-2.482-1.908C16.944.997 15.098.093 12.477.032c-.734-.017-1.457.03-2.174.144-.72.114-1.398.292-2.118.56-1.017.377-1.996.975-2.574 1.554.583-.349 1.476-.733 2.55-.992a10.083 10.083 0 013.729-.167c2.341.34 4.178 1.381 5.48 2.625a8.066 8.066 0 011.298 1.587c1.468 2.382 1.33 5.376.184 7.142-.85 1.312-2.67 2.544-4.37 2.53-.583-.023-1.438-.152-2.25-.566-2.629-1.343-3.021-4.688-1.118-6.306-.632-.136-1.82.13-2.646 1.363-.742 1.107-.7 2.816-.242 4.028a6.473 6.473 0 01-.59-1.895 7.695 7.695 0 01.416-3.845A8.212 8.212 0 019.45 5.399c.896-1.069 1.908-1.72 2.75-2.005-.54-.471-1.411-.738-2.421-.767C8.31 2.583 6.327 3.061 4.7 4.41a8.148 8.148 0 00-1.976 2.414c-.455.836-.691 1.659-.697 1.678.122-1.445.704-2.994 1.248-4.055-.79.413-1.827 1.668-2.41 3.042C.095 9.37-.2 11.608.14 13.989c.966 5.668 5.9 9.982 11.843 9.982C18.62 23.971 24 18.591 24 11.956a11.93 11.93 0 00-3.548-8.511z"/>
-                  </svg>
-                ) : (
-                  <Chromium className="h-4 w-4" />
-                )}
-                <span className="sr-only">Get Browser Extension</span>
-              </a>
-            </Button>
-          )}
 
           {/* Theme toggle */}
           <Button
@@ -607,6 +610,12 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                   <Link href="/settings">
                     <Settings className="mr-2 h-4 w-4" />
                     {t("nav.settings")}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/collection">
+                    <Bookmark className="mr-2 h-4 w-4" />
+                    {t("nav.collection")}
                   </Link>
                 </DropdownMenuItem>
                 {isAdmin && (

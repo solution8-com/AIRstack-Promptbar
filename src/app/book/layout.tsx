@@ -10,7 +10,7 @@ export default function BookLayout({
       <div className="flex flex-col lg:flex-row gap-8">
         <BookSidebar />
         <div className="flex-1 min-w-0 lg:mr-64">
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             {children}
           </div>
         </div>

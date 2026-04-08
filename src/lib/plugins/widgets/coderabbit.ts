@@ -57,8 +57,8 @@ Provide your review in a clear, actionable format with specific line references 
       shouldInject: (context) => {
         const { filters } = context;
         
-        // Don't inject on the skills or tastes pages
-        if (filters?.type === "SKILL" || filters?.type === "TASTE") {
+        // Don't inject on the skills, tastes, or guides pages
+        if (filters?.type === "SKILL" || filters?.type === "TASTE" || filters?.type === "GUIDE") {
           return false;
         }
         

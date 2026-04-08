@@ -1,16 +1,16 @@
 import { defineConfig } from "@/lib/config";
 
 // Set to true to use clone branding (hide prompts.chat repo branding)
-const useCloneBranding = false;
+const useCloneBranding = true;
 
 export default defineConfig({
   // Branding - customize for white-label
   branding: {
-    name: "prompts.chat",
-    logo: "/logo.svg",
-    logoDark: "/logo-dark.svg",
-    favicon: "/logo.svg",
-    description: "Collect, organize, and share AI prompts",
+    name: "Solution8 PromptBar",
+    logo: "/ffff.svg",
+    logoDark: "/ffff.svg",
+    favicon: "/ffff.svg",
+    description: "Collect, organize, and share AI prompts, skills and MCPs",
 
     // Delete this if useCloneBranding is true
     appStoreUrl: "https://apps.apple.com/tr/app/prompts-chat/id6756895736",
@@ -24,7 +24,7 @@ export default defineConfig({
     // UI style: "flat" | "default" | "brutal"
     variant: "default",
     // Spacing density: "compact" | "default" | "comfortable"
-    density: "default",
+    density: "compact",
     // Colors (hex or oklch)
     colors: {
       primary: "#6366f1", // Indigo
@@ -35,7 +35,7 @@ export default defineConfig({
   auth: {
     // Available: "credentials" | "google" | "azure" | "github" | "apple" | custom
     // Use `providers` array to enable multiple auth providers
-    providers: ["github", "google", "apple"],
+    providers: ["github"],
     // Allow public registration (only applies to credentials provider)
     allowRegistration: false,
   },
@@ -64,6 +64,8 @@ export default defineConfig({
     mcp: true,
     // Enable comments on prompts
     comments: true,
+    // Enable Click to Iterate prompt refinement feature
+    clickToIterate: false,
   },
 
   // Homepage customization
@@ -71,20 +73,15 @@ export default defineConfig({
     // Set to true to hide prompts.chat repo branding and use your own branding
     useCloneBranding,
     achievements: {
-      enabled: !useCloneBranding,
+      enabled: true,
     },
     sponsors: {
       enabled: !useCloneBranding,
       items: [
         // Add sponsors here
         { name: "Clemta", logo: '/sponsors/clemta.webp', url: "https://clemta.com/?utm_source=prompts.chat" },
-        { name: "Wiro.ai", className: 'py-1', darkLogo: '/sponsors/wiro.png', logo: '/sponsors/wiro.png', url: "https://wiro.ai/?utm_source=prompts.chat" },
-        { name: "Cognition", logo: "/sponsors/cognition.svg", url: "https://wind.surf/prompts-chat" },
         { name: "CodeRabbit", className: 'py-1', logo: '/sponsors/coderabbit.svg', darkLogo: '/sponsors/coderabbit-dark.svg', url: "https://coderabbit.link/fatih" },
         { name: "Sentry", className: 'py-1', logo: '/sponsors/sentry.svg', darkLogo: '/sponsors/sentry-dark.svg', url: "https://sentry.io/?utm_source=prompts.chat" },
-
-        { name: "eachlabs", className: 'py-[6px]', logo: '/sponsors/eachlabs.png', darkLogo: '/sponsors/eachlabs-dark.png', url: "https://www.eachlabs.ai/?utm_source=promptschat&utm_medium=referral" },
-        { name: "CommandCode", className: 'py-1', logo: '/sponsors/commandcode.svg', darkLogo: '/sponsors/commandcode-dark.svg', url: "https://commandcode.ai/?utm_source=prompts.chat" },
       ],
     },
   },

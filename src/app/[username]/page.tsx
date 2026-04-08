@@ -19,6 +19,7 @@ import { McpServerPopup } from "@/components/mcp/mcp-server-popup";
 import { PrivatePromptsNote } from "@/components/prompts/private-prompts-note";
 import { ActivityChartWrapper } from "@/components/user/activity-chart-wrapper";
 import { ProfileLinks, type CustomLink } from "@/components/user/profile-links";
+import { DeleteUserButton } from "@/components/admin/delete-user-button";
 
 interface UserProfilePageProps {
   params: Promise<{ username: string }>;
@@ -58,6 +59,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
   const t = await getTranslations("user");
   const tChanges = await getTranslations("changeRequests");
   const tPrompts = await getTranslations("prompts");
+  const tAdminUsers = await getTranslations("admin.users");
   const locale = await getLocale();
 
   // Decode URL-encoded @ symbol
@@ -99,6 +101,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
   const page = Math.max(1, parseInt(pageParam || "1") || 1);
   const perPage = 24;
   const isOwner = session?.user?.id === user.id;
+  const isAdmin = session?.user?.role === "ADMIN";
   const isUnclaimed = user.email?.endsWith("@unclaimed.prompts.chat") ?? false;
 
   // Parse date filter for filtering prompts by day (validate YYYY-MM-DD format)
@@ -624,7 +627,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {pinnedPrompts.map((prompt: PromptCardProps["prompt"]) => (
-                  <PromptCard key={prompt.id} prompt={prompt} showPinButton={isOwner} isPinned={isOwner} />
+                  <PromptCard key={prompt.id} prompt={prompt} showPinButton={isOwner} isPinned={isOwner} isAdmin={isAdmin} />
                 ))}
               </div>
             </div>
@@ -665,6 +668,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
                 totalPages={totalPages}
                 pinnedIds={pinnedIds}
                 showPinButton={isOwner}
+                isAdmin={isAdmin}
               />
             </>
           ) : null}
@@ -679,7 +683,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {contributions.map((prompt: PromptCardProps["prompt"]) => (
-                <PromptCard key={prompt.id} prompt={prompt} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
               ))}
             </div>
           )}
@@ -694,7 +698,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
           ) : (
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
               {likedPrompts.map((prompt: PromptCardProps["prompt"]) => (
-                <PromptCard key={prompt.id} prompt={prompt} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
               ))}
             </Masonry>
           )}
@@ -709,7 +713,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {userExamples.map((prompt: PromptCardProps["prompt"]) => (
-                <PromptCard key={prompt.id} prompt={prompt} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
               ))}
             </div>
           )}
@@ -753,6 +757,14 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Admin Zone — visible only to admins viewing another user's profile */}
+      {session?.user?.role === "ADMIN" && session.user.id !== user.id && (
+        <div className="mt-8 border border-destructive/30 rounded-lg p-4 bg-destructive/5">
+          <h3 className="text-sm font-semibold text-destructive mb-3">{tAdminUsers("adminZone")}</h3>
+          <DeleteUserButton userId={user.id} username={user.username} />
+        </div>
+      )}
     </div>
   );
 }

@@ -193,7 +193,8 @@
       "structured": "Δομημένο",
       "document": "Έγγραφο",
       "skill": "Δεξιότητα",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Οδηγός"
     },
     "inputType": "Prompt χρήστη",
     "outputType": "Απάντηση AI",
@@ -392,7 +393,11 @@
     "learnHowToWritePrompts": "Μάθετε πώς να γράφετε αποτελεσματικά prompts →",
     "structuredFormatDetected": "Εντοπίστηκε μορφή {format}",
     "structuredFormatWarningDescription": "Το περιεχόμενο του prompt σας μοιάζει με δομημένα δεδομένα. Σκεφτείτε να αλλάξετε σε δομημένη λειτουργία για καλύτερη επισήμανση σύνταξης και επικύρωση.",
-    "switchToStructured": "Αλλαγή σε {format}"
+    "switchToStructured": "Αλλαγή σε {format}",
+    "createTag": "Create \"{name}\"",
+    "creatingTag": "Creating...",
+    "guideNotFound": "Ο Οδηγός Δεν Βρέθηκε",
+    "readTheGuide": "Διαβάστε τον οδηγό: {title}"
   },
   "changeRequests": {
     "title": "Αιτήσεις αλλαγής",
@@ -629,7 +634,9 @@
       "currentCredits": "Τρέχουσες: {remaining}/{limit} πιστώσεις απομένουν",
       "creditsUpdated": "Οι πιστώσεις ενημερώθηκαν επιτυχώς",
       "creditsUpdateFailed": "Αποτυχία ενημέρωσης πιστώσεων",
-      "save": "Αποθήκευση"
+      "save": "Αποθήκευση",
+      "adminZone": "Ζώνη Διαχειριστή",
+      "deleteUser": "Διαγραφή Χρήστη"
     },
     "categories": {
       "title": "Διαχείριση κατηγοριών",
@@ -695,7 +702,8 @@
       "editTitle": "Επεξεργασία ετικέτας",
       "editDescription": "Ενημέρωση στοιχείων ετικέτας",
       "deleteConfirmTitle": "Διαγραφή ετικέτας;",
-      "deleteConfirmDescription": "Αυτό θα αφαιρέσει την ετικέτα από όλα τα prompts."
+      "deleteConfirmDescription": "Αυτό θα αφαιρέσει την ετικέτα από όλα τα prompts.",
+      "deleteHoverHint": "Διαγραφή ετικέτας"
     },
     "webhooks": {
       "title": "Διαχείριση Webhooks",
@@ -2266,6 +2274,10 @@
     "cancel": "Ακύρωση",
     "submit": "Υποβολή",
     "communityExamples": "Παραδείγματα Κοινότητας",
-    "userExample": "Παράδειγμα Χρήστη"
+    "userExample": "Παράδειγμα Χρήστη",
+    "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
+    "skillOutcomeImageUrl": "Skill Outcome Image URL",
+    "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
+    "maxFileSizeVideo": "Max 4MB (MP4)"
   }
 }

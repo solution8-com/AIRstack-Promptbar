@@ -15,6 +15,7 @@ import { injectWidgets, isWidget } from "@/lib/plugins/widgets";
 interface InfinitePromptListProps {
   initialPrompts: PromptCardProps["prompt"][];
   initialTotal: number;
+  isAdmin?: boolean;
   filters: {
     q?: string;
     type?: string;
@@ -50,6 +51,7 @@ function PromptCardSkeleton() {
 export function InfinitePromptList({ 
   initialPrompts, 
   initialTotal,
+  isAdmin = false,
   filters 
 }: InfinitePromptListProps) {
   const t = useTranslations("prompts");
@@ -196,7 +198,7 @@ export function InfinitePromptList({
           isWidget(item) ? (
             <WidgetCard key={item.id} prompt={item} />
           ) : (
-            <PromptCard key={item.id} prompt={item} />
+            <PromptCard key={item.id} prompt={item} isAdmin={isAdmin} />
           )
         )}
       </Masonry>

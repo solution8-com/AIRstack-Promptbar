@@ -106,7 +106,7 @@ export default async function EditPromptPage({ params }: EditPromptPageProps) {
   const aiModelName = getAIModelName();
 
   return (
-    <div className="container max-w-3xl py-8">
+    <div className="container max-w-6xl py-8">
       <PromptForm
         categories={categories}
         tags={tags}
