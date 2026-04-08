@@ -193,7 +193,8 @@
       "structured": "구조화",
       "document": "문서",
       "skill": "스킬",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "가이드"
     },
     "inputType": "사용자 프롬프트",
     "outputType": "AI 응답",

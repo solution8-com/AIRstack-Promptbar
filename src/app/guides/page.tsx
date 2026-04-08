@@ -28,80 +28,87 @@ function getCachedGuides(
 
   return unstable_cache(
     async () => {
-      const where: Record<string, unknown> = {
-        type: "GUIDE",
-        isPrivate: false,
-        isUnlisted: false,
-        deletedAt: null,
-      };
+      try {
+        const where: Record<string, unknown> = {
+          type: "GUIDE",
+          isPrivate: false,
+          isUnlisted: false,
+          deletedAt: null,
+        };
 
-      if (searchQuery) {
-        where.OR = [
-          { title: { contains: searchQuery, mode: "insensitive" } },
-          { content: { contains: searchQuery, mode: "insensitive" } },
-          { description: { contains: searchQuery, mode: "insensitive" } },
-        ];
-      }
+        if (searchQuery) {
+          where.OR = [
+            { title: { contains: searchQuery, mode: "insensitive" } },
+            { content: { contains: searchQuery, mode: "insensitive" } },
+            { description: { contains: searchQuery, mode: "insensitive" } },
+          ];
+        }
 
-      const [guidesRaw, totalCount] = await Promise.all([
-        db.prompt.findMany({
-          where,
-          orderBy,
-          skip: 0,
-          take: perPage,
-          include: {
-            author: {
-              select: {
-                id: true,
-                name: true,
-                username: true,
-                avatar: true,
-                verified: true,
+        const [guidesRaw, totalCount] = await Promise.all([
+          db.prompt.findMany({
+            where,
+            orderBy,
+            skip: 0,
+            take: perPage,
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  name: true,
+                  username: true,
+                  avatar: true,
+                  verified: true,
+                },
               },
-            },
-            category: {
-              include: {
-                parent: {
-                  select: { id: true, name: true, slug: true },
+              category: {
+                include: {
+                  parent: {
+                    select: { id: true, name: true, slug: true },
+                  },
+                },
+              },
+              tags: {
+                include: {
+                  tag: true,
+                },
+              },
+              contributors: {
+                select: {
+                  id: true,
+                  username: true,
+                  name: true,
+                  avatar: true,
+                },
+              },
+              _count: {
+                select: {
+                  votes: true,
+                  contributors: true,
+                  outgoingConnections: { where: { label: { not: "related" } } },
+                  incomingConnections: { where: { label: { not: "related" } } },
                 },
               },
             },
-            tags: {
-              include: {
-                tag: true,
-              },
-            },
-            contributors: {
-              select: {
-                id: true,
-                username: true,
-                name: true,
-                avatar: true,
-              },
-            },
-            _count: {
-              select: {
-                votes: true,
-                contributors: true,
-                outgoingConnections: { where: { label: { not: "related" } } },
-                incomingConnections: { where: { label: { not: "related" } } },
-              },
-            },
-          },
-        }),
-        db.prompt.count({ where }),
-      ]);
+          }),
+          db.prompt.count({ where }),
+        ]);
 
-      return {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        guides: guidesRaw.map((p: any) => ({
-          ...p,
-          voteCount: p._count.votes,
-          contributorCount: p._count.contributors,
-          contributors: p.contributors,
-        })),
-        total: totalCount,
-      };
+        return {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          guides: guidesRaw.map((p: any) => ({
+            ...p,
+            voteCount: p._count.votes,
+            contributorCount: p._count.contributors,
+            contributors: p.contributors,
+          })),
+          total: totalCount,
+        };
+      } catch (error) {
+        // If the GUIDE enum doesn't exist in the database yet (migration pending),
+        // return an empty result instead of a 500 error.
+        console.error("Failed to fetch guides:", error);
+        return { guides: [], total: 0 };
+      }
     },
     ["guides", cacheKey],
     { tags: ["prompts"] }

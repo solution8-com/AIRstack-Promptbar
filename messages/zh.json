@@ -193,7 +193,8 @@
       "structured": "结构化",
       "document": "文档",
       "skill": "技能",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "指南"
     },
     "inputType": "用户提示词",
     "outputType": "AI 响应",

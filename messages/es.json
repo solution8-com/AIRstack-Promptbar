@@ -193,7 +193,8 @@
       "structured": "Estructurado",
       "document": "Documento",
       "skill": "Habilidad",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Guía"
     },
     "inputType": "Prompt del Usuario",
     "outputType": "Respuesta de IA",

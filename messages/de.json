@@ -193,7 +193,8 @@
       "structured": "Strukturiert",
       "document": "Dokument",
       "skill": "Skill",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "Leitfaden"
     },
     "inputType": "Benutzer-Prompt",
     "outputType": "KI-Antwort",

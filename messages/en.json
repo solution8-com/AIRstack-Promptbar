@@ -201,7 +201,8 @@
       "structured": "Structured",
       "document": "Document",
       "skill": "Skill",
-      "taste": "AIR Toolkit"
+      "taste": "AIR Toolkit",
+      "guide": "AIR Guide"
     },
     "inputType": "User Prompt",
     "inputTypeHack": "Hack Implementation Guide",

@@ -193,7 +193,8 @@
       "structured": "構造化",
       "document": "ドキュメント",
       "skill": "スキル",
-      "taste": "Taste"
+      "taste": "Taste",
+      "guide": "ガイド"
     },
     "inputType": "ユーザープロンプト",
     "outputType": "AI応答",

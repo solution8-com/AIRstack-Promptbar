@@ -262,7 +262,7 @@ export function PromptCard({ prompt, showPinButton = false, isPinned = false, is
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-1 flex-1 min-w-0">
             {prompt.isPrivate && <Lock className="h-3 w-3 text-muted-foreground shrink-0" />}
-            <Link href={getPromptUrl(prompt.id, prompt.slug)} prefetch={false} className="font-medium text-sm hover:underline line-clamp-1">
+            <Link href={prompt.type === "GUIDE" ? `/guides/${prompt.id}` : getPromptUrl(prompt.id, prompt.slug)} prefetch={false} className="font-medium text-sm hover:underline line-clamp-1">
               {prompt.title}
             </Link>
           </div>
