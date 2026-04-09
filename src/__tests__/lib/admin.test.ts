@@ -123,9 +123,15 @@ describe("Admin utilities", () => {
 
       await syncAdminRoleFromLegacyEnv();
 
-      const call = vi.mocked(db.user.updateMany).mock.calls[0][0];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((call.where as any).OR[0]).toEqual({ username: { in: ["le-dawg", "kasper-2904"] } });
+      expect(db.user.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            OR: expect.arrayContaining([
+              { username: { in: ["le-dawg", "kasper-2904"] } },
+            ]),
+          }),
+        })
+      );
     });
 
     it("should parse comma-separated format correctly", async () => {
@@ -134,9 +140,15 @@ describe("Admin utilities", () => {
 
       await syncAdminRoleFromLegacyEnv();
 
-      const call = vi.mocked(db.user.updateMany).mock.calls[0][0];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((call.where as any).OR[0]).toEqual({ username: { in: ["le-dawg", "kasper-2904"] } });
+      expect(db.user.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            OR: expect.arrayContaining([
+              { username: { in: ["le-dawg", "kasper-2904"] } },
+            ]),
+          }),
+        })
+      );
     });
 
     it("should be a no-op when S8_ADMINS is an empty list", async () => {
