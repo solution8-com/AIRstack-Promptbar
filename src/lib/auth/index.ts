@@ -3,6 +3,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "@/lib/db";
 import { getConfig } from "@/lib/config";
 import { initializePlugins, getAuthPlugin } from "@/lib/plugins";
+import { syncAdminRoleFromLegacyEnv } from "@/lib/admin";
 import type { Adapter, AdapterUser } from "next-auth/adapters";
 
 // Initialize plugins before use
@@ -121,29 +122,6 @@ function getConfiguredProviders(config: Awaited<ReturnType<typeof getConfig>>): 
   return ["credentials"];
 }
 
-// Helper to check if a username is in the admin list
-function isAdminUser(username: string | null | undefined): boolean {
-  if (!username) return false;
-  
-  const adminList = process.env.S8_ADMINS;
-  if (!adminList) {
-    // If S8_ADMINS is not set, allow all users (backwards compatible)
-    return true;
-  }
-  
-  // Parse the admin list (comma-separated or JSON array)
-  let admins: string[] = [];
-  try {
-    // Try to parse as JSON array first
-    admins = JSON.parse(adminList);
-  } catch {
-    // Fall back to comma-separated list
-    admins = adminList.split(',').map(u => u.trim()).filter(Boolean);
-  }
-  
-  return admins.includes(username);
-}
-
 const REQUIRED_ORG = process.env.S8_REQUIRED_ORG || "solution8-com";
 const ENFORCE_GITHUB_ORG = process.env.S8_ENFORCE_GITHUB_ORG !== "false";
 
@@ -186,6 +164,9 @@ async function isGithubOrgMember(username: string | null | undefined, accessToke
 
 // Build auth config dynamically based on prompts.config.ts
 async function buildAuthConfig() {
+  // One-shot migration: ensure S8_ADMINS users have role=ADMIN in DB
+  await syncAdminRoleFromLegacyEnv();
+
   const config = await getConfig();
   const providerIds = getConfiguredProviders(config);
   
@@ -241,18 +222,6 @@ async function buildAuthConfig() {
           });
 
           if (dbUser) {
-            // Check if user is in admin list (if S8_ADMINS is configured)
-            // Evaluate both the exact GitHub username and the sanitized DB username
-            if (!isAdminUser(dbUser.githubUsername) && !isAdminUser(dbUser.username)) {
-              // User not in admin list - deny access
-              console.log(`[AUTH] JWT_SIGNIN_DENIED`, JSON.stringify({
-                reason: "NOT_IN_ADMIN_LIST",
-                username: dbUser.username,
-                s8AdminsConfigured: Boolean(process.env.S8_ADMINS),
-              }));
-              return null;
-            }
-            
             token.id = dbUser.id;
             token.role = dbUser.role;
             token.username = dbUser.username;
@@ -280,22 +249,11 @@ async function buildAuthConfig() {
             }));
             return null;
           }
-          
-          // Check if user is still in admin list
-          // Evaluate both the exact GitHub username and the sanitized DB username
-          if (!isAdminUser(dbUser.githubUsername) && !isAdminUser(dbUser.username)) {
-            // User no longer in admin list - invalidate token
-            console.log(`[AUTH] JWT_TOKEN_INVALIDATED`, JSON.stringify({
-              reason: "REMOVED_FROM_ADMIN_LIST",
-              username: dbUser.username,
-              s8AdminsConfigured: Boolean(process.env.S8_ADMINS),
-            }));
-            return null;
-          }
 
-          // Update token with latest user data on explicit update or if data missing
+          // Always refresh role so DB role changes take effect immediately
+          token.role = dbUser.role;
+          // Update remaining token fields on explicit update or if data missing
           if (trigger === "update" || !token.username) {
-            token.role = dbUser.role;
             token.username = dbUser.username;
             token.locale = dbUser.locale;
             token.name = dbUser.name;
@@ -334,21 +292,6 @@ async function buildAuthConfig() {
 const authConfig = await buildAuthConfig();
 
 export const { handlers, signIn, signOut, auth } = NextAuth(authConfig);
-
-// Export admin helper for use in other components
-export { isAdminUser };
-
-// Helper to get all admin usernames from environment
-export function getAdminUsernames(): string[] {
-  const adminList = process.env.S8_ADMINS;
-  if (!adminList) return [];
-  
-  try {
-    return JSON.parse(adminList);
-  } catch {
-    return adminList.split(',').map(u => u.trim()).filter(Boolean);
-  }
-}
 
 // Extended session type
 declare module "next-auth" {

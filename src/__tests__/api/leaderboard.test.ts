@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/leaderboard/route";
 import { db } from "@/lib/db";
-import { getAdminUserIds } from "@/lib/admin";
+import { getAdminUserIds, getAdminUsernames } from "@/lib/admin";
 
 // Mock dependencies
 vi.mock("@/lib/db", () => ({
@@ -20,6 +20,7 @@ vi.mock("@/lib/db", () => ({
 
 vi.mock("@/lib/admin", () => ({
   getAdminUserIds: vi.fn(),
+  getAdminUsernames: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({
@@ -31,6 +32,8 @@ describe("GET /api/leaderboard", () => {
     vi.clearAllMocks();
     // Default mock - return user1 and user2 as admins
     vi.mocked(getAdminUserIds).mockResolvedValue(["user1", "user2"]);
+    // Default: return empty so all users pass the filter (length === 0 branch)
+    vi.mocked(getAdminUsernames).mockResolvedValue([]);
   });
 
   it("should return leaderboard with default period (all)", async () => {
@@ -278,6 +281,8 @@ describe("GET /api/leaderboard", () => {
   it("should only include admin users in leaderboard", async () => {
     // Mock getAdminUserIds to return only specific admin users
     vi.mocked(getAdminUserIds).mockResolvedValue(["admin1", "admin2"]);
+    // Mock getAdminUsernames to match admin users returned by db.user.findMany
+    vi.mocked(getAdminUsernames).mockResolvedValue(["admin1", "admin2"]);
 
     vi.mocked(db.promptVote.groupBy).mockResolvedValue([
       { promptId: "prompt1", _count: { promptId: 10 } },
@@ -292,7 +297,7 @@ describe("GET /api/leaderboard", () => {
       // prompt3 filtered out because author is not admin
     ] as never);
 
-    vi.mocked(db.user.findMany).mockResolvedValue([
+    vi.mocked(db.user.findMany).mockResolvedValueOnce([
       {
         id: "admin1",
         name: "Admin One",
@@ -307,7 +312,7 @@ describe("GET /api/leaderboard", () => {
         avatar: null,
         _count: { prompts: 3 },
       },
-    ] as never);
+    ] as never).mockResolvedValueOnce([] as never); // fill step returns empty
 
     const request = new Request("http://localhost:3000/api/leaderboard");
 

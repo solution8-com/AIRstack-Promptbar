@@ -106,10 +106,13 @@ export async function DELETE(
     }
 
     await db.$transaction(async (tx) => {
-      // Re-assign featured prompts owned by the target user to the acting admin
+      // Unfeature prompts owned by the target user — they will be cascade-deleted with the user
       await tx.prompt.updateMany({
         where: { authorId: id, isFeatured: true },
-        data: { authorId: session.user.id },
+        data: {
+          isFeatured: false,
+          featuredAt: null,
+        },
       });
 
       // Delete the user — cascade rules in schema handle remaining relations

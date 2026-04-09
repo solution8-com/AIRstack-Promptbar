@@ -1,89 +1,78 @@
 /**
  * Admin utilities for checking user admin status
- * 
- * Admins can be defined in two ways:
- * 1. Via ADMIN_USERNAMES environment variable (comma-separated list)
- * 2. Via UserRole.ADMIN in database (for future flexibility)
+ *
+ * The DB `role` field is the single source of truth for admin status.
+ * No runtime env-var checks — use `syncAdminRoleFromLegacyEnv` once on boot
+ * to migrate users from the old S8_ADMINS env var.
  */
 
 import { db } from "@/lib/db";
 
-// Cache admin usernames at module level to avoid repeated parsing
-let cachedAdminUsernames: string[] | null = null;
-
 /**
- * Clear the cached admin usernames (useful for testing)
- */
-export function clearAdminUsernamesCache(): void {
-  cachedAdminUsernames = null;
-}
-
-/**
- * Get list of admin usernames from environment variable
- */
-export function getAdminUsernamesFromEnv(): string[] {
-  // Return cached value if available
-  if (cachedAdminUsernames !== null) {
-    return cachedAdminUsernames;
-  }
-
-  const adminUsernames = process.env.ADMIN_USERNAMES;
-  if (!adminUsernames) {
-    cachedAdminUsernames = [];
-    return cachedAdminUsernames;
-  }
-  
-  cachedAdminUsernames = adminUsernames
-    .split(",")
-    .map(username => username.trim())
-    .filter(username => username.length > 0);
-  
-  return cachedAdminUsernames;
-}
-
-/**
- * Check if a username is in the admin list (from ENV var)
- */
-export function isAdminUsername(username: string): boolean {
-  const adminUsernames = getAdminUsernamesFromEnv();
-  return adminUsernames.includes(username);
-}
-
-/**
- * Check if a user is an admin by their ID
- * Checks both ENV var (by username) and database role
+ * Canonical admin check. DB role field is the single source of truth.
  */
 export async function isUserAdmin(userId: string): Promise<boolean> {
   const user = await db.user.findUnique({
     where: { id: userId },
-    select: { username: true, role: true },
+    select: { role: true },
   });
-
-  if (!user) return false;
-
-  // Check ENV var first
-  if (isAdminUsername(user.username)) return true;
-
-  // Fallback to database role
-  return user.role === "ADMIN";
+  return user?.role === "ADMIN";
 }
 
 /**
- * Get all admin user IDs (from both ENV var and database)
+ * Returns all user IDs with ADMIN role.
  */
 export async function getAdminUserIds(): Promise<string[]> {
-  const adminUsernames = getAdminUsernamesFromEnv();
-  
-  // Get users that match either ENV var usernames OR have ADMIN role
-  const adminUsers = await db.user.findMany({
-    where: {
-      OR: [
-        { username: { in: adminUsernames } },
-        { role: "ADMIN" },
-      ],
-    },
+  const admins = await db.user.findMany({
+    where: { role: "ADMIN" },
     select: { id: true },
   });
+  return admins.map((u) => u.id);
+}
 
-  return adminUsers.map(user => user.id);
+/**
+ * Returns all admin usernames. Used for leaderboard filtering, contributor search, etc.
+ */
+export async function getAdminUsernames(): Promise<string[]> {
+  const admins = await db.user.findMany({
+    where: { role: "ADMIN" },
+    select: { username: true },
+  });
+  return admins.map((u) => u.username);
+}
+
+/**
+ * One-shot boot migration: reads S8_ADMINS env var and upgrades matching
+ * users to role=ADMIN in the database. Idempotent — safe to run every boot.
+ *
+ * This exists solely to migrate from the old env-var-based system.
+ * Once S8_ADMINS is removed from Vercel env vars, this is a no-op.
+ */
+export async function syncAdminRoleFromLegacyEnv(): Promise<void> {
+  const adminList = process.env.S8_ADMINS;
+  if (!adminList) return;
+
+  let usernames: string[] = [];
+  try {
+    usernames = JSON.parse(adminList);
+  } catch {
+    usernames = adminList.split(",").map((u) => u.trim()).filter(Boolean);
+  }
+
+  if (usernames.length === 0) return;
+
+  const result = await db.user.updateMany({
+    where: {
+      OR: [
+        { username: { in: usernames } },
+        { githubUsername: { in: usernames } },
+      ],
+      role: "USER", // Only upgrade, never downgrade
+    },
+    data: { role: "ADMIN" },
+  });
+
+  if (result.count > 0) {
+    console.log(`[ADMIN] syncAdminRoleFromLegacyEnv: upgraded ${result.count} user(s) to role=ADMIN from S8_ADMINS env`);
+  }
 }
