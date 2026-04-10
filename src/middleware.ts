@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { getToken } from "next-auth/jwt";
 
 const PUBLIC_PATHS = ["/login", "/register", "/api/auth", "/unauthorized", "/monitoring"];
 const REQUIRED_ORG = process.env.S8_REQUIRED_ORG || "solution8-com";
@@ -15,7 +15,31 @@ function wantsJson(request: NextRequest) {
   return request.nextUrl.pathname.startsWith("/api") || accept.includes("application/json");
 }
 
-export default auth((request) => {
+async function getAuthToken(request: NextRequest) {
+  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+  if (!secret) return null;
+
+  // Primary decode path using default Auth.js cookie detection.
+  const primary = await getToken({ req: request, secret });
+  if (primary) return primary;
+
+  // Fallback cookie names for cross-runtime/proxy edge cases.
+  const fallbackCookieNames = [
+    "__Secure-authjs.session-token",
+    "authjs.session-token",
+    "__Secure-next-auth.session-token",
+    "next-auth.session-token",
+  ] as const;
+
+  for (const cookieName of fallbackCookieNames) {
+    const token = await getToken({ req: request, secret, cookieName });
+    if (token) return token;
+  }
+
+  return null;
+}
+
+export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasFileExtension = /\.[a-zA-Z0-9]+$/.test(pathname);
 
@@ -29,7 +53,9 @@ export default auth((request) => {
     return NextResponse.next();
   }
 
-  if (!request.auth?.user) {
+  const token = await getAuthToken(request);
+
+  if (!token) {
     if (wantsJson(request)) {
       return NextResponse.json({ error: "unauthorized", reason: "NO_SESSION" }, { status: 401 });
     }
@@ -39,7 +65,7 @@ export default auth((request) => {
     return NextResponse.redirect(loginUrl, { status: 302 });
   }
 
-  if (ENFORCE_GITHUB_ORG && request.auth.user.orgMember !== true) {
+  if (ENFORCE_GITHUB_ORG && token.orgMember !== true) {
     if (wantsJson(request)) {
       return NextResponse.json(
         { error: "unauthorized", reason: "WRONG_ORG", requiredOrg: REQUIRED_ORG },
@@ -66,7 +92,7 @@ export default auth((request) => {
       headers: requestHeaders,
     },
   });
-});
+}
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],

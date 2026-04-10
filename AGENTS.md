@@ -13,7 +13,7 @@ This repository enforces strict authentication and authorization. Do not weaken 
 3. **ORG-ONLY ACCESS:** Keep GitHub org enforcement enabled. Authentication must only succeed for users who are members of `S8_REQUIRED_ORG`.
 4. **DO NOT** remove `secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET` from `src/lib/auth/index.ts`.
 5. **DO NOT** replace the current `trustHost` logic in `src/lib/auth/index.ts` without evidence-based verification against Vercel behavior.
-6. **DO NOT** reintroduce blanket `getToken()`-based middleware gating. Use the Auth.js-native middleware/proxy session path so middleware and `auth()` do not diverge.
+6. **EDGE SIZE GUARDRAIL:** Middleware must remain edge-light. Do not import heavy server auth modules (`@/lib/auth`, Prisma adapter, plugin registries) into middleware. If needed, use `next-auth/jwt` token checks in middleware with default Auth.js behavior (no custom `salt`).
 7. **DO NOT** add `NEXTAUTH_JWT_SECRET` back to active secret resolution. Keep auth secret handling consistent across auth config and middleware.
 
 ## Project Overview
