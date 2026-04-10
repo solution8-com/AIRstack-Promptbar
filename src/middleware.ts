@@ -71,7 +71,6 @@ export async function middleware(request: NextRequest) {
     req: request,
     secret: secret,
     cookieName: sessionCookieName,
-    salt: sessionCookieName,
     secureCookie: sessionCookieName?.startsWith("__Secure-"),
   });
 

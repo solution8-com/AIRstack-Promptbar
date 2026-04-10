@@ -2,6 +2,13 @@
 
 > Guidelines for AI coding agents working on this project.
 
+# AI Agent Instructions (CRITICAL)
+
+## Authentication (NextAuth / Auth.js v5)
+- **DO NOT** remove `secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET` from `src/lib/auth/index.ts`. Vercel Edge runtimes strip dynamic environment variables and will crash with `ENVIRONMENT_FALLBACK` without it.
+- **DO NOT** remove `trustHost: true` from `src/lib/auth/index.ts`.
+- **DO NOT** pass a custom `salt` to `getToken()` in `src/middleware.ts`. Auth.js relies on an internal default salt for JWTs, and overriding it causes silent decryption failures resulting in infinite `NO_TOKEN` / `UNAUTHORIZED` redirect loops.
+
 ## Project Overview
 
 **prompts.chat** is a social platform for AI prompts built with Next.js 16. It allows users to share, discover, and collect prompts from the community. The project is open source and can be self-hosted with customizable branding, themes, and authentication.
