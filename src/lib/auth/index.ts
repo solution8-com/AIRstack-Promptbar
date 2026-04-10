@@ -187,7 +187,9 @@ async function buildAuthConfig() {
 
   return {
     adapter: CustomPrismaAdapter(),
+    secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
     providers: authProviders,
+    trustHost: true,
     session: {
       strategy: "jwt" as const,
     },

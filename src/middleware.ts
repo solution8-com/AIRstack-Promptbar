@@ -56,37 +56,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // =======================================================================
-  // FOOLPROOF COOKIE DISCOVERY
-  // Vercel Edge misreads HTTPS status and looks for the wrong cookie name.
-  // We find exactly what the browser sent and force getToken to use it.
-  // =======================================================================
-
-  const allCookies = request.cookies.getAll();
-  const sessionCookie = allCookies.find((cookie) => cookie.name.includes("session-token"));
-  const sessionCookieName = sessionCookie?.name?.replace(/\.\d+$/, "");
   const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || process.env.NEXTAUTH_JWT_SECRET;
-
-  let token = null;
-  if (sessionCookieName) {
-    token = await getToken({
-      req: request,
-      secret,
-      cookieName: sessionCookieName,
-      salt: sessionCookieName,
-      secureCookie: sessionCookieName.startsWith("__Secure-"),
-    });
-  }
+  const token = await getToken({ req: request, secret });
 
   if (!token) {
-    token = await getToken({ req: request, secret });
-  }
-
-  if (!token) {
-    return handleUnauthorized(request, "NO_TOKEN", {
-      cookies: allCookies.map((cookie) => cookie.name),
-      sessionCookieName: sessionCookieName ?? null,
-    });
+    return handleUnauthorized(request, "NO_TOKEN");
   }
 
   if (ENFORCE_GITHUB_ORG && token.org !== REQUIRED_ORG) {
