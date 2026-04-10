@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { getAdminUsernamesFromEnv } from "@/lib/admin";
 
 export async function GET(request: Request) {
   try {
@@ -33,13 +32,7 @@ export async function GET(request: Request) {
 
     // Filter to admin users only if requested
     if (adminOnly) {
-      const adminUsernames = getAdminUsernamesFromEnv();
-      whereClause.AND = {
-        OR: [
-          { username: { in: adminUsernames } },
-          { role: "ADMIN" },
-        ],
-      };
+      whereClause.AND = { role: "ADMIN" as const };
     }
 
     const users = await db.user.findMany({

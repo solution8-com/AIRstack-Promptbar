@@ -67,13 +67,16 @@ export async function middleware(request: NextRequest) {
   const sessionCookieName = sessionCookie?.name?.replace(/\.\d+$/, "");
   const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || process.env.NEXTAUTH_JWT_SECRET;
 
-  let token = await getToken({
-    req: request,
-    secret: secret,
-    cookieName: sessionCookieName,
-    salt: sessionCookieName,
-    secureCookie: sessionCookieName?.startsWith("__Secure-"),
-  });
+  let token = null;
+  if (sessionCookieName) {
+    token = await getToken({
+      req: request,
+      secret,
+      cookieName: sessionCookieName,
+      salt: sessionCookieName,
+      secureCookie: sessionCookieName.startsWith("__Secure-"),
+    });
+  }
 
   if (!token) {
     token = await getToken({ req: request, secret });

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getAdminUsernamesFromEnv, isAdminUsername, isUserAdmin, getAdminUserIds, clearAdminUsernamesCache } from "@/lib/admin";
+import { isUserAdmin, getAdminUserIds, getAdminUsernames, syncAdminRoleFromLegacyEnv } from "@/lib/admin";
 import { db } from "@/lib/db";
 
 // Mock the database
@@ -8,6 +8,7 @@ vi.mock("@/lib/db", () => ({
     user: {
       findUnique: vi.fn(),
       findMany: vi.fn(),
+      updateMany: vi.fn(),
     },
   },
 }));
@@ -15,86 +16,27 @@ vi.mock("@/lib/db", () => ({
 describe("Admin utilities", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Clear environment variable
-    delete process.env.ADMIN_USERNAMES;
-    // Clear admin username cache
-    clearAdminUsernamesCache();
-  });
-
-  describe("getAdminUsernamesFromEnv", () => {
-    it("should return empty array when ADMIN_USERNAMES is not set", () => {
-      const result = getAdminUsernamesFromEnv();
-      expect(result).toEqual([]);
-    });
-
-    it("should parse comma-separated usernames", () => {
-      process.env.ADMIN_USERNAMES = "admin1,admin2,admin3";
-      const result = getAdminUsernamesFromEnv();
-      expect(result).toEqual(["admin1", "admin2", "admin3"]);
-    });
-
-    it("should trim whitespace from usernames", () => {
-      process.env.ADMIN_USERNAMES = " admin1 , admin2 , admin3 ";
-      const result = getAdminUsernamesFromEnv();
-      expect(result).toEqual(["admin1", "admin2", "admin3"]);
-    });
-
-    it("should filter out empty strings", () => {
-      process.env.ADMIN_USERNAMES = "admin1,,admin2,";
-      const result = getAdminUsernamesFromEnv();
-      expect(result).toEqual(["admin1", "admin2"]);
-    });
-  });
-
-  describe("isAdminUsername", () => {
-    it("should return true for admin username", () => {
-      process.env.ADMIN_USERNAMES = "admin1,admin2";
-      expect(isAdminUsername("admin1")).toBe(true);
-      expect(isAdminUsername("admin2")).toBe(true);
-    });
-
-    it("should return false for non-admin username", () => {
-      process.env.ADMIN_USERNAMES = "admin1,admin2";
-      expect(isAdminUsername("user1")).toBe(false);
-    });
-
-    it("should return false when no admins configured", () => {
-      expect(isAdminUsername("admin1")).toBe(false);
-    });
+    delete process.env.S8_ADMINS;
   });
 
   describe("isUserAdmin", () => {
-    it("should return true for user in admin ENV list", async () => {
-      process.env.ADMIN_USERNAMES = "admin1";
-      vi.mocked(db.user.findUnique).mockResolvedValue({
-        id: "user-1",
-        username: "admin1",
-        role: "USER",
-      });
-
-      const result = await isUserAdmin("user-1");
-      expect(result).toBe(true);
-    });
-
     it("should return true for user with ADMIN role", async () => {
-      process.env.ADMIN_USERNAMES = "";
       vi.mocked(db.user.findUnique).mockResolvedValue({
-        id: "user-1",
-        username: "someuser",
         role: "ADMIN",
-      });
+      } as never);
 
       const result = await isUserAdmin("user-1");
       expect(result).toBe(true);
+      expect(db.user.findUnique).toHaveBeenCalledWith({
+        where: { id: "user-1" },
+        select: { role: true },
+      });
     });
 
-    it("should return false for non-admin user", async () => {
-      process.env.ADMIN_USERNAMES = "admin1";
+    it("should return false for user with USER role", async () => {
       vi.mocked(db.user.findUnique).mockResolvedValue({
-        id: "user-1",
-        username: "regularuser",
         role: "USER",
-      });
+      } as never);
 
       const result = await isUserAdmin("user-1");
       expect(result).toBe(false);
@@ -108,31 +50,111 @@ describe("Admin utilities", () => {
   });
 
   describe("getAdminUserIds", () => {
-    it("should return user IDs matching ENV usernames or ADMIN role", async () => {
-      process.env.ADMIN_USERNAMES = "admin1,admin2";
+    it("should return IDs of all ADMIN-role users from DB", async () => {
       vi.mocked(db.user.findMany).mockResolvedValue([
         { id: "user-1" },
         { id: "user-2" },
-        { id: "user-3" },
-      ]);
+      ] as never);
 
       const result = await getAdminUserIds();
-      expect(result).toEqual(["user-1", "user-2", "user-3"]);
+      expect(result).toEqual(["user-1", "user-2"]);
       expect(db.user.findMany).toHaveBeenCalledWith({
-        where: {
-          OR: [
-            { username: { in: ["admin1", "admin2"] } },
-            { role: "ADMIN" },
-          ],
-        },
+        where: { role: "ADMIN" },
         select: { id: true },
       });
     });
 
-    it("should handle empty admin list", async () => {
+    it("should return empty array when no admins exist", async () => {
       vi.mocked(db.user.findMany).mockResolvedValue([]);
       const result = await getAdminUserIds();
       expect(result).toEqual([]);
+    });
+  });
+
+  describe("getAdminUsernames", () => {
+    it("should return usernames of all ADMIN-role users from DB", async () => {
+      vi.mocked(db.user.findMany).mockResolvedValue([
+        { username: "le-dawg" },
+        { username: "kasper-2904" },
+      ] as never);
+
+      const result = await getAdminUsernames();
+      expect(result).toEqual(["le-dawg", "kasper-2904"]);
+      expect(db.user.findMany).toHaveBeenCalledWith({
+        where: { role: "ADMIN" },
+        select: { username: true },
+      });
+    });
+
+    it("should return empty array when no admins exist", async () => {
+      vi.mocked(db.user.findMany).mockResolvedValue([]);
+      const result = await getAdminUsernames();
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe("syncAdminRoleFromLegacyEnv", () => {
+    it("should be a no-op when S8_ADMINS is not set", async () => {
+      await syncAdminRoleFromLegacyEnv();
+      expect(db.user.updateMany).not.toHaveBeenCalled();
+    });
+
+    it("should call updateMany with correct where clause when S8_ADMINS is set", async () => {
+      process.env.S8_ADMINS = '["le-dawg","kasper-2904"]';
+      vi.mocked(db.user.updateMany).mockResolvedValue({ count: 2 });
+
+      await syncAdminRoleFromLegacyEnv();
+
+      expect(db.user.updateMany).toHaveBeenCalledWith({
+        where: {
+          OR: [
+            { username: { in: ["le-dawg", "kasper-2904"] } },
+            { githubUsername: { in: ["le-dawg", "kasper-2904"] } },
+          ],
+          role: "USER",
+        },
+        data: { role: "ADMIN" },
+      });
+    });
+
+    it("should parse JSON array format correctly", async () => {
+      process.env.S8_ADMINS = '["le-dawg","kasper-2904"]';
+      vi.mocked(db.user.updateMany).mockResolvedValue({ count: 0 });
+
+      await syncAdminRoleFromLegacyEnv();
+
+      expect(db.user.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            OR: expect.arrayContaining([
+              { username: { in: ["le-dawg", "kasper-2904"] } },
+            ]),
+          }),
+        })
+      );
+    });
+
+    it("should parse comma-separated format correctly", async () => {
+      process.env.S8_ADMINS = "le-dawg,kasper-2904";
+      vi.mocked(db.user.updateMany).mockResolvedValue({ count: 0 });
+
+      await syncAdminRoleFromLegacyEnv();
+
+      expect(db.user.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            OR: expect.arrayContaining([
+              { username: { in: ["le-dawg", "kasper-2904"] } },
+            ]),
+          }),
+        })
+      );
+    });
+
+    it("should be a no-op when S8_ADMINS is an empty list", async () => {
+      process.env.S8_ADMINS = "[]";
+      await syncAdminRoleFromLegacyEnv();
+      expect(db.user.updateMany).not.toHaveBeenCalled();
     });
   });
 });

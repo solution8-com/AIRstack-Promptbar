@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
-import { getAdminUserIds } from "@/lib/admin";
-import { getAdminUsernames } from "@/lib/auth";
+import { getAdminUserIds, getAdminUsernames } from "@/lib/admin";
 
 // Cache leaderboard data for 1 hour (3600 seconds)
 const getLeaderboard = unstable_cache(
@@ -81,8 +80,8 @@ const getLeaderboard = unstable_cache(
       },
     });
 
-    // Filter by admin users if S8_ADMINS is configured
-    const adminUsernames = getAdminUsernames();
+    // Filter to admin users only (DB role is source of truth)
+    const adminUsernames = await getAdminUsernames();
     const filteredUsers = adminUsernames.length > 0
       ? topUsers.filter(user => adminUsernames.includes(user.username))
       : topUsers;
@@ -121,7 +120,7 @@ const getLeaderboard = unstable_cache(
         },
       };
 
-      // Add username filter if admins configured
+      // Add username filter for admin users
       if (adminUsernames.length > 0) {
         additionalUsersWhere.username = { in: adminUsernames };
       }
