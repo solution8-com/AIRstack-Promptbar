@@ -63,10 +63,11 @@ export async function middleware(request: NextRequest) {
     return handleUnauthorized(request, "NO_TOKEN");
   }
 
-  if (ENFORCE_GITHUB_ORG && token.org !== REQUIRED_ORG) {
+  if (ENFORCE_GITHUB_ORG && token.orgMember !== true) {
     return handleUnauthorized(request, "WRONG_ORG", {
       tokenOrg: token.org ?? null,
       requiredOrg: REQUIRED_ORG,
+      orgMember: token.orgMember ?? null,
       username: token.username ?? token.name ?? null,
     });
   }

@@ -125,40 +125,60 @@ function getConfiguredProviders(config: Awaited<ReturnType<typeof getConfig>>): 
 const REQUIRED_ORG = process.env.S8_REQUIRED_ORG || "solution8-com";
 const ENFORCE_GITHUB_ORG = process.env.S8_ENFORCE_GITHUB_ORG !== "false";
 
-async function isGithubOrgMember(username: string | null | undefined, accessToken?: string | null): Promise<boolean> {
-  if (!username || !accessToken) return false;
+async function getGithubOrgMembership(accessToken?: string | null): Promise<"member" | "not_member" | "error"> {
+  if (!accessToken) {
+    return "error";
+  }
 
   try {
-    const res = await fetch(`https://api.github.com/orgs/${REQUIRED_ORG}/members/${username}`, {
+    const res = await fetch(`https://api.github.com/user/memberships/orgs/${REQUIRED_ORG}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         Accept: "application/vnd.github+json",
       },
     });
 
-    if (res.status !== 204) {
-      const bodyText = await res.text();
+    if (res.status === 404) {
       console.log(`[AUTH] SIGNIN_DENIED`, JSON.stringify({
         reason: "NOT_ORG_MEMBER",
         org: REQUIRED_ORG,
-        username,
+      }));
+      return "not_member";
+    }
+
+    if (!res.ok) {
+      const bodyText = await res.text();
+      console.error(`[AUTH] SIGNIN_ORG_CHECK_ERROR`, JSON.stringify({
+        reason: "UNEXPECTED_GITHUB_STATUS",
+        org: REQUIRED_ORG,
         githubStatus: res.status,
         githubStatusText: res.statusText,
         githubBody: bodyText.slice(0, 200),
       }));
-      return false;
+      return "error";
     }
 
-    console.log(`[AUTH] SIGNIN_ORG_OK`, JSON.stringify({ org: REQUIRED_ORG, username }));
-    return true;
+    const membership = await res.json() as { state?: string };
+    const state = membership.state ?? "unknown";
+
+    if (state === "active" || state === "pending") {
+      console.log(`[AUTH] SIGNIN_ORG_OK`, JSON.stringify({ org: REQUIRED_ORG, state }));
+      return "member";
+    }
+
+    console.log(`[AUTH] SIGNIN_DENIED`, JSON.stringify({
+      reason: "INVALID_MEMBERSHIP_STATE",
+      org: REQUIRED_ORG,
+      state,
+    }));
+    return "not_member";
   } catch (error) {
     console.error(`[AUTH] SIGNIN_ORG_CHECK_ERROR`, JSON.stringify({
       reason: "GITHUB_API_EXCEPTION",
       org: REQUIRED_ORG,
-      username,
       error: String(error),
     }));
-    return false;
+    return "error";
   }
 }
 
@@ -200,7 +220,7 @@ async function buildAuthConfig() {
     pages: {
       signIn: "/login",
       signUp: "/register",
-      error: "/login",
+      error: "/unauthorized",
     },
     callbacks: {
       async signIn({ account, profile }): Promise<boolean> {
@@ -216,10 +236,24 @@ async function buildAuthConfig() {
           return true;
         }
 
-        return isGithubOrgMember(githubUsername, accessToken);
+        const membership = await getGithubOrgMembership(accessToken);
+
+        if (membership === "member") {
+          return true;
+        }
+
+        console.log(`[AUTH] SIGNIN_DENIED`, JSON.stringify({
+          reason: membership === "not_member" ? "NOT_ORG_MEMBER" : "ORG_CHECK_ERROR",
+          org: REQUIRED_ORG,
+          username: githubUsername,
+        }));
+        return "/unauthorized";
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      async jwt({ token, user, trigger }: { token: any; user?: any; trigger?: string }) {
+      async jwt({ token, user, account, trigger }: { token: any; user?: any; account?: any; trigger?: string }) {
+        const isVerifiedGithubOrgMember =
+          account?.provider === "github" && ENFORCE_GITHUB_ORG ? true : Boolean(token.orgMember);
+
         // On sign in, look up the actual database user by email to ensure correct ID
         if (user && user.email) {
           const dbUser = await db.user.findUnique({
@@ -234,7 +268,7 @@ async function buildAuthConfig() {
             token.locale = dbUser.locale;
             token.name = dbUser.name;
             token.picture = dbUser.avatar;
-            token.orgMember = true;
+            token.orgMember = isVerifiedGithubOrgMember;
             token.org = REQUIRED_ORG;
           }
         }
@@ -266,7 +300,7 @@ async function buildAuthConfig() {
             token.picture = dbUser.avatar;
           }
 
-          token.orgMember = token.orgMember ?? false;
+          token.orgMember = Boolean(token.orgMember);
           token.org = REQUIRED_ORG;
         }
 

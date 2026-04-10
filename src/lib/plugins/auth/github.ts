@@ -14,10 +14,14 @@ export const githubPlugin: AuthPlugin = {
         },
       },
       profile(profile) {
+        const normalizedEmail =
+          profile.email ||
+          (profile.login ? `${profile.login}@users.noreply.github.com` : null);
+
         return {
           id: profile.id.toString(),
           name: profile.name || profile.login,
-          email: profile.email,
+          email: normalizedEmail,
           image: profile.avatar_url,
           username: profile.login, // GitHub username (used as display username)
           githubUsername: profile.login, // Immutable GitHub username for contributor attribution
