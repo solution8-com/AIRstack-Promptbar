@@ -2,6 +2,18 @@
 
 > Guidelines for AI coding agents working on this project.
 
+## AI Agent Instructions (CRITICAL)
+
+### Authentication (NextAuth / Auth.js v5 on Vercel)
+
+NEVER modify the following authentication configurations. Doing so will immediately break Vercel Edge deployments.
+
+1. **DO NOT** remove `secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET` from `src/lib/auth/index.ts`. Without it, the auth secret can be unavailable at runtime and Auth.js can crash with `ENVIRONMENT_FALLBACK`.
+2. **DO NOT** remove `trustHost: true` from `src/lib/auth/index.ts`. Vercel generates dynamic deployment URLs, and this setting keeps Auth.js from rejecting those hosts and dropping session cookies.
+3. **DO NOT** pass a custom `salt` or `cookieName` to `getToken()` in `src/middleware.ts`. Auth.js relies on its internal defaults for JWT decryption. Overriding them causes silent token decryption failures and redirect loops.
+4. **DO NOT** replace the explicit `AUTH_SECRET || NEXTAUTH_SECRET` fallback with auto-discovery. If auth env naming changes in the future, update both the auth config and middleware deliberately in the same change.
+5. **DO NOT** add `NEXTAUTH_JWT_SECRET` back to the secret resolution in `src/middleware.ts`. Both `src/lib/auth/index.ts` and `src/middleware.ts` must use the same `AUTH_SECRET || NEXTAUTH_SECRET` chain. A mismatched secret causes middleware to successfully decrypt tokens that Auth.js itself cannot, or vice-versa, producing confusing redirect loops.
+
 ## Project Overview
 
 **prompts.chat** is a social platform for AI prompts built with Next.js 16. It allows users to share, discover, and collect prompts from the community. The project is open source and can be self-hosted with customizable branding, themes, and authentication.
@@ -218,8 +230,11 @@ Authentication and storage use a plugin architecture:
 Required in `.env`:
 ```
 DATABASE_URL=           # PostgreSQL connection string
-AUTH_SECRET=            # NextAuth secret key
+AUTH_SECRET=            # NextAuth secret key (preferred)
+NEXTAUTH_SECRET=        # Legacy fallback secret; AUTH_SECRET takes precedence
 ```
+
+> **Secret precedence:** Both `src/lib/auth/index.ts` and `src/middleware.ts` resolve the secret as `AUTH_SECRET || NEXTAUTH_SECRET`. Only these two variables are supported. Do **not** set `NEXTAUTH_JWT_SECRET` — it is no longer read and tokens encrypted with it will fail to decrypt.
 
 Optional OAuth (if using those providers):
 ```
