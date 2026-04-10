@@ -120,7 +120,7 @@ In Internal Hack mode, when searching for contributors:
 ```
 
 **Results (Admin Only):**
-Only users from `ADMIN_USERNAMES` env var OR users with `role: ADMIN` appear:
+Only users with `role: ADMIN` appear:
 ```
 ┌─────────────────────────────────────────────────────┐
 │ @admin1     Admin User One                          │
@@ -145,38 +145,33 @@ Only users from `ADMIN_USERNAMES` env var OR users with `role: ADMIN` appear:
 
 ## Testing Steps
 
-1. Set up `.env` with admin usernames:
-   ```bash
-   ADMIN_USERNAMES="testadmin,admin2"
-   ```
-
-2. Create test users in database (if testing contributor search):
+1. Create test users in database (if testing contributor search):
    - Regular user: `testuser` with `role: USER`
-   - Admin user: `testadmin` with `role: USER` (matches ENV)
+   - Admin user: `testadmin` with `role: ADMIN`
    - DB Admin: `dbadmin` with `role: ADMIN`
 
-3. Start dev server:
+2. Start dev server:
    ```bash
    npm run dev
    ```
 
-4. Open browser to `http://localhost:3000/prompts/new`
+3. Open browser to `http://localhost:3000/prompts/new`
 
-5. Test toggle:
+4. Test toggle:
    - Click toggle switch
    - Verify URL changes to `?mode=internal-hack`
    - Verify headline changes
    - Verify private toggle disappears
 
-6. Test markdown preview:
+5. Test markdown preview:
    - Write some markdown in content editor
    - Click "Preview" tab
    - Verify markdown renders correctly
    - Click "Edit" tab to return to editing
 
-7. Test contributor search:
+6. Test contributor search:
    - Search for "test"
-   - In regular mode: both `testuser` and `testadmin` appear
+   - In regular mode: `testuser`, `testadmin`, and `dbadmin` appear
    - Toggle to internal hack mode
    - Search for "test"
    - Only `testadmin` appears (+ `dbadmin` if searching "admin")

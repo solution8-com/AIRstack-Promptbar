@@ -6,19 +6,13 @@ This implementation adds a toggle feature to the `/prompts/new` endpoint that al
 ## What Was Implemented
 
 ### 1. Admin Configuration
-- **Environment Variable**: Added `ADMIN_USERNAMES` to `.env.example`
-  - Format: Comma-separated list of usernames (e.g., `ADMIN_USERNAMES="admin1,admin2,admin3"`)
-  - Flexible approach that doesn't require database changes
-  
 - **Admin Utility Library** (`src/lib/admin.ts`):
-  - `getAdminUsernamesFromEnv()`: Parses admin usernames from environment variable
-  - `isAdminUsername(username)`: Checks if a username is in the admin list
-  - `isUserAdmin(userId)`: Checks if a user is admin (checks both ENV var AND database role)
+  - `isUserAdmin(userId)`: Checks if a user is admin based on the database role
   - `getAdminUserIds()`: Gets all admin user IDs
+  - `getAdminUsernames()`: Returns admin usernames from users with `role: ADMIN`
+  - `syncAdminRoleFromLegacyEnv()`: Migrates legacy `S8_ADMINS` usernames into `role: ADMIN` on boot
 
-**Note on Database Role**: The codebase already has a `UserRole` enum with `ADMIN` and `USER` values in the Prisma schema. The implementation supports both approaches:
-- **ENV variable** (your preference): Quick, flexible, no database changes needed
-- **Database role** (fallback): If a user has `role: ADMIN` in the database, they're also treated as admin
+**Current Admin Model**: The codebase uses the `UserRole` enum with `ADMIN` and `USER` values in the Prisma schema. Admin-only flows should rely on `role: ADMIN` in the database.
 
 ### 2. UI Components
 
@@ -54,9 +48,7 @@ When in Internal Hack mode (`?mode=internal-hack`):
 
 #### API Endpoint (`src/app/api/users/search/route.ts`)
 - Added `adminOnly` query parameter
-- When `adminOnly=true`, filters users to:
-  - Users whose usernames are in `ADMIN_USERNAMES` env var, OR
-  - Users with `role: ADMIN` in database
+- When `adminOnly=true`, filters users with `role: ADMIN` in the database
 
 #### Page Component (`src/app/prompts/new/page.tsx`)
 - Reads `mode` from search params
@@ -74,10 +66,7 @@ When in Internal Hack mode (`?mode=internal-hack`):
 
 ### Setting Up Admins
 
-Add admin usernames to your `.env` file:
-```bash
-ADMIN_USERNAMES="john,jane,alice"
-```
+Set the relevant users to `role: ADMIN` in the database or via the Admin UI.
 
 ### Accessing Internal Hack Mode
 
@@ -90,7 +79,7 @@ ADMIN_USERNAMES="john,jane,alice"
 
 - **Content Editor**: Defaults to YAML structured format for markdown
 - **Markdown Preview**: Toggle between Edit/Preview to see rendered markdown
-- **Contributors**: Search only shows admin users (from ENV var)
+- **Contributors**: Search only shows admin users
 - **Privacy**: Always public (no toggle shown)
 - **Output Section**: Hidden (not needed for internal docs)
 - **Workflow Link**: Hidden (not needed for internal docs)
@@ -113,8 +102,8 @@ ADMIN_USERNAMES="john,jane,alice"
 
 ### Manual Testing Checklist
 To test the feature, you'll need to:
-1. Set up `ADMIN_USERNAMES` in `.env`
-2. Create test users with those usernames
+1. Ensure the relevant test users have `role: ADMIN`
+2. Create test users in the database
 3. Start dev server: `npm run dev`
 4. Navigate to `http://localhost:3000/prompts/new`
 5. Test toggle functionality
@@ -133,7 +122,7 @@ To test the feature, you'll need to:
 - `src/__tests__/lib/admin.test.ts` - Unit tests
 
 ### Modified:
-- `.env.example` - Added ADMIN_USERNAMES documentation
+- `.env.example` - Documented database-role admin control
 - `messages/en.json` - Added translation strings
 - `src/app/prompts/new/page.tsx` - Added mode toggle and logic
 - `src/components/prompts/prompt-form.tsx` - Conditional rendering for internal hack mode

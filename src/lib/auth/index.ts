@@ -205,9 +205,8 @@ async function buildAuthConfig() {
     throw new Error(`No valid auth plugins found. Configured: ${providerIds.join(", ")}`);
   }
 
-  const hasExplicitAuthUrl = Boolean(process.env.AUTH_URL || process.env.NEXTAUTH_URL);
-  const isVercelPreviewDeployment = process.env.VERCEL === "1" && process.env.VERCEL_ENV === "preview";
-  const trustHost = !hasExplicitAuthUrl && isVercelPreviewDeployment;
+  const isVercelDeployment = process.env.VERCEL === "1";
+  const trustHost = isVercelDeployment || !process.env.AUTH_URL;
 
   return {
     adapter: CustomPrismaAdapter(),
