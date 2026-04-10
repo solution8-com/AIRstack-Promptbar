@@ -117,6 +117,28 @@ The setup wizard configures branding, theme, authentication (GitHub/Google/Azure
 
 📖 **[Full Self-Hosting Guide](SELF-HOSTING.md)** • 🐳 **[Docker Guide](DOCKER.md)**
 
+### Access Control Policy (Solution8 Deployment)
+
+This deployment is intentionally locked down:
+
+- `Authenticated-only` app access (all app routes require a valid session)
+- `GitHub-only` authentication provider
+- `Org-only` login: only users in the required GitHub org may authenticate
+
+Required auth environment variables for this policy:
+
+```bash
+AUTH_SECRET=...
+S8_ENFORCE_GITHUB_ORG=true
+S8_REQUIRED_ORG=solution8-com
+```
+
+Optional legacy compatibility:
+
+```bash
+NEXTAUTH_SECRET=...
+```
+
 ---
 
 ## 🤖 GitHub Models Integration

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { auth } from "@/lib/auth";
 
 const PUBLIC_PATHS = ["/login", "/register", "/api/auth", "/unauthorized", "/monitoring"];
 const REQUIRED_ORG = process.env.S8_REQUIRED_ORG || "solution8-com";
@@ -10,39 +10,12 @@ function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
 
-function authLog(event: string, details: Record<string, unknown>) {
-  console.log(`[AUTH] ${event}`, JSON.stringify(details));
-}
-
 function wantsJson(request: NextRequest) {
   const accept = request.headers.get("accept") ?? "";
   return request.nextUrl.pathname.startsWith("/api") || accept.includes("application/json");
 }
 
-function handleUnauthorized(request: NextRequest, reason: string, tokenInfo?: Record<string, unknown>) {
-  const { pathname } = request.nextUrl;
-  const jsonResponse = { error: "unauthorized", reason };
-  const responseType = wantsJson(request) ? "json" : "redirect";
-
-  authLog("UNAUTHORIZED", {
-    reason,
-    path: pathname,
-    method: request.method,
-    responseType,
-    token: tokenInfo ?? null,
-    referer: request.headers.get("referer") ?? undefined,
-    userAgent: request.headers.get("user-agent") ?? undefined,
-  });
-
-  if (responseType === "json") {
-    return NextResponse.json(jsonResponse, { status: 401 });
-  }
-
-  const url = new URL("/unauthorized", request.url);
-  return NextResponse.redirect(url, { status: 302 });
-}
-
-export async function middleware(request: NextRequest) {
+export default auth((request) => {
   const { pathname } = request.nextUrl;
   const hasFileExtension = /\.[a-zA-Z0-9]+$/.test(pathname);
 
@@ -56,20 +29,26 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
-  const token = await getToken({ req: request, secret });
+  if (!request.auth?.user) {
+    if (wantsJson(request)) {
+      return NextResponse.json({ error: "unauthorized", reason: "NO_SESSION" }, { status: 401 });
+    }
 
-  if (!token) {
-    return handleUnauthorized(request, "NO_TOKEN");
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("callbackUrl", `${pathname}${request.nextUrl.search}`);
+    return NextResponse.redirect(loginUrl, { status: 302 });
   }
 
-  if (ENFORCE_GITHUB_ORG && token.orgMember !== true) {
-    return handleUnauthorized(request, "WRONG_ORG", {
-      tokenOrg: token.org ?? null,
-      requiredOrg: REQUIRED_ORG,
-      orgMember: token.orgMember ?? null,
-      username: token.username ?? token.name ?? null,
-    });
+  if (ENFORCE_GITHUB_ORG && request.auth.user.orgMember !== true) {
+    if (wantsJson(request)) {
+      return NextResponse.json(
+        { error: "unauthorized", reason: "WRONG_ORG", requiredOrg: REQUIRED_ORG },
+        { status: 403 }
+      );
+    }
+
+    const unauthorizedUrl = new URL("/unauthorized", request.url);
+    return NextResponse.redirect(unauthorizedUrl, { status: 302 });
   }
 
   if (pathname.startsWith("/prompts/") && (pathname.endsWith(".prompt.md") || pathname.endsWith(".prompt.yml"))) {
@@ -87,7 +66,7 @@ export async function middleware(request: NextRequest) {
       headers: requestHeaders,
     },
   });
-}
+});
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
