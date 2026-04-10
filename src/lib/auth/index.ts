@@ -185,11 +185,15 @@ async function buildAuthConfig() {
     throw new Error(`No valid auth plugins found. Configured: ${providerIds.join(", ")}`);
   }
 
+  const hasExplicitAuthUrl = Boolean(process.env.AUTH_URL || process.env.NEXTAUTH_URL);
+  const isVercelPreviewDeployment = process.env.VERCEL === "1" && process.env.VERCEL_ENV === "preview";
+  const trustHost = !hasExplicitAuthUrl && isVercelPreviewDeployment;
+
   return {
     adapter: CustomPrismaAdapter(),
     secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
     providers: authProviders,
-    trustHost: true,
+    trustHost,
     session: {
       strategy: "jwt" as const,
     },
