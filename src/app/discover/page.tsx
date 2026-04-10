@@ -1,7 +1,7 @@
 import { DiscoverTabs } from "@/components/prompts/discover-tabs";
 import { StructuredData } from "@/components/seo/structured-data";
 import { db } from "@/lib/db";
-import { getAdminUsernames } from "@/lib/auth";
+import { getAdminUsernames } from "@/lib/admin";
 import { auth } from "@/lib/auth";
 
 export default async function DiscoverPage() {
