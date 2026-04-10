@@ -6,7 +6,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SkillsFilteredList } from "@/components/prompts/skills-filtered-list";
 import { db } from "@/lib/db";
-import { getAdminUsernames } from "@/lib/auth";
+import { getAdminUsernames } from "@/lib/admin";
 import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
