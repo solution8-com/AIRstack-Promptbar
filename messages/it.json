@@ -636,7 +636,12 @@
       "creditsUpdateFailed": "Impossibile aggiornare i crediti",
       "save": "Salva",
       "adminZone": "Zona Amministratore",
-      "deleteUser": "Elimina Utente"
+      "deleteUser": "Elimina Utente",
+      "openSelected": "Apri utenti selezionati",
+      "pageSize": {
+        "label": "Righe per pagina",
+        "all": "Tutti"
+      }
     },
     "categories": {
       "title": "Gestione Categorie",

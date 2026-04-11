@@ -636,7 +636,12 @@
       "creditsUpdateFailed": "Kreditlər yenilənmədi",
       "save": "Saxla",
       "adminZone": "İdarəçi Zonası",
-      "deleteUser": "İstifadəçini Sil"
+      "deleteUser": "İstifadəçini Sil",
+      "openSelected": "Seçilmiş istifadəçiləri aç",
+      "pageSize": {
+        "label": "Səhifə başına sətir",
+        "all": "Hamısı"
+      }
     },
     "categories": {
       "title": "Kateqoriya İdarəetməsi",

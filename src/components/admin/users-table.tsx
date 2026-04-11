@@ -94,6 +94,7 @@ export function UsersTable() {
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [userFilter, setUserFilter] = useState("all");
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [pageSizeLoaded, setPageSizeLoaded] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -108,6 +109,7 @@ export function UsersTable() {
         window.localStorage.removeItem(PAGE_SIZE_STORAGE_KEY);
       }
     }
+    setPageSizeLoaded(true);
   }, []);
 
   const fetchUsers = useCallback(async (page: number, search: string, filter: string, limit: number = DEFAULT_PAGE_SIZE) => {
@@ -136,9 +138,10 @@ export function UsersTable() {
   }, []);
 
   useEffect(() => {
+    if (!pageSizeLoaded) return;
     fetchUsers(currentPage, searchQuery, userFilter, pageSize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, userFilter, pageSize, fetchUsers]);
+  }, [currentPage, userFilter, pageSize, fetchUsers, pageSizeLoaded]);
 
   const handleSearch = () => {
     setCurrentPage(1);

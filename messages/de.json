@@ -641,7 +641,12 @@
       "creditsUpdateFailed": "Guthaben konnte nicht aktualisiert werden",
       "save": "Speichern",
       "adminZone": "Admin-Bereich",
-      "deleteUser": "Benutzer löschen"
+      "deleteUser": "Benutzer löschen",
+      "openSelected": "Ausgewählte Benutzer öffnen",
+      "pageSize": {
+        "label": "Zeilen pro Seite",
+        "all": "Alle"
+      }
     },
     "categories": {
       "title": "Kategorieverwaltung",

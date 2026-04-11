@@ -641,7 +641,12 @@
       "creditsUpdateFailed": "Error al actualizar créditos",
       "save": "Guardar",
       "adminZone": "Zona de Administrador",
-      "deleteUser": "Eliminar Usuario"
+      "deleteUser": "Eliminar Usuario",
+      "openSelected": "Abrir usuarios seleccionados",
+      "pageSize": {
+        "label": "Filas por página",
+        "all": "Todos"
+      }
     },
     "categories": {
       "title": "Gestión de Categorías",

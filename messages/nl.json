@@ -636,7 +636,12 @@
       "creditsUpdateFailed": "Kon credits niet bijwerken",
       "save": "Opslaan",
       "adminZone": "Beheerderszone",
-      "deleteUser": "Gebruiker verwijderen"
+      "deleteUser": "Gebruiker verwijderen",
+      "openSelected": "Geselecteerde gebruikers openen",
+      "pageSize": {
+        "label": "Rijen per pagina",
+        "all": "Alle"
+      }
     },
     "categories": {
       "title": "Categoriebeheer",

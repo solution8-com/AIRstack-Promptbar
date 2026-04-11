@@ -641,7 +641,12 @@
       "creditsUpdateFailed": "额度更新失败",
       "save": "保存",
       "adminZone": "管理员区域",
-      "deleteUser": "删除用户"
+      "deleteUser": "删除用户",
+      "openSelected": "打开选定的用户",
+      "pageSize": {
+        "label": "每页行数",
+        "all": "全部"
+      }
     },
     "categories": {
       "title": "分类管理",

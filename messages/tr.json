@@ -641,7 +641,12 @@
       "creditsUpdateFailed": "Krediler güncellenemedi",
       "save": "Kaydet",
       "adminZone": "Yönetici Alanı",
-      "deleteUser": "Kullanıcıyı Sil"
+      "deleteUser": "Kullanıcıyı Sil",
+      "openSelected": "Seçili kullanıcıları aç",
+      "pageSize": {
+        "label": "Sayfa başına satır",
+        "all": "Tümü"
+      }
     },
     "categories": {
       "title": "Kategori Yönetimi",
