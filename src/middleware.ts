@@ -44,7 +44,7 @@ async function getAuthToken(request: NextRequest) {
   return null;
 }
 
-export default async function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasFileExtension = /\.[a-zA-Z0-9]+$/.test(pathname);
 
