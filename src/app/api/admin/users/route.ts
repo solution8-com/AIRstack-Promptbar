@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     const filter = searchParams.get("filter") || "all";
 
     // Validate pagination
-    const validPage = Math.max(1, page);
+    const validPage = fetchAll ? 1 : Math.max(1, page);
     const skip = fetchAll ? 0 : (validPage - 1) * validLimit;
 
     // Build filter conditions
