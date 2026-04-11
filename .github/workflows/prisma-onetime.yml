@@ -23,14 +23,14 @@ jobs:
         with:
           node-version: 20
           cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
+      
       - name: Debug Environment Variables
         run: echo "DATABASE_URL is '${{ secrets.DATABASE_URL }}'"
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Apply Prisma migrations
         run: npx prisma migrate deploy
