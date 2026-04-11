@@ -30,8 +30,13 @@ async function getAuthToken(request: NextRequest) {
     "__Secure-next-auth.session-token",
     "next-auth.session-token",
   ] as const;
+  const presentFallbackCookieNames = fallbackCookieNames.filter((cookieName) =>
+    request.cookies.has(cookieName)
+  );
 
-  for (const cookieName of fallbackCookieNames) {
+  if (presentFallbackCookieNames.length === 0) return null;
+
+  for (const cookieName of presentFallbackCookieNames) {
     const token = await getToken({ req: request, secret, cookieName });
     if (token) return token;
   }
@@ -39,7 +44,7 @@ async function getAuthToken(request: NextRequest) {
   return null;
 }
 
-export default async function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasFileExtension = /\.[a-zA-Z0-9]+$/.test(pathname);
 
