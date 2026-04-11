@@ -672,6 +672,11 @@
       "creditsUpdated": "Credits updated successfully",
       "creditsUpdateFailed": "Failed to update credits",
       "save": "Save",
+      "openSelected": "Open selected users",
+      "pageSize": {
+        "label": "Rows per page",
+        "all": "All"
+      },
       "adminZone": "Admin Zone",
       "deleteUser": "Delete User"
     },

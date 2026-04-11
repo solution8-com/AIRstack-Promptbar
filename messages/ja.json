@@ -641,7 +641,12 @@
       "creditsUpdateFailed": "クレジットの更新に失敗しました",
       "save": "保存",
       "adminZone": "管理者ゾーン",
-      "deleteUser": "ユーザーを削除"
+      "deleteUser": "ユーザーを削除",
+      "openSelected": "選択したユーザーを開く",
+      "pageSize": {
+        "label": "ページごとの行数",
+        "all": "すべて"
+      }
     },
     "categories": {
       "title": "カテゴリー管理",

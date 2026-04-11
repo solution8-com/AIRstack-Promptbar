@@ -1,6 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+
+// Zod schema for query parameter validation
+const requestQuerySchema = z.object({
+  page: z.string().optional().transform((val) => {
+    const num = parseInt(val || "1", 10);
+    return !Number.isNaN(num) && num >= 1 ? num : 1;
+  }),
+  limit: z.union([
+    z.literal("all"),
+    z.string().transform((val) => {
+      const num = parseInt(val, 10);
+      return !Number.isNaN(num) && num >= 1 && num <= 100 ? num : 15;
+    }),
+  ]).optional().transform((val) => val || 15),
+  search: z.string().optional().default(""),
+  sortBy: z.string().optional().default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
+  filter: z.string().optional().default("all"),
+});
+
+const DEFAULT_LIMIT = 15;
+const MAX_LIMIT_ALL = 1000; // Hard cap for "all" to prevent unbounded queries
 
 // GET - List all users for admin with pagination and search
 export async function GET(request: NextRequest) {
@@ -24,17 +47,31 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "20");
-    const search = searchParams.get("search") || "";
-    const sortBy = searchParams.get("sortBy") || "createdAt";
-    const sortOrder = searchParams.get("sortOrder") || "desc";
-    const filter = searchParams.get("filter") || "all";
+
+    // Validate query parameters with Zod
+    const queryParams = requestQuerySchema.safeParse({
+      page: searchParams.get("page"),
+      limit: searchParams.get("limit"),
+      search: searchParams.get("search"),
+      sortBy: searchParams.get("sortBy"),
+      sortOrder: searchParams.get("sortOrder"),
+      filter: searchParams.get("filter"),
+    });
+
+    if (!queryParams.success) {
+      return NextResponse.json(
+        { error: "validation_error", message: "Invalid query parameters", details: queryParams.error.issues },
+        { status: 400 }
+      );
+    }
+
+    const { page, limit, search, sortBy, sortOrder, filter } = queryParams.data;
+    const fetchAll = limit === "all";
+    const validLimit = typeof limit === "number" ? limit : DEFAULT_LIMIT;
 
     // Validate pagination
-    const validPage = Math.max(1, page);
-    const validLimit = Math.min(Math.max(1, limit), 100);
-    const skip = (validPage - 1) * validLimit;
+    const validPage = fetchAll ? 1 : page;
+    const skip = fetchAll ? 0 : (validPage - 1) * validLimit;
 
     // Build filter conditions
     type WhereCondition = {
@@ -88,8 +125,8 @@ export async function GET(request: NextRequest) {
     const [users, total] = await Promise.all([
       db.user.findMany({
         where,
-        skip,
-        take: validLimit,
+        skip: fetchAll ? undefined : skip,
+        take: fetchAll ? MAX_LIMIT_ALL : validLimit, // Apply hard cap for "all"
         orderBy: { [orderByField]: orderByDirection },
         select: {
           id: true,
@@ -119,9 +156,9 @@ export async function GET(request: NextRequest) {
       users,
       pagination: {
         page: validPage,
-        limit: validLimit,
+        limit: fetchAll ? total : validLimit,
         total,
-        totalPages: Math.ceil(total / validLimit),
+        totalPages: fetchAll ? 1 : Math.ceil(total / validLimit),
       },
     });
   } catch (error) {

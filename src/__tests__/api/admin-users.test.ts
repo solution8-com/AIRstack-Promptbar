@@ -189,4 +189,72 @@ describe("GET /api/admin/users", () => {
       })
     );
   });
+
+  it("should fetch all users when limit=all", async () => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "admin1", role: "ADMIN" } } as never);
+    const mockUsers = Array.from({ length: 50 }, (_, i) => ({
+      id: `user-${i}`,
+      email: `user${i}@example.com`,
+      username: `user${i}`,
+      name: `User ${i}`,
+      avatar: null,
+      role: "USER",
+      verified: true,
+      flagged: false,
+      flaggedAt: null,
+      flaggedReason: null,
+      dailyGenerationLimit: 10,
+      generationCreditsRemaining: 5,
+      createdAt: new Date(),
+      _count: { prompts: 0 },
+    }));
+    vi.mocked(db.user.findMany).mockResolvedValue(mockUsers as never);
+    vi.mocked(db.user.count).mockResolvedValue(50);
+
+    const request = new Request("http://localhost:3000/api/admin/users?limit=all");
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(db.user.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skip: undefined,
+        take: 1000, // MAX_LIMIT_ALL hard cap
+      })
+    );
+    expect(data.pagination.page).toBe(1);
+    expect(data.pagination.totalPages).toBe(1);
+    expect(data.pagination.limit).toBe(50); // Should equal total
+  });
+
+  it("should handle limit=all with zero users", async () => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "admin1", role: "ADMIN" } } as never);
+    vi.mocked(db.user.findMany).mockResolvedValue([]);
+    vi.mocked(db.user.count).mockResolvedValue(0);
+
+    const request = new Request("http://localhost:3000/api/admin/users?limit=all");
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.users).toHaveLength(0);
+    expect(data.pagination.page).toBe(1);
+    expect(data.pagination.totalPages).toBe(1);
+    expect(data.pagination.total).toBe(0);
+    expect(data.pagination.limit).toBe(0);
+  });
+
+  it("should apply hard cap of 1000 users for limit=all", async () => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "admin1", role: "ADMIN" } } as never);
+    vi.mocked(db.user.findMany).mockResolvedValue([]);
+    vi.mocked(db.user.count).mockResolvedValue(1500);
+
+    const request = new Request("http://localhost:3000/api/admin/users?limit=all");
+    await GET(request);
+
+    expect(db.user.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        take: 1000, // Hard cap applied
+      })
+    );
+  });
 });

@@ -636,7 +636,12 @@
       "creditsUpdateFailed": "به‌روزرسانی اعتبار ناموفق بود",
       "save": "ذخیره",
       "adminZone": "ناحیه مدیر",
-      "deleteUser": "حذف کاربر"
+      "deleteUser": "حذف کاربر",
+      "openSelected": "باز کردن کاربران انتخاب شده",
+      "pageSize": {
+        "label": "ردیف در هر صفحه",
+        "all": "همه"
+      }
     },
     "categories": {
       "title": "مدیریت دسته‌بندی‌ها",

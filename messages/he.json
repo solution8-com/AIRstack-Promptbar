@@ -636,7 +636,12 @@
       "creditsUpdateFailed": "עדכון הקרדיטים נכשל",
       "save": "שמור",
       "adminZone": "אזור מנהל",
-      "deleteUser": "מחק משתמש"
+      "deleteUser": "מחק משתמש",
+      "openSelected": "פתח משתמשים נבחרים",
+      "pageSize": {
+        "label": "שורות לעמוד",
+        "all": "הכל"
+      }
     },
     "categories": {
       "title": "ניהול קטגוריות",

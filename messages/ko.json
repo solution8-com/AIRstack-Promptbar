@@ -636,7 +636,12 @@
       "creditsUpdateFailed": "크레딧 업데이트 실패",
       "save": "저장",
       "adminZone": "관리자 영역",
-      "deleteUser": "사용자 삭제"
+      "deleteUser": "사용자 삭제",
+      "openSelected": "선택한 사용자 열기",
+      "pageSize": {
+        "label": "페이지당 행",
+        "all": "전체"
+      }
     },
     "categories": {
       "title": "카테고리 관리",

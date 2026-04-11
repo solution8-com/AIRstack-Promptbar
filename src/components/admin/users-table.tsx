@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { formatDistanceToNow } from "@/lib/date";
-import { MoreHorizontal, Shield, User, Trash2, BadgeCheck, Search, Loader2, ChevronLeft, ChevronRight, Filter, Flag, AlertTriangle, Sparkles } from "lucide-react";
+import { ExternalLink, MoreHorizontal, Shield, User, Trash2, BadgeCheck, Search, Loader2, ChevronLeft, ChevronRight, Filter, Flag, AlertTriangle, Sparkles } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -69,6 +69,10 @@ interface Pagination {
   totalPages: number;
 }
 
+const PAGE_SIZE_STORAGE_KEY = "admin-users-page-size";
+const DEFAULT_PAGE_SIZE = 15;
+const PAGE_SIZE_OPTIONS = [15, 30, 50, 100, 0];
+
 export function UsersTable() {
   const router = useRouter();
   const t = useTranslations("admin.users");
@@ -89,13 +93,31 @@ export function UsersTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [userFilter, setUserFilter] = useState("all");
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [pageSizeLoaded, setPageSizeLoaded] = useState(false);
 
-  const fetchUsers = useCallback(async (page: number, search: string, filter: string) => {
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const storedValue = window.localStorage.getItem(PAGE_SIZE_STORAGE_KEY);
+    if (storedValue) {
+      const parsed = parseInt(storedValue, 10);
+      // Validate that the parsed value exists in PAGE_SIZE_OPTIONS
+      if (!Number.isNaN(parsed) && PAGE_SIZE_OPTIONS.includes(parsed)) {
+        setPageSize(parsed);
+      } else {
+        // Clear invalid value from localStorage
+        window.localStorage.removeItem(PAGE_SIZE_STORAGE_KEY);
+      }
+    }
+    setPageSizeLoaded(true);
+  }, []);
+
+  const fetchUsers = useCallback(async (page: number, search: string, filter: string, limit: number = DEFAULT_PAGE_SIZE) => {
     setLoadingUsers(true);
     try {
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: "15",
+        limit: limit === 0 ? "all" : limit.toString(),
         ...(search && { search }),
         ...(filter !== "all" && { filter }),
       });
@@ -116,18 +138,29 @@ export function UsersTable() {
   }, []);
 
   useEffect(() => {
-    fetchUsers(currentPage, searchQuery, userFilter);
+    if (!pageSizeLoaded) return;
+    fetchUsers(currentPage, searchQuery, userFilter, pageSize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, userFilter, fetchUsers]);
+  }, [currentPage, userFilter, pageSize, fetchUsers, pageSizeLoaded]);
 
   const handleSearch = () => {
     setCurrentPage(1);
-    fetchUsers(1, searchQuery, userFilter);
+    fetchUsers(1, searchQuery, userFilter, pageSize);
   };
 
   const handleFilterChange = (value: string) => {
     setUserFilter(value);
     setCurrentPage(1);
+  };
+
+  const handlePageSizeChange = (value: string) => {
+    const size = value === "all" ? 0 : parseInt(value, 10);
+    setPageSize(size);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(PAGE_SIZE_STORAGE_KEY, size.toString());
+    }
+    setCurrentPage(1);
+    setSelectedIds([]); // Clear selection when page size changes
   };
 
   const handleRoleChange = async (userId: string, newRole: "ADMIN" | "USER") => {
@@ -158,7 +191,7 @@ export function UsersTable() {
       if (!res.ok) throw new Error("Failed to update verification");
 
       toast.success(verified ? t("verified") : t("unverified"));
-      fetchUsers(currentPage, searchQuery, userFilter);
+      fetchUsers(currentPage, searchQuery, userFilter, pageSize);
       router.refresh();
     } catch {
       toast.error(t("verifyFailed"));
@@ -176,7 +209,7 @@ export function UsersTable() {
       if (!res.ok) throw new Error("Failed to update flag status");
 
       toast.success(flagged ? t("flagged") : t("unflagged"));
-      fetchUsers(currentPage, searchQuery, userFilter);
+      fetchUsers(currentPage, searchQuery, userFilter, pageSize);
       router.refresh();
     } catch {
       toast.error(t("flagFailed"));
@@ -195,7 +228,7 @@ export function UsersTable() {
       if (!res.ok) throw new Error("Failed to delete user");
 
       toast.success(t("deleted"));
-      fetchUsers(currentPage, searchQuery, userFilter);
+      fetchUsers(currentPage, searchQuery, userFilter, pageSize);
       router.refresh();
     } catch {
       toast.error(t("deleteFailed"));
@@ -257,6 +290,15 @@ export function UsersTable() {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
   };
 
+  const selectedUsers = useMemo(() => users.filter((user) => selectedIds.includes(user.id)), [selectedIds, users]);
+
+  const handleOpenSelectedUsers = useCallback(() => {
+    if (selectedUsers.length === 0 || typeof window === "undefined") return;
+    selectedUsers.forEach((user) => {
+      window.open(`/@${user.username}`, "_blank", "noopener,noreferrer");
+    });
+  }, [selectedUsers]);
+
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return;
     if (!window.confirm(t("deleteConfirmTitle"))) return;
@@ -296,7 +338,7 @@ export function UsersTable() {
       }
 
       setSelectedIds((prev) => prev.filter((id) => !succeeded.includes(id)));
-      fetchUsers(currentPage, searchQuery, userFilter);
+      fetchUsers(currentPage, searchQuery, userFilter, pageSize);
       router.refresh();
     } catch {
       toast.error(t("deleteFailed"));
@@ -324,7 +366,7 @@ export function UsersTable() {
       if (!res.ok) throw new Error("Failed to update credits");
 
       toast.success(t("creditsUpdated"));
-      fetchUsers(currentPage, searchQuery, userFilter);
+      fetchUsers(currentPage, searchQuery, userFilter, pageSize);
       router.refresh();
     } catch {
       toast.error(t("creditsUpdateFailed"));
@@ -342,20 +384,34 @@ export function UsersTable() {
             <p className="text-sm text-muted-foreground">{t("description")}</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Select value={userFilter} onValueChange={handleFilterChange}>
-              <SelectTrigger className="w-full sm:w-[140px]">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("filters.all")}</SelectItem>
-              <SelectItem value="admin">{t("filters.admin")}</SelectItem>
-              <SelectItem value="user">{t("filters.user")}</SelectItem>
-              <SelectItem value="verified">{t("filters.verified")}</SelectItem>
-              <SelectItem value="unverified">{t("filters.unverified")}</SelectItem>
-              <SelectItem value="flagged">{t("filters.flagged")}</SelectItem>
-            </SelectContent>
-          </Select>
+            <div className="flex items-center gap-2">
+              {selectedIds.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1"
+                  onClick={handleOpenSelectedUsers}
+                  disabled={selectedUsers.length === 0}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  {t("openSelected")}
+                </Button>
+              )}
+              <Select value={userFilter} onValueChange={handleFilterChange}>
+                <SelectTrigger className="w-full sm:w-[140px]">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("filters.all")}</SelectItem>
+                <SelectItem value="admin">{t("filters.admin")}</SelectItem>
+                <SelectItem value="user">{t("filters.user")}</SelectItem>
+                <SelectItem value="verified">{t("filters.verified")}</SelectItem>
+                <SelectItem value="unverified">{t("filters.unverified")}</SelectItem>
+                <SelectItem value="flagged">{t("filters.flagged")}</SelectItem>
+              </SelectContent>
+            </Select>
+            </div>
             <div className="flex gap-2">
               <div className="relative flex-1 sm:flex-none">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -592,39 +648,59 @@ export function UsersTable() {
         </Table>
           </div>
 
-          {/* Pagination */}
-          {pagination && pagination.totalPages > 1 && (
+          {users.length > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 pt-4 border-t">
-              <p className="text-sm text-muted-foreground">
-                {t("showing", {
-                  from: (pagination.page - 1) * pagination.limit + 1,
-                  to: Math.min(pagination.page * pagination.limit, pagination.total),
-                  total: pagination.total,
-                })}
-              </p>
-              <div className="flex items-center gap-2">
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className="h-8 w-8"
-                  disabled={currentPage === 1 || loadingUsers}
-                  onClick={() => setCurrentPage((p) => p - 1)}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="text-sm tabular-nums px-2">
-                  {currentPage} / {pagination.totalPages}
-                </span>
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className="h-8 w-8"
-                  disabled={currentPage === pagination.totalPages || loadingUsers}
-                  onClick={() => setCurrentPage((p) => p + 1)}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+              <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">{t("pageSize.label")}</span>
+                  <Select value={pageSize === 0 ? "all" : pageSize.toString()} onValueChange={handlePageSizeChange}>
+                    <SelectTrigger className="w-[120px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAGE_SIZE_OPTIONS.map((size) => (
+                        <SelectItem key={size} value={size === 0 ? "all" : size.toString()}>
+                          {size === 0 ? t("pageSize.all") : size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {pagination && (
+                  <p className="text-sm text-muted-foreground">
+                    {t("showing", {
+                      from: (pagination.page - 1) * pagination.limit + 1,
+                      to: Math.min(pagination.page * pagination.limit, pagination.total),
+                      total: pagination.total,
+                    })}
+                  </p>
+                )}
               </div>
+              {pagination && pagination.totalPages > 1 && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="h-8 w-8"
+                    disabled={currentPage === 1 || loadingUsers}
+                    onClick={() => setCurrentPage((p) => p - 1)}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm tabular-nums px-2">
+                    {currentPage} / {pagination.totalPages}
+                  </span>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="h-8 w-8"
+                    disabled={currentPage === pagination.totalPages || loadingUsers}
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </>
