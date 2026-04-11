@@ -10,39 +10,36 @@ function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
 
-function authLog(event: string, details: Record<string, unknown>) {
-  console.log(`[AUTH] ${event}`, JSON.stringify(details));
-}
-
 function wantsJson(request: NextRequest) {
   const accept = request.headers.get("accept") ?? "";
   return request.nextUrl.pathname.startsWith("/api") || accept.includes("application/json");
 }
 
-function handleUnauthorized(request: NextRequest, reason: string, tokenInfo?: Record<string, unknown>) {
-  const { pathname } = request.nextUrl;
-  const jsonResponse = { error: "unauthorized", reason };
-  const responseType = wantsJson(request) ? "json" : "redirect";
+async function getAuthToken(request: NextRequest) {
+  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+  if (!secret) return null;
 
-  authLog("UNAUTHORIZED", {
-    reason,
-    path: pathname,
-    method: request.method,
-    responseType,
-    token: tokenInfo ?? null,
-    referer: request.headers.get("referer") ?? undefined,
-    userAgent: request.headers.get("user-agent") ?? undefined,
-  });
+  // Primary decode path using default Auth.js cookie detection.
+  const primary = await getToken({ req: request, secret });
+  if (primary) return primary;
 
-  if (responseType === "json") {
-    return NextResponse.json(jsonResponse, { status: 401 });
+  // Fallback cookie names for cross-runtime/proxy edge cases.
+  const fallbackCookieNames = [
+    "__Secure-authjs.session-token",
+    "authjs.session-token",
+    "__Secure-next-auth.session-token",
+    "next-auth.session-token",
+  ] as const;
+
+  for (const cookieName of fallbackCookieNames) {
+    const token = await getToken({ req: request, secret, cookieName });
+    if (token) return token;
   }
 
-  const url = new URL("/unauthorized", request.url);
-  return NextResponse.redirect(url, { status: 302 });
+  return null;
 }
 
-export async function middleware(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasFileExtension = /\.[a-zA-Z0-9]+$/.test(pathname);
 
@@ -56,20 +53,28 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
-  const token = await getToken({ req: request, secret });
+  const token = await getAuthToken(request);
 
   if (!token) {
-    return handleUnauthorized(request, "NO_TOKEN");
+    if (wantsJson(request)) {
+      return NextResponse.json({ error: "unauthorized", reason: "NO_SESSION" }, { status: 401 });
+    }
+
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("callbackUrl", `${pathname}${request.nextUrl.search}`);
+    return NextResponse.redirect(loginUrl, { status: 302 });
   }
 
   if (ENFORCE_GITHUB_ORG && token.orgMember !== true) {
-    return handleUnauthorized(request, "WRONG_ORG", {
-      tokenOrg: token.org ?? null,
-      requiredOrg: REQUIRED_ORG,
-      orgMember: token.orgMember ?? null,
-      username: token.username ?? token.name ?? null,
-    });
+    if (wantsJson(request)) {
+      return NextResponse.json(
+        { error: "unauthorized", reason: "WRONG_ORG", requiredOrg: REQUIRED_ORG },
+        { status: 403 }
+      );
+    }
+
+    const unauthorizedUrl = new URL("/unauthorized", request.url);
+    return NextResponse.redirect(unauthorizedUrl, { status: 302 });
   }
 
   if (pathname.startsWith("/prompts/") && (pathname.endsWith(".prompt.md") || pathname.endsWith(".prompt.yml"))) {

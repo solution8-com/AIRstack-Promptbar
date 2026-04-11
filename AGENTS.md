@@ -6,13 +6,15 @@
 
 ### Authentication (NextAuth / Auth.js v5 on Vercel)
 
-NEVER modify the following authentication configurations. Doing so will immediately break Vercel Edge deployments.
+This repository enforces strict authentication and authorization. Do not weaken these rules.
 
-1. **DO NOT** remove `secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET` from `src/lib/auth/index.ts`. Without it, the auth secret can be unavailable at runtime and Auth.js can crash with `ENVIRONMENT_FALLBACK`.
-2. **DO NOT** remove `trustHost: true` from `src/lib/auth/index.ts`. Vercel generates dynamic deployment URLs, and this setting keeps Auth.js from rejecting those hosts and dropping session cookies.
-3. **DO NOT** pass a custom `salt` or `cookieName` to `getToken()` in `src/middleware.ts`. Auth.js relies on its internal defaults for JWT decryption. Overriding them causes silent token decryption failures and redirect loops.
-4. **DO NOT** replace the explicit `AUTH_SECRET || NEXTAUTH_SECRET` fallback with auto-discovery. If auth env naming changes in the future, update both the auth config and middleware deliberately in the same change.
-5. **DO NOT** add `NEXTAUTH_JWT_SECRET` back to the secret resolution in `src/middleware.ts`. Both `src/lib/auth/index.ts` and `src/middleware.ts` must use the same `AUTH_SECRET || NEXTAUTH_SECRET` chain. A mismatched secret causes middleware to successfully decrypt tokens that Auth.js itself cannot, or vice-versa, producing confusing redirect loops.
+1. **AUTHENTICATED-ONLY APP:** Treat all application routes as protected by default. Do not introduce public app pages unless explicitly approved by the product owner.
+2. **GITHUB-ONLY AUTH:** Keep `providers: ["github"]` in `prompts.config.ts` unless explicitly instructed otherwise.
+3. **ORG-ONLY ACCESS:** Keep GitHub org enforcement enabled. Authentication must only succeed for users who are members of `S8_REQUIRED_ORG`.
+4. **DO NOT** remove `secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET` from `src/lib/auth/index.ts`.
+5. **DO NOT** replace the current `trustHost` logic in `src/lib/auth/index.ts` without evidence-based verification against Vercel behavior.
+6. **EDGE SIZE GUARDRAIL:** Middleware must remain edge-light. Do not import heavy server auth modules (`@/lib/auth`, Prisma adapter, plugin registries) into middleware. If needed, use `next-auth/jwt` token checks in middleware with default Auth.js behavior (no custom `salt`).
+7. **DO NOT** add `NEXTAUTH_JWT_SECRET` back to active secret resolution. Keep auth secret handling consistent across auth config and middleware.
 
 ## Project Overview
 
