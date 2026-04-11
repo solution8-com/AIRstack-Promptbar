@@ -25,7 +25,12 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "20");
+    const DEFAULT_LIMIT = 15;
+    const limitParam = searchParams.get("limit") || DEFAULT_LIMIT.toString();
+    const fetchAll = limitParam === "all";
+    const parsedLimit = parseInt(limitParam, 10);
+    const normalizedLimit = Number.isNaN(parsedLimit) ? DEFAULT_LIMIT : parsedLimit;
+    const validLimit = Math.min(Math.max(1, normalizedLimit), 100);
     const search = searchParams.get("search") || "";
     const sortBy = searchParams.get("sortBy") || "createdAt";
     const sortOrder = searchParams.get("sortOrder") || "desc";
@@ -33,8 +38,7 @@ export async function GET(request: NextRequest) {
 
     // Validate pagination
     const validPage = Math.max(1, page);
-    const validLimit = Math.min(Math.max(1, limit), 100);
-    const skip = (validPage - 1) * validLimit;
+    const skip = fetchAll ? 0 : (validPage - 1) * validLimit;
 
     // Build filter conditions
     type WhereCondition = {
@@ -88,8 +92,8 @@ export async function GET(request: NextRequest) {
     const [users, total] = await Promise.all([
       db.user.findMany({
         where,
-        skip,
-        take: validLimit,
+        skip: fetchAll ? undefined : skip,
+        take: fetchAll ? undefined : validLimit,
         orderBy: { [orderByField]: orderByDirection },
         select: {
           id: true,
@@ -119,9 +123,9 @@ export async function GET(request: NextRequest) {
       users,
       pagination: {
         page: validPage,
-        limit: validLimit,
+        limit: fetchAll ? total : validLimit,
         total,
-        totalPages: Math.ceil(total / validLimit),
+        totalPages: fetchAll ? 1 : Math.ceil(total / validLimit),
       },
     });
   } catch (error) {
