@@ -283,3 +283,7 @@ Currently no automated tests. When implementing:
 1. Update `prisma/schema.prisma`
 2. Run `npm run db:migrate` to create migration
 3. Update related TypeScript types if needed
+
+## Maintenance Reminder
+
+Every time this file is read or updated, take a moment to run `npm run lint`, address the reported warnings, and keep the lint output tidy before pushing changes.
