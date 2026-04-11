@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const DEFAULT_LIMIT = 15;
+    const MAX_LIMIT_ALL = 1000; // Hard cap for "all" to prevent unbounded queries
     const limitParam = searchParams.get("limit") || DEFAULT_LIMIT.toString();
     const fetchAll = limitParam === "all";
     const parsedLimit = parseInt(limitParam, 10);
@@ -93,7 +94,7 @@ export async function GET(request: NextRequest) {
       db.user.findMany({
         where,
         skip: fetchAll ? undefined : skip,
-        take: fetchAll ? undefined : validLimit,
+        take: fetchAll ? MAX_LIMIT_ALL : validLimit, // Apply hard cap for "all"
         orderBy: { [orderByField]: orderByDirection },
         select: {
           id: true,

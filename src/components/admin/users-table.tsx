@@ -100,8 +100,12 @@ export function UsersTable() {
     const storedValue = window.localStorage.getItem(PAGE_SIZE_STORAGE_KEY);
     if (storedValue) {
       const parsed = parseInt(storedValue, 10);
-      if (!Number.isNaN(parsed)) {
+      // Validate that the parsed value exists in PAGE_SIZE_OPTIONS
+      if (!Number.isNaN(parsed) && PAGE_SIZE_OPTIONS.includes(parsed)) {
         setPageSize(parsed);
+      } else {
+        // Clear invalid value from localStorage
+        window.localStorage.removeItem(PAGE_SIZE_STORAGE_KEY);
       }
     }
   }, []);
@@ -153,6 +157,7 @@ export function UsersTable() {
       window.localStorage.setItem(PAGE_SIZE_STORAGE_KEY, size.toString());
     }
     setCurrentPage(1);
+    setSelectedIds([]); // Clear selection when page size changes
   };
 
   const handleRoleChange = async (userId: string, newRole: "ADMIN" | "USER") => {
