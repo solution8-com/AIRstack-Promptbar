@@ -56,6 +56,7 @@ import { prettifyJson } from "@/lib/format";
 import { analyticsPrompt } from "@/lib/analytics";
 import { getPromptUrl } from "@/lib/urls";
 import { AI_MODELS, getModelsByProvider } from "@/lib/works-best-with";
+import TurndownService from "turndown";
 
 interface MediaFieldProps {
   form: ReturnType<typeof useForm<PromptFormValues>>;
@@ -338,6 +339,95 @@ function MediaField({ form, t, promptType, promptContent }: MediaFieldProps) {
         </FormItem>
       )}
     />
+  );
+}
+
+interface MagicOutputPlaceholderProps {
+  placeholder: string;
+}
+
+function MagicOutputPlaceholder({ placeholder }: MagicOutputPlaceholderProps) {
+  const [magicValue, setMagicValue] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
+  const magicRef = useRef<HTMLDivElement | null>(null);
+  const turndownRef = useRef<TurndownService | null>(null);
+
+  useEffect(() => {
+    turndownRef.current = new TurndownService({ headingStyle: "atx" });
+  }, []);
+
+  useEffect(() => {
+    if (magicRef.current && magicRef.current.textContent !== magicValue) {
+      magicRef.current.textContent = magicValue;
+    }
+  }, [magicValue]);
+
+  const commitMagicValue = (value: string) => {
+    setMagicValue(value);
+  };
+
+  const handleMagicInput = (event: React.FormEvent<HTMLDivElement>) => {
+    commitMagicValue(event.currentTarget.textContent ?? "");
+  };
+
+  const handleMagicPaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const clipboard = event.clipboardData;
+    if (!clipboard) return;
+    const html = clipboard.getData("text/html");
+    const text = clipboard.getData("text/plain");
+    const converter = turndownRef.current;
+    const markdown = html && converter ? converter.turndown(html) : text;
+    const inserted = markdown || text;
+    if (!inserted) return;
+    const nextValue = magicValue + inserted;
+    commitMagicValue(nextValue);
+    requestAnimationFrame(() => {
+      if (!magicRef.current) return;
+      magicRef.current.textContent = nextValue;
+      const selection = window.getSelection();
+      if (!selection) return;
+      selection.removeAllRanges();
+      const range = document.createRange();
+      range.selectNodeContents(magicRef.current);
+      range.collapse(false);
+      selection.addRange(range);
+    });
+  };
+
+  const containerClass = `relative transition-[max-height,padding] duration-[800ms] ease-in-out overflow-hidden rounded-md border border-dashed border-muted/40 bg-background ${
+    isFocused || magicValue ? "max-h-[180px] py-4" : "max-h-[52px] py-2"
+  }`;
+
+  const innerClass = "relative min-h-[36px] w-full whitespace-pre-wrap break-words px-3 text-sm leading-relaxed text-foreground focus:outline-none";
+
+  return (
+    <div className={containerClass}>
+      <div
+        ref={magicRef}
+        contentEditable
+        suppressContentEditableWarning
+        onInput={handleMagicInput}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => {
+          if (!magicValue.trim()) {
+            setIsFocused(false);
+          }
+        }}
+        onPaste={handleMagicPaste}
+        className={innerClass}
+        aria-label={placeholder}
+        role="textbox"
+        tabIndex={0}
+      >
+        {magicValue}
+      </div>
+      {!magicValue && !isFocused && (
+        <div className="pointer-events-none absolute inset-0 flex items-center px-3 text-sm italic text-muted-foreground/60">
+          {placeholder}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -1729,9 +1819,9 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
             {/* Output Preview based on type */}
             <div className="rounded-lg border bg-muted/20 p-4">
               {promptType === "TEXT" && (
-                <div className="text-muted-foreground/50 italic text-sm">
-                  {t("outputPreview.text")}
-                </div>
+                <MagicOutputPlaceholder
+                  placeholder={t("outputPreview.text")}
+                />
               )}
               {promptType === "IMAGE" && (
                 <div className="space-y-3">
