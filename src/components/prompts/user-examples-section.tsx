@@ -58,7 +58,7 @@ export function UserExamplesSection({
       currentUserId={currentUserId}
       isAdmin={isAdmin}
       refreshTrigger={refreshTrigger}
-      renderAddButton={supportsExamples ? renderAddButton : undefined}
+      renderAddButton={renderAddButton}
       supportsTextExample={Boolean(structuredFormat)}
     />
   );
