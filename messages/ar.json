@@ -636,7 +636,12 @@
       "creditsUpdateFailed": "فشل تحديث الرصيد",
       "save": "حفظ",
       "adminZone": "منطقة المشرف",
-      "deleteUser": "حذف المستخدم"
+      "deleteUser": "حذف المستخدم",
+      "openSelected": "فتح المستخدمين المحددين",
+      "pageSize": {
+        "label": "صفوف لكل صفحة",
+        "all": "الكل"
+      }
     },
     "categories": {
       "title": "إدارة التصنيفات",

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { formatDistanceToNow } from "@/lib/date";
-import { ArrowSquareOut, MoreHorizontal, Shield, User, Trash2, BadgeCheck, Search, Loader2, ChevronLeft, ChevronRight, Filter, Flag, AlertTriangle, Sparkles } from "lucide-react";
+import { ExternalLink, MoreHorizontal, Shield, User, Trash2, BadgeCheck, Search, Loader2, ChevronLeft, ChevronRight, Filter, Flag, AlertTriangle, Sparkles } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -94,16 +94,22 @@ export function UsersTable() {
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [userFilter, setUserFilter] = useState("all");
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [pageSizeLoaded, setPageSizeLoaded] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const storedValue = window.localStorage.getItem(PAGE_SIZE_STORAGE_KEY);
     if (storedValue) {
       const parsed = parseInt(storedValue, 10);
-      if (!Number.isNaN(parsed)) {
+      // Validate that the parsed value exists in PAGE_SIZE_OPTIONS
+      if (!Number.isNaN(parsed) && PAGE_SIZE_OPTIONS.includes(parsed)) {
         setPageSize(parsed);
+      } else {
+        // Clear invalid value from localStorage
+        window.localStorage.removeItem(PAGE_SIZE_STORAGE_KEY);
       }
     }
+    setPageSizeLoaded(true);
   }, []);
 
   const fetchUsers = useCallback(async (page: number, search: string, filter: string, limit: number = DEFAULT_PAGE_SIZE) => {
@@ -132,9 +138,10 @@ export function UsersTable() {
   }, []);
 
   useEffect(() => {
+    if (!pageSizeLoaded) return;
     fetchUsers(currentPage, searchQuery, userFilter, pageSize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, userFilter, pageSize, fetchUsers]);
+  }, [currentPage, userFilter, pageSize, fetchUsers, pageSizeLoaded]);
 
   const handleSearch = () => {
     setCurrentPage(1);
@@ -153,6 +160,7 @@ export function UsersTable() {
       window.localStorage.setItem(PAGE_SIZE_STORAGE_KEY, size.toString());
     }
     setCurrentPage(1);
+    setSelectedIds([]); // Clear selection when page size changes
   };
 
   const handleRoleChange = async (userId: string, newRole: "ADMIN" | "USER") => {
@@ -385,7 +393,7 @@ export function UsersTable() {
                   onClick={handleOpenSelectedUsers}
                   disabled={selectedUsers.length === 0}
                 >
-                  <ArrowSquareOut className="h-4 w-4" />
+                  <ExternalLink className="h-4 w-4" />
                   {t("openSelected")}
                 </Button>
               )}

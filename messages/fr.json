@@ -641,7 +641,12 @@
       "creditsUpdateFailed": "Échec de la mise à jour des crédits",
       "save": "Enregistrer",
       "adminZone": "Zone Administrateur",
-      "deleteUser": "Supprimer l'utilisateur"
+      "deleteUser": "Supprimer l'utilisateur",
+      "openSelected": "Ouvrir les utilisateurs sélectionnés",
+      "pageSize": {
+        "label": "Lignes par page",
+        "all": "Tous"
+      }
     },
     "categories": {
       "title": "Gestion des Catégories",
