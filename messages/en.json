@@ -434,7 +434,8 @@
     "createGuideDescription": "Write a new guide in Markdown format",
     "editGuide": "Edit",
     "guideNotFound": "Guide Not Found",
-    "readTheGuide": "Read the guide: {title}"
+    "readTheGuide": "Read the guide: {title}",
+    "selectExampleToPreview": "Select an example to preview."
   },
   "changeRequests": {
     "title": "Change Requests",
@@ -2333,6 +2334,9 @@
     "cancel": "Cancel",
     "submit": "Submit",
     "communityExamples": "Community Examples",
-    "userExample": "User example"
+    "userExample": "User example",
+    "textExampleLabel": "Text example",
+    "textExamplePlaceholder": "Paste Markdown, JSON, or structured output here.",
+    "textExampleHelper": "Markdown is rendered in the preview area."
   }
 }

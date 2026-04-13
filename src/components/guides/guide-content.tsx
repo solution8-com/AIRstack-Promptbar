@@ -2,6 +2,7 @@
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkFootnotes from "remark-footnotes";
 
 interface GuideContentProps {
   content: string;
@@ -11,7 +12,7 @@ export function GuideContent({ content }: GuideContentProps) {
   return (
     <article className="prose prose-neutral dark:prose-invert max-w-none">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, [remarkFootnotes, { inlineNotes: false }]]}
         components={{
           img: ({ src, alt }) => {
             if (!src) return null;
@@ -27,11 +28,25 @@ export function GuideContent({ content }: GuideContentProps) {
               </span>
             );
           },
-          a: ({ href, children }) => (
-            <a href={href} target="_blank" rel="noopener noreferrer">
-              {children}
-            </a>
-          ),
+          a: ({ href, children, ...props }) => {
+            if (!href) {
+              return <>{children}</>;
+            }
+
+            const isInternalHash = href.startsWith("#");
+
+            return (
+              <a
+                href={href}
+                {...props}
+                {...(!isInternalHash
+                  ? { target: "_blank", rel: "noopener noreferrer" }
+                  : {})}
+              >
+                {children}
+              </a>
+            );
+          },
         }}
       >
         {content}

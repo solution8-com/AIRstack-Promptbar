@@ -3,11 +3,28 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
-const addExampleSchema = z.object({
-  mediaUrl: z.string().url(),
-  comment: z.string().max(500).optional(),
-});
+const addExampleSchema = z
+  .object({
+    mediaUrl: z.string().url().optional(),
+    content: z.string().min(1).max(5000).optional(),
+    comment: z.string().max(500).optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (!value.mediaUrl && !value.content) {
+      ctx.addIssue({
+        path: [],
+        message: "Either mediaUrl or content is required",
+        code: z.ZodIssueCode.custom,
+      });
+    }
+  });
 const EXAMPLE_SUPPORTED_TYPES = new Set(["IMAGE", "VIDEO", "SKILL"]);
+
+function promptSupportsExamples(prompt: { type: string; structuredFormat: string | null }) {
+  if (EXAMPLE_SUPPORTED_TYPES.has(prompt.type)) return true;
+  if (prompt.type === "TEXT" && prompt.structuredFormat) return true;
+  return false;
+}
 
 export async function GET(
   req: NextRequest,
@@ -17,15 +34,14 @@ export async function GET(
 
   const prompt = await db.prompt.findUnique({
     where: { id: promptId },
-    select: { id: true, type: true },
+    select: { id: true, type: true, structuredFormat: true },
   });
 
   if (!prompt) {
     return NextResponse.json({ error: "Prompt not found" }, { status: 404 });
   }
 
-  // Only allow examples for IMAGE, VIDEO, and SKILL prompts
-  if (!EXAMPLE_SUPPORTED_TYPES.has(prompt.type)) {
+  if (!promptSupportsExamples(prompt)) {
     return NextResponse.json({ error: "Examples not supported for this prompt type" }, { status: 400 });
   }
 
@@ -61,19 +77,18 @@ export async function POST(
 
   try {
     const body = await req.json();
-    const { mediaUrl, comment } = addExampleSchema.parse(body);
+    const { mediaUrl, content, comment } = addExampleSchema.parse(body);
 
     const prompt = await db.prompt.findUnique({
       where: { id: promptId },
-      select: { id: true, type: true, isPrivate: true, authorId: true },
+      select: { id: true, type: true, structuredFormat: true, isPrivate: true, authorId: true },
     });
 
     if (!prompt) {
       return NextResponse.json({ error: "Prompt not found" }, { status: 404 });
     }
 
-    // Only allow examples for IMAGE, VIDEO, and SKILL prompts
-    if (!EXAMPLE_SUPPORTED_TYPES.has(prompt.type)) {
+    if (!promptSupportsExamples(prompt)) {
       return NextResponse.json({ error: "Examples not supported for this prompt type" }, { status: 400 });
     }
 
@@ -84,7 +99,8 @@ export async function POST(
 
     const example = await db.userPromptExample.create({
       data: {
-        mediaUrl,
+        mediaUrl: mediaUrl ?? null,
+        content: content ?? null,
         comment: comment || null,
         promptId,
         userId: session.user.id,

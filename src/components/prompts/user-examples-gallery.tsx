@@ -14,7 +14,8 @@ import { cn } from "@/lib/utils";
 
 interface UserExample {
   id: string;
-  mediaUrl: string;
+  mediaUrl: string | null;
+  content: string | null;
   comment: string | null;
   createdAt: string;
   user: {
@@ -143,19 +144,27 @@ export function UserExamplesGallery({
                       : "border-transparent hover:border-muted-foreground/30"
                   )}
                 >
-                  {promptType === "VIDEO" ? (
-                    <video
-                      src={example.mediaUrl}
-                      className="w-full h-full object-cover"
-                      muted
-                    />
+                  {example.mediaUrl ? (
+                    promptType === "VIDEO" ? (
+                      <video
+                        src={example.mediaUrl}
+                        className="w-full h-full object-cover"
+                        muted
+                      />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={example.mediaUrl}
+                        alt={example.comment || t("userExample")}
+                        className="w-full h-full object-cover"
+                      />
+                    )
                   ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={example.mediaUrl}
-                      alt={example.comment || t("userExample")}
-                      className="w-full h-full object-cover"
-                    />
+                    <div className="w-full h-full flex items-center justify-center bg-muted/20 p-3 text-[10px] text-muted-foreground text-center">
+                      <span className="line-clamp-5">
+                        {example.content || t("textExamplePlaceholder")}
+                      </span>
+                    </div>
                   )}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-1">
                     <div className="flex items-center gap-1">

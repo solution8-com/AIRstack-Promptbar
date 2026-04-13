@@ -275,7 +275,8 @@ model Collection {
 
 model UserPromptExample {
   id        String   @id @default(cuid())
-  mediaUrl  String
+  mediaUrl  String?  @db.Text
+  content   String?  @db.Text
   comment   String?
   createdAt DateTime @default(now())
   promptId  String

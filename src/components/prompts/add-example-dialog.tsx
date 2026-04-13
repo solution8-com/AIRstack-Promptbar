@@ -24,6 +24,7 @@ interface AddExampleDialogProps {
   isLoggedIn: boolean;
   onExampleAdded?: () => void;
   asThumbnail?: boolean;
+  supportsTextExample?: boolean;
 }
 
 export function AddExampleDialog({
@@ -32,11 +33,13 @@ export function AddExampleDialog({
   isLoggedIn,
   onExampleAdded,
   asThumbnail = false,
+  supportsTextExample = false,
 }: AddExampleDialogProps) {
   const t = useTranslations("userExamples");
   const [open, setOpen] = useState(false);
   const [mediaUrl, setMediaUrl] = useState("");
   const [comment, setComment] = useState("");
+  const [textContent, setTextContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -147,10 +150,11 @@ export function AddExampleDialog({
       const res = await fetch(`/api/prompts/${promptId}/examples`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mediaUrl,
-          comment: comment.trim() || undefined,
-        }),
+      body: JSON.stringify({
+        mediaUrl: mediaUrl || undefined,
+        content: textContent.trim() || undefined,
+        comment: comment.trim() || undefined,
+      }),
       });
 
       if (!res.ok) {
@@ -160,6 +164,7 @@ export function AddExampleDialog({
 
       setMediaUrl("");
       setComment("");
+      setTextContent("");
       setOpen(false);
       onExampleAdded?.();
     } catch (err) {
@@ -300,6 +305,21 @@ export function AddExampleDialog({
               </Tabs>
             )}
 
+            {supportsTextExample && (
+              <div className="space-y-2">
+                <Label htmlFor="textExample">{t("textExampleLabel")}</Label>
+                <Textarea
+                  id="textExample"
+                  placeholder={t("textExamplePlaceholder")}
+                  value={textContent}
+                  onChange={(e) => setTextContent(e.target.value)}
+                  rows={6}
+                  maxLength={2000}
+                />
+                <p className="text-xs text-muted-foreground">{t("textExampleHelper")}</p>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="comment">{t("commentOptional")}</Label>
               <Textarea
@@ -327,7 +347,14 @@ export function AddExampleDialog({
             >
               {t("cancel")}
             </Button>
-            <Button type="submit" disabled={isLoading || isUploading || !mediaUrl || !isValidUrl(mediaUrl)}>
+            <Button
+              type="submit"
+              disabled={
+                isLoading ||
+                isUploading ||
+                (!((mediaUrl && isValidUrl(mediaUrl)) || textContent.trim().length > 0))
+              }
+            >
               {isLoading && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
               {t("submit")}
             </Button>

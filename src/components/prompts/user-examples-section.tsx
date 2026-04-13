@@ -5,13 +5,14 @@ import { MediaPreviewWithExamples } from "./media-preview-with-examples";
 import { AddExampleDialog } from "./add-example-dialog";
 
 interface UserExamplesSectionProps {
-  mediaUrl: string;
+  mediaUrl?: string | null;
   title: string;
   type: string;
   promptId: string;
   isLoggedIn: boolean;
   currentUserId?: string;
   isAdmin?: boolean;
+  structuredFormat?: string | null;
 }
 
 export function UserExamplesSection({
@@ -29,7 +30,12 @@ export function UserExamplesSection({
     setRefreshTrigger((prev) => prev + 1);
   }, []);
 
-  const supportsExamples = type === "IMAGE" || type === "VIDEO" || type === "SKILL";
+  const supportsExamples =
+    type === "IMAGE" || type === "VIDEO" || type === "SKILL" || Boolean(structuredFormat);
+
+  if (!supportsExamples) {
+    return null;
+  }
 
   const renderAddButton = useCallback((asThumbnail: boolean) => (
     <AddExampleDialog
@@ -38,8 +44,9 @@ export function UserExamplesSection({
       isLoggedIn={isLoggedIn}
       onExampleAdded={handleExampleAdded}
       asThumbnail={asThumbnail}
+      supportsTextExample={Boolean(structuredFormat)}
     />
-  ), [promptId, type, isLoggedIn, handleExampleAdded]);
+  ), [promptId, type, isLoggedIn, handleExampleAdded, structuredFormat]);
 
   return (
     <MediaPreviewWithExamples
@@ -51,6 +58,7 @@ export function UserExamplesSection({
       isAdmin={isAdmin}
       refreshTrigger={refreshTrigger}
       renderAddButton={supportsExamples ? renderAddButton : undefined}
+      supportsTextExample={Boolean(structuredFormat)}
     />
   );
 }

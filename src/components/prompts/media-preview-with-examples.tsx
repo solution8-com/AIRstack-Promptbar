@@ -3,12 +3,15 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ImageIcon, AlertTriangle } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { AudioPlayer } from "./audio-player";
 import { UserExamplesGallery } from "./user-examples-gallery";
 
 interface UserExample {
   id: string;
-  mediaUrl: string;
+  mediaUrl: string | null;
+  content: string | null;
   comment: string | null;
   createdAt: string;
   user: {
@@ -20,7 +23,7 @@ interface UserExample {
 }
 
 interface MediaPreviewWithExamplesProps {
-  mediaUrl: string;
+  mediaUrl?: string | null;
   title: string;
   type: string;
   promptId: string;
@@ -28,6 +31,7 @@ interface MediaPreviewWithExamplesProps {
   isAdmin?: boolean;
   refreshTrigger?: number;
   renderAddButton?: (asThumbnail: boolean) => React.ReactNode;
+  supportsTextExample?: boolean;
 }
 
 export function MediaPreviewWithExamples({
@@ -39,6 +43,7 @@ export function MediaPreviewWithExamples({
   isAdmin,
   refreshTrigger = 0,
   renderAddButton,
+  supportsTextExample,
 }: MediaPreviewWithExamplesProps) {
   const t = useTranslations("prompts");
   const [hasError, setHasError] = useState(false);
@@ -50,10 +55,12 @@ export function MediaPreviewWithExamples({
   };
 
   const displayUrl = selectedExample?.mediaUrl || mediaUrl;
+  const displayContent = selectedExample?.content;
   const displayTitle = selectedExample?.comment || title;
   const isShowingExample = !!selectedExample;
 
-  const supportsExamples = type === "IMAGE" || type === "VIDEO" || type === "SKILL";
+  const supportsExamples =
+    type === "IMAGE" || type === "VIDEO" || type === "SKILL" || Boolean(supportsTextExample);
 
   if (hasError && !isShowingExample) {
     return (
@@ -83,41 +90,52 @@ export function MediaPreviewWithExamples({
     );
   }
 
+  const showTextPreview = Boolean(displayContent);
+  const hasMediaPreview = Boolean(displayUrl) && !showTextPreview;
+
   return (
     <div className="space-y-3">
       <div className="rounded-lg overflow-hidden border bg-muted/30 relative">
-        {type === "VIDEO" ? (
+        {showTextPreview ? (
+          <div className="p-6 prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed min-h-[250px]">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{displayContent || ""}</ReactMarkdown>
+          </div>
+        ) : type === "VIDEO" && hasMediaPreview ? (
           <video
-            src={displayUrl}
+            src={displayUrl || undefined}
             controls
             className="w-full max-h-[500px] object-contain block"
             onError={() => setHasError(true)}
           />
-        ) : type === "AUDIO" ? (
+        ) : type === "AUDIO" && hasMediaPreview ? (
           <AudioPlayer
-            src={displayUrl}
+            src={displayUrl || undefined}
             onError={() => setHasError(true)}
           />
-        ) : (
+        ) : hasMediaPreview ? (
           <a
-            href={displayUrl}
+            href={displayUrl || undefined}
             target="_blank"
             rel="noopener noreferrer"
             className="block relative"
           >
-            {/* Blurred background for vertical images */}
             <div
               className="absolute inset-0 bg-cover bg-center blur-2xl opacity-50 scale-110"
               style={{ backgroundImage: `url(${displayUrl})` }}
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={displayUrl}
+              src={displayUrl || undefined}
               alt={displayTitle}
               className="relative w-full max-h-[500px] object-contain block"
               onError={() => setHasError(true)}
             />
           </a>
+        ) : (
+          <div className="h-48 flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
+            <ImageIcon className="h-8 w-8 text-muted-foreground/70" />
+            <span>{t("selectExampleToPreview")}</span>
+          </div>
         )}
         {isShowingExample && selectedExample && (
           <div className="absolute bottom-2 left-2 right-2 px-3 py-2 rounded-lg bg-black/70 backdrop-blur-sm">

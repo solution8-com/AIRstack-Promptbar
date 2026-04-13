@@ -397,7 +397,8 @@
     "createTag": "Create \"{name}\"",
     "creatingTag": "Creating...",
     "guideNotFound": "Guida Non Trovata",
-    "readTheGuide": "Leggi la guida: {title}"
+    "readTheGuide": "Leggi la guida: {title}",
+    "selectExampleToPreview": "Select an example to preview."
   },
   "changeRequests": {
     "title": "Richieste di Modifica",
@@ -2298,6 +2299,9 @@
     "addExampleDescriptionSkill": "Share an image showing the outcome of running this skill.",
     "skillOutcomeImageUrl": "Skill Outcome Image URL",
     "clickToUploadSkillOutcome": "Click to upload a skill outcome image",
-    "maxFileSizeVideo": "Max 4MB (MP4)"
+    "maxFileSizeVideo": "Max 4MB (MP4)",
+    "textExampleLabel": "Text example",
+    "textExamplePlaceholder": "Paste Markdown, JSON, or structured output here.",
+    "textExampleHelper": "Markdown is rendered in the preview area."
   }
 }

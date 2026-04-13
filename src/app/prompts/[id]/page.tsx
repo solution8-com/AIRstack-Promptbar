@@ -550,15 +550,16 @@ export default async function PromptPage({ params }: PromptPageProps) {
 
         <TabsContent value="content" className="space-y-4 mt-0">
           {/* Media Preview with User Examples (for image/video prompts) */}
-          {prompt.mediaUrl && (
+          {(prompt.mediaUrl || prompt.structuredFormat) && (
             <UserExamplesSection 
-              mediaUrl={prompt.mediaUrl} 
+              mediaUrl={prompt.mediaUrl}
               title={prompt.title} 
               type={prompt.type}
               promptId={prompt.id}
               isLoggedIn={!!session?.user}
               currentUserId={session?.user?.id}
               isAdmin={isAdmin}
+              structuredFormat={prompt.structuredFormat}
             />
           )}
 
