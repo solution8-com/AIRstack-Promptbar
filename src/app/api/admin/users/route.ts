@@ -47,15 +47,20 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
+    const getParam = (key: string) => {
+      const value = searchParams.get(key);
+      return value === null ? undefined : value;
+    };
 
     // Validate query parameters with Zod
     const queryParams = requestQuerySchema.safeParse({
-      page: searchParams.get("page"),
-      limit: searchParams.get("limit"),
-      search: searchParams.get("search"),
-      sortBy: searchParams.get("sortBy"),
-      sortOrder: searchParams.get("sortOrder"),
-      filter: searchParams.get("filter"),
+      // URLSearchParams.get() returns `null` for missing keys; Zod `optional()` expects `undefined`.
+      page: getParam("page"),
+      limit: getParam("limit"),
+      search: getParam("search"),
+      sortBy: getParam("sortBy"),
+      sortOrder: getParam("sortOrder"),
+      filter: getParam("filter"),
     });
 
     if (!queryParams.success) {
