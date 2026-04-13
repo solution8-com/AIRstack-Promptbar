@@ -25,10 +25,10 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
-    const DEFAULT_LIMIT = 15;
-    const limitParam = searchParams.get("limit") || DEFAULT_LIMIT.toString();
+    const DEFAULT_LIMIT = 50;
+    const limitParam = searchParams.get("limit");
     const fetchAll = limitParam === "all";
-    const parsedLimit = parseInt(limitParam, 10);
+    const parsedLimit = limitParam && !fetchAll ? parseInt(limitParam, 10) : DEFAULT_LIMIT;
     const normalizedLimit = Number.isNaN(parsedLimit) ? DEFAULT_LIMIT : parsedLimit;
     const validLimit = Math.min(Math.max(1, normalizedLimit), 100);
     const search = searchParams.get("search") || "";
