@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { InfinitePromptList } from "@/components/prompts/infinite-prompt-list";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { annotatePromptsWithUserVotes } from "@/lib/prompt-votes";
 
 export async function generateMetadata() {
   const tNav = await getTranslations("nav");
@@ -154,7 +155,7 @@ export default async function GuidesPage({ searchParams }: GuidesPageProps) {
   }
 
   const result = await getCachedGuides(orderBy, perPage, params.q);
-  const guides = result.guides;
+  const guides = await annotatePromptsWithUserVotes(result.guides, session?.user?.id);
   const total = result.total;
 
   return (
@@ -187,6 +188,7 @@ export default async function GuidesPage({ searchParams }: GuidesPageProps) {
           type: "GUIDE",
           sort: params.sort,
         }}
+        isLoggedIn={!!session?.user}
       />
     </div>
   );

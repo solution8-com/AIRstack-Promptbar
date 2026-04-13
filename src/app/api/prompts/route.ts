@@ -7,6 +7,7 @@ import { triggerWebhooks } from "@/lib/webhook";
 import { generatePromptEmbedding, findAndSaveRelatedPrompts } from "@/lib/ai/embeddings";
 import { generatePromptSlug } from "@/lib/slug";
 import { checkPromptQuality } from "@/lib/ai/quality-check";
+import { annotatePromptsWithUserVotes } from "@/lib/prompt-votes";
 import { isSimilarContent, normalizeContent } from "@/lib/similarity";
 import { generateHackDescription } from "@/lib/ai/generate-hack-description";
 
@@ -404,6 +405,7 @@ export async function GET(request: Request) {
       orderBy = { votes: { _count: "desc" } };
     }
 
+    const session = await auth();
     const [promptsRaw, total] = await Promise.all([
       db.prompt.findMany({
         where,
@@ -475,9 +477,10 @@ export async function GET(request: Request) {
       contributorCount: p._count.contributors,
       contributors: p.contributors,
     }));
+    const promptsWithVotes = await annotatePromptsWithUserVotes(prompts, session?.user?.id);
 
     return NextResponse.json({
-      prompts,
+      prompts: promptsWithVotes,
       total,
       page,
       perPage,

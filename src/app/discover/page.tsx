@@ -3,6 +3,7 @@ import { StructuredData } from "@/components/seo/structured-data";
 import { db } from "@/lib/db";
 import { getAdminUsernames } from "@/lib/admin";
 import { auth } from "@/lib/auth";
+import { annotatePromptsWithUserVotes } from "@/lib/prompt-votes";
 
 export default async function DiscoverPage() {
   const session = await auth();
@@ -103,9 +104,15 @@ export default async function DiscoverPage() {
   const latestPrompts = latestPromptsRaw.map(mapPrompt);
   const recentlyUpdated = recentlyUpdatedRaw.map(mapPrompt);
   const mostContributed = mostContributedRaw.map(mapPrompt);
-  
   // Today's most upvoted is same as latest for now (can be computed client-side if needed)
   const todaysMostUpvoted = latestPrompts;
+
+  const sessionUserId = session?.user?.id;
+  const annotatedFeaturedPrompts = await annotatePromptsWithUserVotes(featuredPrompts, sessionUserId);
+  const annotatedLatestPrompts = await annotatePromptsWithUserVotes(latestPrompts, sessionUserId);
+  const annotatedRecentlyUpdated = await annotatePromptsWithUserVotes(recentlyUpdated, sessionUserId);
+  const annotatedMostContributed = await annotatePromptsWithUserVotes(mostContributed, sessionUserId);
+  const annotatedTodaysMostUpvoted = await annotatePromptsWithUserVotes(todaysMostUpvoted, sessionUserId);
   
   const adminUsernames = getAdminUsernames();
 
@@ -150,14 +157,15 @@ export default async function DiscoverPage() {
         }}
       />
       <DiscoverTabs
-        featuredPrompts={featuredPrompts}
-        todaysMostUpvoted={todaysMostUpvoted}
-        latestPrompts={latestPrompts}
-        recentlyUpdated={recentlyUpdated}
-        mostContributed={mostContributed}
+        featuredPrompts={annotatedFeaturedPrompts}
+        todaysMostUpvoted={annotatedTodaysMostUpvoted}
+        latestPrompts={annotatedLatestPrompts}
+        recentlyUpdated={annotatedRecentlyUpdated}
+        mostContributed={annotatedMostContributed}
         allUsernames={allUsernames.map(u => u.username)}
         adminUsernames={adminUsernames}
         isAdmin={isAdmin}
+        isLoggedIn={!!session?.user}
       />
     </>
   );

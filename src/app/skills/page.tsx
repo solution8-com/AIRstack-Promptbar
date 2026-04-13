@@ -8,6 +8,7 @@ import { SkillsFilteredList } from "@/components/prompts/skills-filtered-list";
 import { db } from "@/lib/db";
 import { getAdminUsernames } from "@/lib/admin";
 import { auth } from "@/lib/auth";
+import { annotatePromptsWithUserVotes } from "@/lib/prompt-votes";
 
 export const metadata: Metadata = {
   title: "Skills",
@@ -100,7 +101,7 @@ export default async function SkillsPage() {
   const perPage = 100; // Fetch more since we're doing client-side filtering
 
   const result = await getCachedSkills(perPage);
-  const skills = result.skills;
+  const skills = await annotatePromptsWithUserVotes(result.skills, session?.user?.id);
   const total = result.total;
 
   // Fetch all usernames for autocomplete
@@ -135,6 +136,7 @@ export default async function SkillsPage() {
         allUsernames={allUsernames.map(u => u.username)}
         adminUsernames={adminUsernames}
         isAdmin={isAdmin}
+        isLoggedIn={!!session?.user}
       />
     </div>
   );

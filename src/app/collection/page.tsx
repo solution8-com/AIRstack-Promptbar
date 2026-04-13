@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { PromptList } from "@/components/prompts/prompt-list";
+import { annotatePromptsWithUserVotes } from "@/lib/prompt-votes";
 
 export default async function CollectionPage() {
   const t = await getTranslations("collection");
@@ -63,6 +64,7 @@ export default async function CollectionPage() {
       voteCount: c.prompt._count?.votes ?? 0,
       contributorCount: c.prompt._count?.contributors ?? 0,
     }));
+  const promptsWithVotes = await annotatePromptsWithUserVotes(prompts, session?.user?.id);
 
   return (
     <div className="container py-6">
@@ -90,7 +92,7 @@ export default async function CollectionPage() {
       </div>
 
       {prompts.length > 0 ? (
-        <PromptList prompts={prompts} currentPage={1} totalPages={1} isAdmin={isAdmin} />
+        <PromptList prompts={promptsWithVotes} currentPage={1} totalPages={1} isAdmin={isAdmin} isLoggedIn={!!session?.user} />
       ) : (
         <div className="text-center py-12 border rounded-lg bg-muted/30">
           <Bookmark className="h-10 w-10 text-muted-foreground mx-auto mb-3" />

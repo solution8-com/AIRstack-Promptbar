@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { getPromptUrl } from "@/lib/urls";
-import { ArrowBigUp, Lock, Copy, ImageIcon, Download, Play, BadgeCheck, Volume2, Link2 } from "lucide-react";
+import { Lock, Copy, ImageIcon, Download, Play, BadgeCheck, Volume2, Link2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CodeView } from "@/components/ui/code-view";
 import { toast } from "sonner";
 import { prettifyJson } from "@/lib/format";
 import { PinButton } from "@/components/prompts/pin-button";
 import { RunPromptButton } from "@/components/prompts/run-prompt-button";
+import { UpvoteButton } from "@/components/prompts/upvote-button";
 import { VariableFillModal, hasVariables, renderContentWithVariables } from "@/components/prompts/variable-fill-modal";
 import { ExamplesSlider } from "@/components/prompts/examples-slider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -35,6 +36,7 @@ export interface PromptCardProps {
     mediaUrl: string | null;
     isPrivate: boolean;
     voteCount: number;
+    hasVoted?: boolean;
     createdAt: Date;
     author: {
       id: string;
@@ -87,9 +89,16 @@ export interface PromptCardProps {
   showPinButton?: boolean;
   isPinned?: boolean;
   isAdmin?: boolean;
+  isLoggedIn?: boolean;
 }
 
-export function PromptCard({ prompt, showPinButton = false, isPinned = false, isAdmin = false }: PromptCardProps) {
+export function PromptCard({
+  prompt,
+  showPinButton = false,
+  isPinned = false,
+  isAdmin = false,
+  isLoggedIn = false,
+}: PromptCardProps) {
   const router = useRouter();
   const t = useTranslations("prompts");
   const tCommon = useTranslations("common");
@@ -381,10 +390,14 @@ export function PromptCard({ prompt, showPinButton = false, isPinned = false, is
             ) : null}
           </div>
           <div className="flex items-center gap-2">
-            <span className="flex items-center gap-0.5">
-              <ArrowBigUp className="h-3.5 w-3.5" />
-              {prompt.voteCount}
-            </span>
+            <UpvoteButton
+              promptId={prompt.id}
+              initialVoted={prompt.hasVoted ?? false}
+              initialCount={prompt.voteCount}
+              isLoggedIn={isLoggedIn}
+              size="sm"
+              showLabel={false}
+            />
             <button
               onClick={handleCopyClick}
               className="p-1 rounded hover:bg-accent"

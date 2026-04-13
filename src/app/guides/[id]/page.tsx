@@ -10,6 +10,7 @@ import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GuideContent } from "@/components/guides/guide-content";
+import { UpvoteButton } from "@/components/prompts/upvote-button";
 
 interface GuidePageProps {
   params: Promise<{ id: string }>;
@@ -62,12 +63,30 @@ export default async function GuidePage({ params }: GuidePageProps) {
           avatar: true,
         },
       },
+      _count: {
+        select: {
+          votes: true,
+        },
+      },
     },
   });
 
   if (!guide) {
     notFound();
   }
+
+  const hasVoted = session?.user
+    ? Boolean(await db.promptVote.findUnique({
+        where: {
+          userId_promptId: {
+            userId: session.user.id,
+            promptId: guide.id,
+          },
+        },
+      }))
+    : false;
+  const initialVoteCount = guide._count?.votes ?? 0;
+  const isLoggedIn = !!session?.user;
 
   const timeAgo = formatDistanceToNow(guide.createdAt);
 
@@ -81,14 +100,24 @@ export default async function GuidePage({ params }: GuidePageProps) {
             {tNav("guides")}
           </Link>
         </Button>
-        {isAdmin && (
-          <Button variant="outline" size="sm" asChild className="gap-1.5">
-            <Link href={`/prompts/${guide.id}/edit`}>
-              <Edit className="h-4 w-4" />
-              {t("editGuide")}
-            </Link>
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          <UpvoteButton
+            promptId={guide.id}
+            initialVoted={hasVoted}
+            initialCount={initialVoteCount}
+            isLoggedIn={isLoggedIn}
+            size="sm"
+            showLabel={false}
+          />
+          {isAdmin && (
+            <Button variant="outline" size="sm" asChild className="gap-1.5">
+              <Link href={`/prompts/${guide.id}/edit`}>
+                <Edit className="h-4 w-4" />
+                {t("editGuide")}
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Guide header */}

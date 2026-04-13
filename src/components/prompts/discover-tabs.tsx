@@ -86,6 +86,7 @@ interface DiscoverTabsProps {
   allUsernames: string[];
   adminUsernames: string[];
   isAdmin?: boolean;
+  isLoggedIn?: boolean;
 }
 
 export function DiscoverTabs({
@@ -97,6 +98,7 @@ export function DiscoverTabs({
   allUsernames,
   adminUsernames,
   isAdmin = false,
+  isLoggedIn = false,
 }: DiscoverTabsProps) {
   const t = useTranslations("feed");
   const tDiscovery = useTranslations("discovery");
@@ -413,7 +415,7 @@ export function DiscoverTabs({
           {filteredFeatured.length > 0 ? (
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
               {filteredFeatured.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} isLoggedIn={isLoggedIn} />
               ))}
             </Masonry>
           ) : (
@@ -441,7 +443,7 @@ export function DiscoverTabs({
           {filteredMostContributed.length > 0 ? (
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
               {filteredMostContributed.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} isLoggedIn={isLoggedIn} />
               ))}
             </Masonry>
           ) : (
@@ -469,7 +471,7 @@ export function DiscoverTabs({
           {filteredRecentlyUpdated.length > 0 ? (
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
               {filteredRecentlyUpdated.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} isLoggedIn={isLoggedIn} />
               ))}
             </Masonry>
           ) : (
@@ -497,7 +499,7 @@ export function DiscoverTabs({
           {filteredLatest.length > 0 ? (
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
               {filteredLatest.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} isLoggedIn={isLoggedIn} />
               ))}
             </Masonry>
           ) : (

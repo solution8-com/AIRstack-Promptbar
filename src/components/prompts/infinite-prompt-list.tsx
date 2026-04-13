@@ -24,6 +24,7 @@ interface InfinitePromptListProps {
     tag?: string; 
     sort?: string;
   };
+  isLoggedIn?: boolean;
 }
 
 function PromptCardSkeleton() {
@@ -52,7 +53,8 @@ export function InfinitePromptList({
   initialPrompts, 
   initialTotal,
   isAdmin = false,
-  filters 
+  filters,
+  isLoggedIn = false,
 }: InfinitePromptListProps) {
   const t = useTranslations("prompts");
   const _searchParams = useSearchParams();
@@ -198,7 +200,7 @@ export function InfinitePromptList({
           isWidget(item) ? (
             <WidgetCard key={item.id} prompt={item} />
           ) : (
-            <PromptCard key={item.id} prompt={item} isAdmin={isAdmin} />
+          <PromptCard key={item.id} prompt={item} isAdmin={isAdmin} isLoggedIn={isLoggedIn} />
           )
         )}
       </Masonry>

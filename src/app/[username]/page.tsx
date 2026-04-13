@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PromptList } from "@/components/prompts/prompt-list";
 import { PromptCard, type PromptCardProps } from "@/components/prompts/prompt-card";
+import { annotatePromptsWithUserVotes } from "@/lib/prompt-votes";
 import { Masonry } from "@/components/ui/masonry";
 import { McpServerPopup } from "@/components/mcp/mcp-server-popup";
 import { PrivatePromptsNote } from "@/components/prompts/private-prompts-note";
@@ -290,6 +291,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
     voteCount: p._count?.votes ?? 0,
     contributorCount: p._count?.contributors ?? 0,
   }));
+  const promptsWithVotes = await annotatePromptsWithUserVotes(prompts, session?.user?.id);
 
   // Transform contributions
   const contributions = contributionsRaw.map((p) => ({
@@ -297,6 +299,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
     voteCount: p._count?.votes ?? 0,
     contributorCount: p._count?.contributors ?? 0,
   }));
+  const contributionsWithVotes = await annotatePromptsWithUserVotes(contributions, session?.user?.id);
 
   // Transform liked prompts
   const likedPrompts = likedPromptsRaw.map((p) => ({
@@ -304,6 +307,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
     voteCount: p._count?.votes ?? 0,
     contributorCount: p._count?.contributors ?? 0,
   }));
+  const likedPromptsWithVotes = await annotatePromptsWithUserVotes(likedPrompts, session?.user?.id);
 
   // Transform user examples (prompts where user added examples)
   // Override mediaUrl with user's example mediaUrl
@@ -314,6 +318,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
     voteCount: p._count?.votes ?? 0,
     contributorCount: p._count?.contributors ?? 0,
   }));
+  const userExamplesWithVotes = await annotatePromptsWithUserVotes(userExamples, session?.user?.id);
 
   // Process activity data into daily counts
   const activityMap = new Map<string, number>();
@@ -342,9 +347,10 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
       voteCount: pp.prompt._count?.votes ?? 0,
       contributorCount: pp.prompt._count?.contributors ?? 0,
     }));
+  const pinnedPromptsWithVotes = await annotatePromptsWithUserVotes(pinnedPrompts, session?.user?.id);
 
   // Get set of pinned prompt IDs for easy lookup
-  const pinnedIds = new Set<string>(pinnedPrompts.map((p: { id: string }) => p.id));
+  const pinnedIds = new Set<string>(pinnedPromptsWithVotes.map((p: { id: string }) => p.id));
 
   const totalPages = Math.ceil(total / perPage);
 
@@ -563,27 +569,27 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
           <TabsTrigger value="contributions" className="gap-2">
             <Users className="h-4 w-4" />
             {t("contributions")}
-            {contributions.length > 0 && (
+            {contributionsWithVotes.length > 0 && (
               <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1 text-xs">
-                {contributions.length}
+                {contributionsWithVotes.length}
               </Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="likes" className="gap-2">
             <Heart className="h-4 w-4" />
             {t("likes")}
-            {likedPrompts.length > 0 && (
+            {likedPromptsWithVotes.length > 0 && (
               <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1 text-xs">
-                {likedPrompts.length}
+                {likedPromptsWithVotes.length}
               </Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="examples" className="gap-2">
             <ImageIcon className="h-4 w-4" />
             {t("examples")}
-            {userExamples.length > 0 && (
+            {userExamplesWithVotes.length > 0 && (
               <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1 text-xs">
-                {userExamples.length}
+                {userExamplesWithVotes.length}
               </Badge>
             )}
           </TabsTrigger>
@@ -619,21 +625,28 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
           {isOwner && <PrivatePromptsNote count={privatePromptsCount} />}
 
           {/* Pinned Prompts Section */}
-          {pinnedPrompts.length > 0 && (
+          {pinnedPromptsWithVotes.length > 0 && (
             <div className="mb-6 pb-6 border-b">
               <div className="flex items-center gap-2 mb-3">
                 <Pin className="h-4 w-4 text-primary" />
                 <h3 className="text-sm font-medium">{tPrompts("pinnedPrompts")}</h3>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {pinnedPrompts.map((prompt: PromptCardProps["prompt"]) => (
-                  <PromptCard key={prompt.id} prompt={prompt} showPinButton={isOwner} isPinned={isOwner} isAdmin={isAdmin} />
+                {pinnedPromptsWithVotes.map((prompt: PromptCardProps["prompt"]) => (
+                  <PromptCard
+                    key={prompt.id}
+                    prompt={prompt}
+                    showPinButton={isOwner}
+                    isPinned={isOwner}
+                    isAdmin={isAdmin}
+                    isLoggedIn={!!session?.user}
+                  />
                 ))}
               </div>
             </div>
           )}
 
-          {prompts.length === 0 && pinnedPrompts.length === 0 ? (
+          {promptsWithVotes.length === 0 && pinnedPromptsWithVotes.length === 0 ? (
             <div className="text-center py-12 border rounded-lg bg-muted/30">
               {validFilterDateStart ? (
                 <>
@@ -659,16 +672,17 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
             </div>
           ) : prompts.length > 0 ? (
             <>
-              {pinnedPrompts.length > 0 && (
+              {pinnedPromptsWithVotes.length > 0 && (
                 <h3 className="text-sm font-medium mb-3">{t("allPrompts")}</h3>
               )}
               <PromptList
-                prompts={prompts}
+                prompts={promptsWithVotes}
                 currentPage={page}
                 totalPages={totalPages}
                 pinnedIds={pinnedIds}
                 showPinButton={isOwner}
                 isAdmin={isAdmin}
+                isLoggedIn={!!session?.user}
               />
             </>
           ) : null}
@@ -682,38 +696,38 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {contributions.map((prompt: PromptCardProps["prompt"]) => (
-                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
+              {contributionsWithVotes.map((prompt: PromptCardProps["prompt"]) => (
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} isLoggedIn={!!session?.user} />
               ))}
             </div>
           )}
         </TabsContent>
 
         <TabsContent value="likes">
-          {likedPrompts.length === 0 ? (
-            <div className="text-center py-12 border rounded-lg bg-muted/30">
-              <Heart className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">{isOwner ? t("noLikesOwner") : t("noLikes")}</p>
-            </div>
-          ) : (
-            <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
-              {likedPrompts.map((prompt: PromptCardProps["prompt"]) => (
-                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
-              ))}
-            </Masonry>
-          )}
+              {likedPromptsWithVotes.length === 0 ? (
+                <div className="text-center py-12 border rounded-lg bg-muted/30">
+                  <Heart className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground">{isOwner ? t("noLikesOwner") : t("noLikes")}</p>
+                </div>
+              ) : (
+                <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
+                  {likedPromptsWithVotes.map((prompt: PromptCardProps["prompt"]) => (
+                    <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} isLoggedIn={!!session?.user} />
+                  ))}
+                </Masonry>
+              )}
         </TabsContent>
 
         <TabsContent value="examples">
-          {userExamples.length === 0 ? (
+          {userExamplesWithVotes.length === 0 ? (
             <div className="text-center py-12 border rounded-lg bg-muted/30">
               <ImageIcon className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
               <p className="text-muted-foreground">{isOwner ? t("noExamplesOwner") : t("noExamples")}</p>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {userExamples.map((prompt: PromptCardProps["prompt"]) => (
-                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
+              {userExamplesWithVotes.map((prompt: PromptCardProps["prompt"]) => (
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} isLoggedIn={!!session?.user} />
               ))}
             </div>
           )}
