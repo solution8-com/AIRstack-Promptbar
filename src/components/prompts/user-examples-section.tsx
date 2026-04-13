@@ -23,6 +23,7 @@ export function UserExamplesSection({
   isLoggedIn,
   currentUserId,
   isAdmin,
+  structuredFormat,
 }: UserExamplesSectionProps) {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
