@@ -16,6 +16,7 @@ import { auth } from "@/lib/auth";
 import { isAISearchEnabled, semanticSearch } from "@/lib/ai/embeddings";
 import { isAIGenerationEnabled } from "@/lib/ai/generation";
 import config from "@/../prompts.config";
+import { annotatePromptsWithUserVotes } from "@/lib/prompt-votes";
 
 export const metadata: Metadata = {
   title: "Prompts",
@@ -279,6 +280,8 @@ export default async function PromptsPage({ searchParams }: PromptsPageProps) {
     total = result.total;
   }
 
+  prompts = await annotatePromptsWithUserVotes(prompts, session?.user?.id);
+
   // Fetch categories, pinned categories, and tags for filter
   const [categories, pinnedCategories, tags] = await Promise.all([
     getCategories(),
@@ -341,6 +344,7 @@ export default async function PromptsPage({ searchParams }: PromptsPageProps) {
                 tag: params.tag,
                 sort: params.sort,
               }}
+              isLoggedIn={!!session?.user}
             />
           </main>
         </div>

@@ -11,6 +11,7 @@ import { PromptList } from "@/components/prompts/prompt-list";
 import { SubscribeButton } from "@/components/categories/subscribe-button";
 import { CategoryFilters } from "@/components/categories/category-filters";
 import { McpServerPopup } from "@/components/mcp/mcp-server-popup";
+import { annotatePromptsWithUserVotes } from "@/lib/prompt-votes";
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
@@ -146,6 +147,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     voteCount: p._count.votes,
     contributorCount: p._count.contributors,
   }));
+  const promptsWithVotes = await annotatePromptsWithUserVotes(prompts, session?.user?.id);
 
   return (
     <div className="container py-6">
@@ -196,7 +198,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
       </div>
 
       {/* Prompts */}
-      <PromptList prompts={prompts} currentPage={currentPage} totalPages={totalPages} isAdmin={isAdmin} />
+      <PromptList prompts={promptsWithVotes} currentPage={currentPage} totalPages={totalPages} isAdmin={isAdmin} isLoggedIn={!!session?.user} />
     </div>
   );
 }

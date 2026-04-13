@@ -4,6 +4,7 @@ import { unstable_cache } from "next/cache";
 import { InfinitePromptList } from "@/components/prompts/infinite-prompt-list";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { annotatePromptsWithUserVotes } from "@/lib/prompt-votes";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("workflows");
@@ -143,7 +144,7 @@ export default async function WorkflowsPage({ searchParams }: WorkflowsPageProps
   }
 
   const result = await getCachedWorkflows(orderBy, perPage, params.q);
-  const workflows = result.workflows;
+  const workflows = await annotatePromptsWithUserVotes(result.workflows, session?.user?.id);
   const total = result.total;
 
   return (
@@ -167,6 +168,7 @@ export default async function WorkflowsPage({ searchParams }: WorkflowsPageProps
           q: params.q,
           sort: params.sort,
         }}
+        isLoggedIn={!!session?.user}
       />
     </div>
   );

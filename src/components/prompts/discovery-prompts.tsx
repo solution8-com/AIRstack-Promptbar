@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Masonry } from "@/components/ui/masonry";
 import { PromptCard } from "@/components/prompts/prompt-card";
 import { auth } from "@/lib/auth";
+import { annotatePromptsWithUserVotes } from "@/lib/prompt-votes";
 
 interface DiscoveryPromptsProps {
   isHomepage?: boolean;
@@ -132,6 +133,12 @@ export async function DiscoveryPrompts({ isHomepage = false }: DiscoveryPromptsP
   const latestPrompts = latestPromptsRaw.map(mapPrompt);
   const recentlyUpdated = recentlyUpdatedRaw.map(mapPrompt);
   const mostContributed = mostContributedRaw.map(mapPrompt);
+  const sessionUserId = session?.user?.id;
+  const featuredPromptsWithVotes = await annotatePromptsWithUserVotes(featuredPrompts, sessionUserId);
+  const todaysMostUpvotedWithVotes = await annotatePromptsWithUserVotes(todaysMostUpvoted, sessionUserId);
+  const latestPromptsWithVotes = await annotatePromptsWithUserVotes(latestPrompts, sessionUserId);
+  const recentlyUpdatedWithVotes = await annotatePromptsWithUserVotes(recentlyUpdated, sessionUserId);
+  const mostContributedWithVotes = await annotatePromptsWithUserVotes(mostContributed, sessionUserId);
 
   return (
     <div className={isHomepage ? "flex flex-col" : "container py-6"}>
@@ -152,8 +159,8 @@ export async function DiscoveryPrompts({ isHomepage = false }: DiscoveryPromptsP
               </Button>
             </div>
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
-              {featuredPrompts.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
+              {featuredPromptsWithVotes.map((prompt) => (
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} isLoggedIn={!!session?.user} />
               ))}
             </Masonry>
           </div>
@@ -177,8 +184,8 @@ export async function DiscoveryPrompts({ isHomepage = false }: DiscoveryPromptsP
               </Button>
             </div>
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
-              {todaysMostUpvoted.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
+              {todaysMostUpvotedWithVotes.map((prompt) => (
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} isLoggedIn={!!session?.user} />
               ))}
             </Masonry>
           </div>
@@ -202,8 +209,8 @@ export async function DiscoveryPrompts({ isHomepage = false }: DiscoveryPromptsP
               </Button>
             </div>
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
-              {latestPrompts.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
+              {latestPromptsWithVotes.map((prompt) => (
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} isLoggedIn={!!session?.user} />
               ))}
             </Masonry>
           </div>
@@ -227,8 +234,8 @@ export async function DiscoveryPrompts({ isHomepage = false }: DiscoveryPromptsP
               </Button>
             </div>
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
-              {recentlyUpdated.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
+              {recentlyUpdatedWithVotes.map((prompt) => (
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} isLoggedIn={!!session?.user} />
               ))}
             </Masonry>
           </div>
@@ -252,8 +259,8 @@ export async function DiscoveryPrompts({ isHomepage = false }: DiscoveryPromptsP
               </Button>
             </div>
             <Masonry columnCount={{ default: 1, md: 2, lg: 3 }} gap={16}>
-              {mostContributed.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} />
+              {mostContributedWithVotes.map((prompt) => (
+                <PromptCard key={prompt.id} prompt={prompt} isAdmin={isAdmin} isLoggedIn={!!session?.user} />
               ))}
             </Masonry>
           </div>

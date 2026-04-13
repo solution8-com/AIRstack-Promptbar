@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { InfinitePromptList } from "@/components/prompts/infinite-prompt-list";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { annotatePromptsWithUserVotes } from "@/lib/prompt-votes";
 
 export async function generateMetadata() {
   const tPrompts = await getTranslations("prompts");
@@ -135,7 +136,7 @@ export default async function TastesPage({ searchParams }: TastesPageProps) {
   }
 
   const result = await getCachedTastes(orderBy, perPage, params.q);
-  const tastes = result.tastes;
+  const tastes = await annotatePromptsWithUserVotes(result.tastes, session?.user?.id);
   const total = result.total;
 
   return (
@@ -166,6 +167,7 @@ export default async function TastesPage({ searchParams }: TastesPageProps) {
           type: "TASTE",
           sort: params.sort,
         }}
+        isLoggedIn={!!session?.user}
       />
     </div>
   );
