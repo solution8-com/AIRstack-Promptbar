@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Noto_Sans_Arabic, Geist_Mono, Playfair_Display } from "next/font/google";
+import { Inter, Noto_Sans_Arabic, Geist_Mono } from "next/font/google";
 import { headers } from "next/headers";
 import { getMessages, getLocale } from "next-intl/server";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -29,13 +29,6 @@ const notoSansArabic = Noto_Sans_Arabic({
 const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-geist-mono",
-});
-
-const playfairDisplay = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -177,8 +170,8 @@ export default async function RootLayout({
   } as React.CSSProperties;
 
 const fontClasses = isRtl
-  ? `${inter.className} ${inter.variable} ${notoSansArabic.className} ${notoSansArabic.variable} ${geistMono.className} ${geistMono.variable} ${playfairDisplay.className} ${playfairDisplay.variable} font-arabic`
-  : `${inter.className} ${inter.variable} ${geistMono.className} ${geistMono.variable} ${playfairDisplay.className} ${playfairDisplay.variable} font-sans`;
+  ? `${inter.className} ${inter.variable} ${notoSansArabic.className} ${notoSansArabic.variable} ${geistMono.className} ${geistMono.variable} font-arabic`
+  : `${inter.className} ${inter.variable} ${geistMono.className} ${geistMono.variable} font-sans`;
 
   return (
     <html lang={locale} dir={isRtl ? "rtl" : "ltr"} suppressHydrationWarning className={themeClasses} style={themeStyles}>
