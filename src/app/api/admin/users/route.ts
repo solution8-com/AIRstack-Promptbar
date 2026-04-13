@@ -13,16 +13,16 @@ const requestQuerySchema = z.object({
     z.literal("all"),
     z.string().transform((val) => {
       const num = parseInt(val, 10);
-      return !Number.isNaN(num) && num >= 1 && num <= 100 ? num : 15;
+      return !Number.isNaN(num) && num >= 1 && num <= 100 ? num : 50;
     }),
-  ]).optional().transform((val) => val || 15),
+  ]).optional().transform((val) => val || 50),
   search: z.string().optional().default(""),
   sortBy: z.string().optional().default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
   filter: z.string().optional().default("all"),
 });
 
-const DEFAULT_LIMIT = 15;
+const DEFAULT_LIMIT = 50;
 const MAX_LIMIT_ALL = 1000; // Hard cap for "all" to prevent unbounded queries
 
 // GET - List all users for admin with pagination and search

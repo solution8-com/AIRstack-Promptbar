@@ -123,17 +123,22 @@ export function WidgetCard({ prompt }: WidgetCardProps) {
 
       {/* Footer */}
       <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-2 border-t mt-auto">
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-col gap-1">
           {prompt.sponsor && (
-            <Link
-              href={prompt.sponsor.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 hover:text-foreground transition-colors"
-            >
-              <span>by {prompt.sponsor.name}</span>
-              <ExternalLink className="h-3 w-3" />
-            </Link>
+            <>
+              <Link
+                href={prompt.sponsor.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                <span>by {prompt.sponsor.name}</span>
+                <ExternalLink className="h-3 w-3" />
+              </Link>
+              <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                DEMO
+              </Badge>
+            </>
           )}
         </div>
         <div className="flex items-center gap-2">

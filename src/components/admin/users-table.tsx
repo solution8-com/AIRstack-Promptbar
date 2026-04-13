@@ -70,7 +70,7 @@ interface Pagination {
 }
 
 const PAGE_SIZE_STORAGE_KEY = "admin-users-page-size";
-const DEFAULT_PAGE_SIZE = 15;
+const DEFAULT_PAGE_SIZE = 50;
 const PAGE_SIZE_OPTIONS = [15, 30, 50, 100, 0];
 
 export function UsersTable() {

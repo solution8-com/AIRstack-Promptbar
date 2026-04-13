@@ -176,9 +176,9 @@ export default async function RootLayout({
     "--primary-foreground": foreground,
   } as React.CSSProperties;
 
-  const fontClasses = isRtl 
-    ? `${inter.variable} ${notoSansArabic.variable} ${geistMono.variable} ${playfairDisplay.variable} font-arabic` 
-    : `${inter.variable} ${geistMono.variable} ${playfairDisplay.variable} font-sans`;
+const fontClasses = isRtl
+  ? `${inter.className} ${inter.variable} ${notoSansArabic.className} ${notoSansArabic.variable} ${geistMono.className} ${geistMono.variable} ${playfairDisplay.className} ${playfairDisplay.variable} font-arabic`
+  : `${inter.className} ${inter.variable} ${geistMono.className} ${geistMono.variable} ${playfairDisplay.className} ${playfairDisplay.variable} font-sans`;
 
   return (
     <html lang={locale} dir={isRtl ? "rtl" : "ltr"} suppressHydrationWarning className={themeClasses} style={themeStyles}>
