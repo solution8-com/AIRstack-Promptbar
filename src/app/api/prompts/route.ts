@@ -134,11 +134,13 @@ export async function POST(request: Request) {
     }
 
     // Check for similar content system-wide (any user)
-    // First, get a batch of public prompts to check similarity against
+    // BETA prompts are experimental and often test similar APIs or variations
+    // Skip global similarity check for BETA prompts but still enforce user-level duplicate prevention
+    const isBetaPrompt = title.includes("BETA");
     const normalizedNewContent = normalizeContent(content);
-    
-    // Only check if normalized content has meaningful length
-    if (normalizedNewContent.length > 50) {
+
+    // Only check if normalized content has meaningful length and not a BETA prompt
+    if (!isBetaPrompt && normalizedNewContent.length > 50) {
       // Get recent public prompts to check for similarity (limit to avoid performance issues)
       const publicPrompts = await db.prompt.findMany({
         where: {
