@@ -286,9 +286,9 @@ describe("create_skill_comment MCP Tool", () => {
       content: tooLongContent,
     }, user);
 
-    // The MCP SDK would reject this before it reaches our handler
-    // We're testing that the schema is configured correctly
-    expect(true).toBe(true); // Placeholder - actual validation is in MCP SDK
+    // The MCP SDK should reject this before it reaches our handler
+    expect(result.isError).toBe(true);
+    expect(result.content[0]?.text ?? "").toContain("10000");
   });
 });
 
