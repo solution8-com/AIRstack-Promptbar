@@ -161,6 +161,6 @@ plugins/claude/promptbar/
 
 ## Links
 
-- **[promptbar](https://promptbar)** - Browse all prompts and skills
-- **[API Documentation](https://promptbar/api/mcp)** - MCP server endpoint
-- **[Settings](https://promptbar/settings)** - Get your API key
+- **[promptbar](https://s8promptbar.vercel.com)** - Browse all prompts and skills
+- **[API Documentation](https://s8promptbar.vercel.com/api/mcp)** - MCP server endpoint
+- **[Settings](https://s8promptbar.vercel.com/settings)** - Get your API key
