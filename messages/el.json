@@ -396,6 +396,7 @@
     "switchToStructured": "Αλλαγή σε {format}",
     "createTag": "Create \"{name}\"",
     "creatingTag": "Creating...",
+    "saveGuide": "Αποθήκευση Οδηγού",
     "guideNotFound": "Ο Οδηγός Δεν Βρέθηκε",
     "readTheGuide": "Διαβάστε τον οδηγό: {title}",
     "selectExampleToPreview": "Select an example to preview."

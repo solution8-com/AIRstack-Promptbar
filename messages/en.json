@@ -433,6 +433,7 @@
     "createGuideTitle": "Create AIR Guide",
     "createGuideDescription": "Write a new guide in Markdown format",
     "editGuide": "Edit",
+    "saveGuide": "Save Guide",
     "guideNotFound": "Guide Not Found",
     "readTheGuide": "Read the guide: {title}",
     "selectExampleToPreview": "Select an example to preview."

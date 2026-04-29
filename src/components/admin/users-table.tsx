@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { formatDistanceToNow } from "@/lib/date";
@@ -478,7 +479,9 @@ export function UsersTable() {
                         {user.verified && <BadgeCheck className="h-4 w-4 text-blue-500 flex-shrink-0" />}
                         {user.flagged && <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />}
                       </div>
-                      <div className="text-xs text-muted-foreground">@{user.username}</div>
+                      <Link href={`/${user.username}`} className="text-xs text-muted-foreground hover:underline">
+                        @{user.username}
+                      </Link>
                     </div>
                   </div>
                   <DropdownMenu>
@@ -585,7 +588,9 @@ export function UsersTable() {
                         {user.verified && <BadgeCheck className="h-4 w-4 text-blue-500" />}
                         {user.flagged && <AlertTriangle className="h-4 w-4 text-amber-500" />}
                       </div>
-                      <div className="text-xs text-muted-foreground">@{user.username}</div>
+                      <Link href={`/${user.username}`} className="text-xs text-muted-foreground hover:underline">
+                        @{user.username}
+                      </Link>
                     </div>
                   </div>
                 </TableCell>

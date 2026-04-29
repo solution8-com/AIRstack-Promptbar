@@ -396,6 +396,7 @@
     "switchToStructured": "לעבור ל-{format}",
     "createTag": "Create \"{name}\"",
     "creatingTag": "Creating...",
+    "saveGuide": "שמור מדריך",
     "guideNotFound": "המדריך לא נמצא",
     "readTheGuide": "קרא את המדריך: {title}",
     "selectExampleToPreview": "Select an example to preview."

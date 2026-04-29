@@ -396,6 +396,7 @@
     "switchToStructured": "{format}-a keçin",
     "createTag": "Create \"{name}\"",
     "creatingTag": "Creating...",
+    "saveGuide": "Bələdçini Yadda Saxla",
     "guideNotFound": "Bələdçi Tapılmadı",
     "readTheGuide": "Bələdçini oxuyun: {title}",
     "selectExampleToPreview": "Select an example to preview."
