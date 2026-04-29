@@ -905,7 +905,11 @@
     "discover": "Découvrir",
     "noPromptsInFeed": "Aucun prompt dans votre flux",
     "subscribeToCategories": "Abonnez-vous à des catégories pour voir des prompts ici",
-    "viewAllCategories": "Voir Toutes les Catégories"
+    "viewAllCategories": "Voir Toutes les Catégories",
+    "noAdminPromptsYet": "No team prompts have been published yet.",
+    "filterLikedByTeam": "Liked by Team",
+    "filterBookmarkedByTeam": "Bookmarked by Team",
+    "filterCreatedByTeam": "Created by Team"
   },
   "workflows": {
     "title": "Flux de travail",

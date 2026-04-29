@@ -936,8 +936,12 @@
     "browseAll": "Browse All",
     "discover": "Discover",
     "noPromptsInFeed": "No prompts in your feed",
+    "noAdminPromptsYet": "No team prompts have been published yet.",
     "subscribeToCategories": "Subscribe to categories to see prompts here",
-    "viewAllCategories": "View All Categories"
+    "viewAllCategories": "View All Categories",
+    "filterLikedByTeam": "Liked by Team",
+    "filterBookmarkedByTeam": "Bookmarked by Team",
+    "filterCreatedByTeam": "Created by Team"
   },
   "workflows": {
     "title": "Workflows",

@@ -905,7 +905,11 @@
     "discover": "发现",
     "noPromptsInFeed": "您的订阅中暂无提示词",
     "subscribeToCategories": "订阅分类以在此查看提示词",
-    "viewAllCategories": "查看所有分类"
+    "viewAllCategories": "查看所有分类",
+    "noAdminPromptsYet": "No team prompts have been published yet.",
+    "filterLikedByTeam": "Liked by Team",
+    "filterBookmarkedByTeam": "Bookmarked by Team",
+    "filterCreatedByTeam": "Created by Team"
   },
   "workflows": {
     "title": "工作流程",

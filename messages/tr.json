@@ -905,7 +905,11 @@
     "discover": "Keşfet",
     "noPromptsInFeed": "Akışınızda prompt yok",
     "subscribeToCategories": "Burada promptları görmek için kategorilere abone olun",
-    "viewAllCategories": "Tüm Kategorileri Gör"
+    "viewAllCategories": "Tüm Kategorileri Gör",
+    "noAdminPromptsYet": "No team prompts have been published yet.",
+    "filterLikedByTeam": "Liked by Team",
+    "filterBookmarkedByTeam": "Bookmarked by Team",
+    "filterCreatedByTeam": "Created by Team"
   },
   "workflows": {
     "title": "Akışlar",

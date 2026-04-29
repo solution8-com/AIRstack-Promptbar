@@ -900,7 +900,11 @@
     "discover": "کشف کنید",
     "noPromptsInFeed": "پرامپتی در فید شما نیست",
     "subscribeToCategories": "برای دیدن پرامپت‌ها، دسته‌بندی‌ها را دنبال کنید",
-    "viewAllCategories": "مشاهده همه دسته‌بندی‌ها"
+    "viewAllCategories": "مشاهده همه دسته‌بندی‌ها",
+    "noAdminPromptsYet": "No team prompts have been published yet.",
+    "filterLikedByTeam": "Liked by Team",
+    "filterBookmarkedByTeam": "Bookmarked by Team",
+    "filterCreatedByTeam": "Created by Team"
   },
   "workflows": {
     "title": "گردش کار",

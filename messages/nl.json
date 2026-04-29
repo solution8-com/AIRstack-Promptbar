@@ -900,7 +900,11 @@
     "discover": "Ontdekken",
     "noPromptsInFeed": "Geen prompts in je feed",
     "subscribeToCategories": "Abonneer op categorieën om hier prompts te zien",
-    "viewAllCategories": "Alle categorieën bekijken"
+    "viewAllCategories": "Alle categorieën bekijken",
+    "noAdminPromptsYet": "No team prompts have been published yet.",
+    "filterLikedByTeam": "Liked by Team",
+    "filterBookmarkedByTeam": "Bookmarked by Team",
+    "filterCreatedByTeam": "Created by Team"
   },
   "workflows": {
     "title": "Workflows",

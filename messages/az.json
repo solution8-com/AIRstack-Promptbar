@@ -900,7 +900,11 @@
     "discover": "Kəşf et",
     "noPromptsInFeed": "Lentinizdə prompt yoxdur",
     "subscribeToCategories": "Burada promptları görmək üçün kateqoriyalara abunə olun",
-    "viewAllCategories": "Bütün Kateqoriyalara Bax"
+    "viewAllCategories": "Bütün Kateqoriyalara Bax",
+    "noAdminPromptsYet": "No team prompts have been published yet.",
+    "filterLikedByTeam": "Liked by Team",
+    "filterBookmarkedByTeam": "Bookmarked by Team",
+    "filterCreatedByTeam": "Created by Team"
   },
   "workflows": {
     "title": "İş axınları",

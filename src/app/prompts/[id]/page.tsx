@@ -301,7 +301,7 @@ export default async function PromptPage({ params }: PromptPageProps) {
             description: prompt.description || `AI prompt: ${prompt.title}`,
             content: prompt.content,
             author: prompt.author.name || prompt.author.username,
-             authorUrl: `${process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://s8promptbar.vercel.com"}/@${prompt.author.username}`,
+             authorUrl: `${process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://prompts.chat"}/@${prompt.author.username}`,
             datePublished: prompt.createdAt.toISOString(),
             dateModified: prompt.updatedAt.toISOString(),
             category: prompt.category?.name,

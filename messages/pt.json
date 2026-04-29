@@ -900,7 +900,11 @@
     "discover": "Descobrir",
     "noPromptsInFeed": "Nenhum prompt no seu feed",
     "subscribeToCategories": "Inscreva-se em categorias para ver prompts aqui",
-    "viewAllCategories": "Ver Todas as Categorias"
+    "viewAllCategories": "Ver Todas as Categorias",
+    "noAdminPromptsYet": "No team prompts have been published yet.",
+    "filterLikedByTeam": "Liked by Team",
+    "filterBookmarkedByTeam": "Bookmarked by Team",
+    "filterCreatedByTeam": "Created by Team"
   },
   "workflows": {
     "title": "Fluxos de trabalho",

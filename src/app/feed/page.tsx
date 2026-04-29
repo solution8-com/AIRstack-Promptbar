@@ -72,10 +72,10 @@ export default async function FeedPage() {
   const promptsWithVotes = await annotatePromptsWithUserVotes(prompts, session?.user?.id);
 
   const filters = [
-    { label: "Liked by Team", icon: Heart, active: true },
-    { label: "Bookmarked by Team", icon: Bookmark, active: false },
-    { label: "Created by Team", icon: UserPlus, active: false },
-    { label: "Browse All", icon: ArrowRight, active: false, href: "/prompts" },
+    { label: t("filterLikedByTeam"), icon: Heart, active: true },
+    { label: t("filterBookmarkedByTeam"), icon: Bookmark, active: false },
+    { label: t("filterCreatedByTeam"), icon: UserPlus, active: false },
+    { label: t("browseAll"), icon: ArrowRight, active: false, href: "/prompts" },
   ];
 
   return (
@@ -88,30 +88,40 @@ export default async function FeedPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {filters.map((filter) => (
-            <Button 
-              key={filter.label}
-              variant={filter.active ? "default" : "outline"} 
-              size="sm" 
-              asChild={!!filter.href}
-              className={cn(
-                "h-8 px-3 text-xs transition-all",
-                filter.active && "border-2 border-[#33bcff] bg-background text-foreground"
-              )}
-            >
-              {filter.href ? (
+          {filters.map((filter) =>
+            filter.href ? (
+              <Button
+                key={filter.label}
+                variant="outline"
+                size="sm"
+                asChild
+                className="h-8 px-3 text-xs transition-all"
+              >
                 <Link href={filter.href}>
                   {filter.icon && <filter.icon className="mr-1.5 h-3.5 w-3.5" />}
                   {filter.label}
                 </Link>
-              ) : (
-                <span>
-                  {filter.icon && <filter.icon className="mr-1.5 h-3.5 w-3.5" />}
-                  {filter.label}
-                </span>
-              )}
-            </Button>
-          ))}
+              </Button>
+            ) : filter.active ? (
+              <span
+                key={filter.label}
+                className={cn(
+                  "inline-flex items-center h-8 px-3 text-xs rounded-md border-2 border-[#33bcff] bg-background text-foreground font-medium"
+                )}
+              >
+                {filter.icon && <filter.icon className="mr-1.5 h-3.5 w-3.5" />}
+                {filter.label}
+              </span>
+            ) : (
+              <span
+                key={filter.label}
+                className="inline-flex items-center h-8 px-3 text-xs rounded-md border border-border bg-background text-muted-foreground font-medium opacity-50"
+              >
+                {filter.icon && <filter.icon className="mr-1.5 h-3.5 w-3.5" />}
+                {filter.label}
+              </span>
+            )
+          )}
         </div>
       </div>
 

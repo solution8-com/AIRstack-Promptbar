@@ -30,10 +30,10 @@ Then install the plugin:
 ### Search Prompts
 
 ```
-/promptbar:prompts <<queryquery>
-/promptbar:prompts <<queryquery> --type IMAGE
-/promptbar:prompts <<queryquery> --category coding
-/promptbar:prompts <<queryquery> --tag productivity
+/promptbar:prompts <query>
+/promptbar:prompts <query> --type IMAGE
+/promptbar:prompts <query> --category coding
+/promptbar:prompts <query> --tag productivity
 ```
 
 **Examples:**
@@ -47,9 +47,9 @@ Then install the plugin:
 ### Search Skills
 
 ```
-/promptbar:skills <<queryquery>
-/promptbar:skills <<queryquery> --category coding
-/promptbar:skills <<queryquery> --tag automation
+/promptbar:skills <query>
+/promptbar:skills <query> --category coding
+/promptbar:skills <query> --tag automation
 ```
 
 **Examples:**

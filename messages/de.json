@@ -905,7 +905,11 @@
     "discover": "Entdecken",
     "noPromptsInFeed": "Keine Prompts in Ihrem Feed",
     "subscribeToCategories": "Abonnieren Sie Kategorien, um hier Prompts zu sehen",
-    "viewAllCategories": "Alle Kategorien anzeigen"
+    "viewAllCategories": "Alle Kategorien anzeigen",
+    "noAdminPromptsYet": "No team prompts have been published yet.",
+    "filterLikedByTeam": "Liked by Team",
+    "filterBookmarkedByTeam": "Bookmarked by Team",
+    "filterCreatedByTeam": "Created by Team"
   },
   "workflows": {
     "title": "Workflows",
