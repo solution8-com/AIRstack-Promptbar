@@ -1,0 +1,17 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "mcp": {
+    "deepwiki": {
+      "type": "remote",
+      "url": "https://mcp.deepwiki.com/mcp",
+      "enabled": true,
+      "timeout": 5000
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://context7.liam.sh/mcp",
+      "enabled": true,
+      "timeout": 5000
+    }
+  }
+}
