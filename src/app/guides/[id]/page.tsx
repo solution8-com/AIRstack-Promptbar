@@ -111,7 +111,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
           />
           {isAdmin && (
             <Button variant="outline" size="sm" asChild className="gap-1.5">
-              <Link href={`/prompts/${guide.id}/edit`}>
+              <Link href={`/guides/${guide.id}/edit`}>
                 <Edit className="h-4 w-4" />
                 {t("editGuide")}
               </Link>
