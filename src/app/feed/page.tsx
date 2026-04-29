@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { ArrowRight, FolderOpen, Sparkles, Heart, Bookmark, UserPlus } from "lucide-react";
+import { ArrowRight, FolderOpen, Heart, Bookmark, UserPlus } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
