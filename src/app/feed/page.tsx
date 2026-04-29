@@ -96,7 +96,7 @@ export default async function FeedPage() {
               asChild={!!filter.href}
               className={cn(
                 "h-8 px-3 text-xs transition-all",
-                filter.active && "border-2 border-[#3bcff] bg-background text-foreground"
+                filter.active && "border-2 border-[#33bcff] bg-background text-foreground"
               )}
             >
               {filter.href ? (
