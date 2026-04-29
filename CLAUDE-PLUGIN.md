@@ -1,27 +1,27 @@
 # Claude Code Plugin
 
-Access prompts.chat directly in [Claude Code](https://code.claude.com) with our official plugin. Search prompts, discover skills, and improve your prompts without leaving your IDE.
+Access promptbar directly in [Claude Code](https://code.claude.com) with our official plugin. Search prompts, discover skills, and improve your prompts without leaving your IDE.
 
 ## Installation
 
-Add the prompts.chat marketplace to Claude Code:
+Add the promptbar marketplace to Claude Code:
 
 ```
-/plugin marketplace add f/prompts.chat
+/plugin marketplace add f/promptbar
 ```
 
 Then install the plugin:
 
 ```
-/plugin install prompts.chat@prompts.chat
+/plugin install promptbar@promptbar
 ```
 
 ## Features
 
 | Feature | Description |
 |---------|-------------|
-| **MCP Server** | Connect to prompts.chat API for real-time prompt access |
-| **Commands** | `/prompts.chat:prompts` and `/prompts.chat:skills` slash commands |
+| **MCP Server** | Connect to promptbar API for real-time prompt access |
+| **Commands** | `/promptbar:prompts` and `/promptbar:skills` slash commands |
 | **Agents** | Prompt Manager and Skill Manager agents for complex workflows |
 | **Skills** | Auto-activating skills for prompt and skill discovery |
 
@@ -30,38 +30,38 @@ Then install the plugin:
 ### Search Prompts
 
 ```
-/prompts.chat:prompts <query>
-/prompts.chat:prompts <query> --type IMAGE
-/prompts.chat:prompts <query> --category coding
-/prompts.chat:prompts <query> --tag productivity
+/promptbar:prompts <<queryquery>
+/promptbar:prompts <<queryquery> --type IMAGE
+/promptbar:prompts <<queryquery> --category coding
+/promptbar:prompts <<queryquery> --tag productivity
 ```
 
 **Examples:**
 ```
-/prompts.chat:prompts code review
-/prompts.chat:prompts writing assistant --category writing
-/prompts.chat:prompts midjourney --type IMAGE
-/prompts.chat:prompts react developer --tag coding
+/promptbar:prompts code review
+/promptbar:prompts writing assistant --category writing
+/promptbar:prompts midjourney --type IMAGE
+/promptbar:prompts react developer --tag coding
 ```
 
 ### Search Skills
 
 ```
-/prompts.chat:skills <query>
-/prompts.chat:skills <query> --category coding
-/prompts.chat:skills <query> --tag automation
+/promptbar:skills <<queryquery>
+/promptbar:skills <<queryquery> --category coding
+/promptbar:skills <<queryquery> --tag automation
 ```
 
 **Examples:**
 ```
-/prompts.chat:skills testing automation
-/prompts.chat:skills documentation --category coding
-/prompts.chat:skills api integration
+/promptbar:skills testing automation
+/promptbar:skills documentation --category coding
+/promptbar:skills api integration
 ```
 
 ## MCP Tools
 
-The plugin provides these tools via the prompts.chat MCP server:
+The plugin provides these tools via the promptbar MCP server:
 
 ### Prompt Tools
 
@@ -88,7 +88,7 @@ The plugin provides these tools via the prompts.chat MCP server:
 ### Prompt Manager
 
 The `prompt-manager` agent helps you:
-- Search for prompts across prompts.chat
+- Search for prompts across promptbar
 - Get and fill prompt variables
 - Save new prompts to your account
 - Improve prompts using AI
@@ -109,7 +109,7 @@ Automatically activates when you:
 - Ask for prompt templates
 - Want to search for prompts
 - Need to improve a prompt
-- Mention prompts.chat
+- Mention promptbar
 
 ### Skill Lookup
 
@@ -121,7 +121,7 @@ Automatically activates when you:
 
 ## Authentication
 
-To save prompts and skills, you need an API key from [prompts.chat/settings](https://prompts.chat/settings).
+To save prompts and skills, you need an API key from [promptbar/settings](https://promptbar/settings).
 
 ### Option 1: Environment Variable
 
@@ -142,13 +142,13 @@ PROMPTS_API_KEY: your_api_key_here
 ## Plugin Structure
 
 ```
-plugins/claude/prompts.chat/
+plugins/claude/promptbar/
 ├── .claude-plugin/
 │   └── plugin.json          # Plugin manifest
 ├── .mcp.json                 # MCP server configuration
 ├── commands/
-│   ├── prompts.md           # /prompts.chat:prompts command
-│   └── skills.md            # /prompts.chat:skills command
+│   ├── prompts.md           # /promptbar:prompts command
+│   └── skills.md            # /promptbar:skills command
 ├── agents/
 │   ├── prompt-manager.md    # Prompt management agent
 │   └── skill-manager.md     # Skill management agent
@@ -161,6 +161,6 @@ plugins/claude/prompts.chat/
 
 ## Links
 
-- **[prompts.chat](https://prompts.chat)** - Browse all prompts and skills
-- **[API Documentation](https://prompts.chat/api/mcp)** - MCP server endpoint
-- **[Settings](https://prompts.chat/settings)** - Get your API key
+- **[promptbar](https://promptbar)** - Browse all prompts and skills
+- **[API Documentation](https://promptbar/api/mcp)** - MCP server endpoint
+- **[Settings](https://promptbar/settings)** - Get your API key

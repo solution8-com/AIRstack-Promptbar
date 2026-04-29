@@ -218,9 +218,9 @@ export function CommentItem({
     <div className={cn("group", depth > 0 && "ml-6 border-l-2 border-muted pl-4")}>
       <div
         className={cn(
-          "py-3",
+          "py-3 rounded-md",
           isDownvoted && "opacity-50",
-          localFlagged && "bg-red-500/5 rounded-md px-3 -mx-3"
+          localFlagged ? "bg-red-500/5 px-3 -mx-3" : "bg-white/5 px-3 -mx-3"
         )}
       >
         {/* Header */}

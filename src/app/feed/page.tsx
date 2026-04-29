@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { ArrowRight, FolderOpen, Sparkles } from "lucide-react";
+import { ArrowRight, FolderOpen, Sparkles, Heart, Bookmark, UserPlus } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { PromptList } from "@/components/prompts/prompt-list";
 import { annotatePromptsWithUserVotes } from "@/lib/prompt-votes";
+import { cn } from "@/lib/utils";
 
 export default async function FeedPage() {
   const t = await getTranslations("feed");
@@ -70,28 +71,47 @@ export default async function FeedPage() {
   }));
   const promptsWithVotes = await annotatePromptsWithUserVotes(prompts, session?.user?.id);
 
+  const filters = [
+    { label: "Liked by Team", icon: Heart, active: true },
+    { label: "Bookmarked by Team", icon: Bookmark, active: false },
+    { label: "Created by Team", icon: UserPlus, active: false },
+    { label: "Browse All", icon: ArrowRight, active: false, href: "/prompts" },
+  ];
+
   return (
     <div className="container py-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
+        <div className="flex-1">
           <h1 className="text-lg font-semibold">{t("yourFeed")}</h1>
           <p className="text-sm text-muted-foreground">
             {t("feedDescription")}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/prompts">
-              {t("browseAll")}
-              <ArrowRight className="ml-1.5 h-4 w-4" />
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/discover">
-              <Sparkles className="mr-1.5 h-4 w-4" />
-              {t("discover")}
-            </Link>
-          </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {filters.map((filter) => (
+            <Button 
+              key={filter.label}
+              variant={filter.active ? "default" : "outline"} 
+              size="sm" 
+              asChild={!!filter.href}
+              className={cn(
+                "h-8 px-3 text-xs transition-all",
+                filter.active && "border-2 border-[#3bcff] bg-background text-foreground"
+              )}
+            >
+              {filter.href ? (
+                <Link href={filter.href}>
+                  {filter.icon && <filter.icon className="mr-1.5 h-3.5 w-3.5" />}
+                  {filter.label}
+                </Link>
+              ) : (
+                <span>
+                  {filter.icon && <filter.icon className="mr-1.5 h-3.5 w-3.5" />}
+                  {filter.label}
+                </span>
+              )}
+            </Button>
+          ))}
         </div>
       </div>
 

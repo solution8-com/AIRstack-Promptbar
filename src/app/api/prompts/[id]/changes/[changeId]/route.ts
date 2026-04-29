@@ -36,9 +36,9 @@ export async function PATCH(
       );
     }
 
-    if (prompt.authorId !== session.user.id) {
+    if (prompt.authorId !== session.user.id && session.user.role !== "ADMIN") {
       return NextResponse.json(
-        { error: "forbidden", message: "Only the prompt owner can review change requests" },
+        { error: "forbidden", message: "Only the prompt owner or an administrator can review change requests" },
         { status: 403 }
       );
     }

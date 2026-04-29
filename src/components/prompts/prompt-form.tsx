@@ -1172,25 +1172,27 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                         <SelectValue placeholder={t("selectCategory")} />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="__none__">{t("noCategory")}</SelectItem>
-                      {categories
-                        .filter((c) => c.id && !c.parentId)
-                        .map((parent) => (
-                          <div key={parent.id}>
-                            <SelectItem value={parent.id} className="font-medium">
-                              {parent.name}
-                            </SelectItem>
-                            {categories
-                              .filter((c) => c.parentId === parent.id)
-                              .map((child) => (
-                                <SelectItem key={child.id} value={child.id} className="pl-6 text-muted-foreground">
-                                  ↳ {child.name}
-                                </SelectItem>
-                              ))}
-                          </div>
-                        ))}
-                    </SelectContent>
+                      <SelectContent>
+                        <SelectItem value="__none__">{t("noCategory")}</SelectItem>
+                        {categories
+                          .filter((c) => c.id && !c.parentId)
+                          .sort((a, b) => a.name.localeCompare(b.name))
+                          .map((parent) => (
+                            <div key={parent.id}>
+                              <SelectItem value={parent.id} className="font-medium">
+                                {parent.name}
+                              </SelectItem>
+                              {categories
+                                .filter((c) => c.parentId === parent.id)
+                                .sort((a, b) => a.name.localeCompare(b.name))
+                                .map((child) => (
+                                  <SelectItem key={child.id} value={child.id} className="pl-6 text-muted-foreground">
+                                    ↳ {child.name}
+                                  </SelectItem>
+                                ))}
+                            </div>
+                          ))}
+                      </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
@@ -1437,18 +1439,28 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                       </div>
                     )}
                     <div className="flex gap-2">
-                      <Input
-                        placeholder={t("mcpCommandPlaceholder")}
-                        value={newMcpCommand}
-                        onChange={(e) => setNewMcpCommand(e.target.value)}
-                        className="flex-1 text-xs h-8"
-                      />
-                      <Input
-                        placeholder={t("mcpToolsPlaceholder")}
-                        value={newMcpTools}
-                        onChange={(e) => setNewMcpTools(e.target.value)}
-                        className="w-28 text-xs h-8"
-                      />
+                       <Input
+                         placeholder={t("mcpCommandPlaceholder")}
+                         value={newMcpCommand}
+                         onChange={(e) => setNewMcpCommand(e.target.value)}
+                         onKeyDown={(e) => {
+                           if (e.key === "Enter") {
+                             e.preventDefault();
+                           }
+                         }}
+                         className="flex-1 text-xs h-8"
+                       />
+                       <Input
+                         placeholder={t("mcpToolsPlaceholder")}
+                         value={newMcpTools}
+                         onChange={(e) => setNewMcpTools(e.target.value)}
+                         onKeyDown={(e) => {
+                           if (e.key === "Enter") {
+                             e.preventDefault();
+                           }
+                         }}
+                         className="w-28 text-xs h-8"
+                       />
                       <Button
                         type="button"
                         variant="outline"
