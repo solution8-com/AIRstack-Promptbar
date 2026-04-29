@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { formatDistanceToNow } from "@/lib/date";
-import { ArrowLeft, Edit } from "lucide-react";
+import { ArrowLeft, Edit, MessageSquare } from "lucide-react";
 import { AnimatedDate } from "@/components/ui/animated-date";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GuideContent } from "@/components/guides/guide-content";
 import { UpvoteButton } from "@/components/prompts/upvote-button";
+import { CommentSection } from "@/components/comments";
 
 interface GuidePageProps {
   params: Promise<{ id: string }>;
@@ -66,6 +67,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
       _count: {
         select: {
           votes: true,
+          comments: true,
         },
       },
     },
@@ -109,6 +111,11 @@ export default async function GuidePage({ params }: GuidePageProps) {
             size="sm"
             showLabel={false}
           />
+          {/* Comment count indicator */}
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <MessageSquare className="h-4 w-4" />
+            {guide._count?.comments ?? 0}
+          </div>
           {isAdmin && (
             <Button variant="outline" size="sm" asChild className="gap-1.5">
               <Link href={`/guides/${guide.id}/edit`}>
@@ -147,6 +154,23 @@ export default async function GuidePage({ params }: GuidePageProps) {
 
       {/* Guide content rendered as Markdown */}
       <GuideContent content={guide.content} />
+
+      {/* Comments Section */}
+      <div className="mt-12 border-t pt-8">
+        {isLoggedIn ? (
+          <CommentSection
+            promptId={guide.id}
+            currentUserId={session?.user?.id}
+            isAdmin={isAdmin}
+            isLoggedIn={isLoggedIn}
+            locale="en"
+          />
+        ) : (
+          <div className="rounded-md border border-secondary bg-secondary/50 px-4 py-3 text-sm text-muted-foreground">
+            <p>{t("loginToComment")}</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
