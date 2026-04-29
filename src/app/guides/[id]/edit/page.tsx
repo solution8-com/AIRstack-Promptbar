@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { GuideEditForm } from "@/components/guides/guide-edit-form";
@@ -17,7 +16,6 @@ export const metadata: Metadata = {
 export default async function EditGuidePage({ params }: EditGuidePageProps) {
   const { id: guideId } = await params;
   const session = await auth();
-  const t = await getTranslations("prompts");
 
   if (!session?.user) {
     redirect("/login");

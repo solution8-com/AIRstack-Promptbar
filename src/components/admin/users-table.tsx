@@ -77,7 +77,6 @@ const PAGE_SIZE_OPTIONS = [15, 30, 50, 100, 0];
 export function UsersTable() {
   const router = useRouter();
   const t = useTranslations("admin.users");
-  const tCommon = useTranslations("common");
   const locale = useLocale();
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
   const [editCreditsUser, setEditCreditsUser] = useState<UserData | null>(null);
