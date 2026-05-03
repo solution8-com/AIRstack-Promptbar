@@ -521,6 +521,28 @@ function getBuilderData(): { content?: string; type?: string; format?: string } 
   }
 }
 
+/**
+ * Renders the prompt creation/edit form UI and manages its state, validation, and submission.
+ *
+ * This component provides the full prompt builder experience: title/description/category/tags/contributors metadata,
+ * editable prompt content (plain text, structured JSON/YAML, or SKILL/TASTE editors), optional media attachment
+ * (URL, upload, or AI generation), advanced "works best with" settings (models and MCP), and output-type preview.
+ * It integrates react-hook-form with a Zod schema, supports create and edit modes, optionally integrates an AI
+ * PromptBuilder, and includes an "internal hack mode" variant that changes UI behavior and paste handling.
+ *
+ * @param categories - List of category objects used for the category selector
+ * @param tags - List of tag objects used for tag suggestions and selection
+ * @param initialData - Optional initial prompt values used to populate the form when editing
+ * @param initialContributors - Optional initial contributor list (defaults to empty array)
+ * @param promptId - Optional prompt identifier used when editing an existing prompt
+ * @param mode - Either `"create"` or `"edit"`, controls submission behavior and some UI variants (defaults to `"create"`)
+ * @param aiGenerationEnabled - When true, enables the embedded AI PromptBuilder UI and generation buttons (defaults to `false`)
+ * @param aiModelName - Optional AI model name passed to the PromptBuilder when AI generation is enabled
+ * @param initialPromptRequest - Optional initial prompt request forwarded to the PromptBuilder
+ * @param isInternalHackMode - When true, toggles the internal hack UI/behavior (paste conversion, previews, simplified metadata) (defaults to `false`)
+ *
+ * @returns A React element that renders the prompt form UI.
+ */
 export function PromptForm({ categories, tags, initialData, initialContributors = [], promptId, mode = "create", aiGenerationEnabled = false, aiModelName, initialPromptRequest, isInternalHackMode = false }: PromptFormProps) {
   const router = useRouter();
   const t = useTranslations("prompts");
