@@ -109,24 +109,23 @@ export default async function FeedPage() {
                   {filter.label}
                 </Link>
               </Button>
-            ) : filter.active ? (
-              <span
+            ) : (
+              <Button
                 key={filter.label}
+                variant="outline"
+                size="sm"
+                disabled={!filter.active}
+                aria-current={filter.active ? "page" : undefined}
                 className={cn(
-                  "inline-flex items-center h-8 px-3 text-xs rounded-md border-2 border-[#33bcff] bg-background text-foreground font-medium"
+                  "h-8 px-3 text-xs transition-all",
+                  filter.active
+                    ? "border-2 border-primary bg-background text-foreground"
+                    : "opacity-50"
                 )}
               >
                 {filter.icon && <filter.icon className="mr-1.5 h-3.5 w-3.5" />}
                 {filter.label}
-              </span>
-            ) : (
-              <span
-                key={filter.label}
-                className="inline-flex items-center h-8 px-3 text-xs rounded-md border border-border bg-background text-muted-foreground font-medium opacity-50"
-              >
-                {filter.icon && <filter.icon className="mr-1.5 h-3.5 w-3.5" />}
-                {filter.label}
-              </span>
+              </Button>
             )
           )}
         </div>
