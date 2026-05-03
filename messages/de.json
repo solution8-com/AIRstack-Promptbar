@@ -906,10 +906,10 @@
     "noPromptsInFeed": "Keine Prompts in Ihrem Feed",
     "subscribeToCategories": "Abonnieren Sie Kategorien, um hier Prompts zu sehen",
     "viewAllCategories": "Alle Kategorien anzeigen",
-    "noAdminPromptsYet": "No team prompts have been published yet.",
-    "filterLikedByTeam": "Liked by Team",
-    "filterBookmarkedByTeam": "Bookmarked by Team",
-    "filterCreatedByTeam": "Created by Team"
+    "noAdminPromptsYet": "Bisher wurden noch keine Team-Prompts veröffentlicht.",
+    "filterLikedByTeam": "Vom Team mit „Gefällt mir" markiert",
+    "filterBookmarkedByTeam": "Vom Team als Lesezeichen gespeichert",
+    "filterCreatedByTeam": "Vom Team erstellt"
   },
   "workflows": {
     "title": "Workflows",
