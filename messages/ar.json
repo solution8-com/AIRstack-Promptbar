@@ -901,10 +901,10 @@
     "noPromptsInFeed": "لا توجد أوامر في خلاصتك",
     "subscribeToCategories": "اشترك في التصنيفات لرؤية الأوامر هنا",
     "viewAllCategories": "عرض جميع التصنيفات",
-    "noAdminPromptsYet": "No team prompts have been published yet.",
-    "filterLikedByTeam": "Liked by Team",
-    "filterBookmarkedByTeam": "Bookmarked by Team",
-    "filterCreatedByTeam": "Created by Team"
+    "noAdminPromptsYet": "لم يتم نشر أي أوامر من الفريق حتى الآن.",
+    "filterLikedByTeam": "أعجب بها الفريق",
+    "filterBookmarkedByTeam": "محفوظة لدى الفريق",
+    "filterCreatedByTeam": "أنشأها الفريق"
   },
   "workflows": {
     "title": "سير العمل",
