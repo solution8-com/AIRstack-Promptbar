@@ -901,10 +901,10 @@
     "noPromptsInFeed": "پرامپتی در فید شما نیست",
     "subscribeToCategories": "برای دیدن پرامپت‌ها، دسته‌بندی‌ها را دنبال کنید",
     "viewAllCategories": "مشاهده همه دسته‌بندی‌ها",
-    "noAdminPromptsYet": "No team prompts have been published yet.",
-    "filterLikedByTeam": "Liked by Team",
-    "filterBookmarkedByTeam": "Bookmarked by Team",
-    "filterCreatedByTeam": "Created by Team"
+    "noAdminPromptsYet": "هنوز هیچ پرامپت تیمی منتشر نشده است.",
+    "filterLikedByTeam": "پسندیده‌شده توسط تیم",
+    "filterBookmarkedByTeam": "نشانک‌گذاری‌شده توسط تیم",
+    "filterCreatedByTeam": "ایجادشده توسط تیم"
   },
   "workflows": {
     "title": "گردش کار",
