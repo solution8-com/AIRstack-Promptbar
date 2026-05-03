@@ -121,7 +121,7 @@ Automatically activates when you:
 
 ## Authentication
 
-To save prompts and skills, you need an API key from [promptbar/settings](https://promptbar/settings).
+To save prompts and skills, you need an API key from [promptbar/settings](https://s8promptbar.vercel.com/settings).
 
 ### Option 1: Environment Variable
 

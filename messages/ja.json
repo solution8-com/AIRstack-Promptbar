@@ -906,10 +906,10 @@
     "noPromptsInFeed": "フィードにプロンプトがありません",
     "subscribeToCategories": "カテゴリーを購読してプロンプトを表示",
     "viewAllCategories": "すべてのカテゴリーを見る",
-    "noAdminPromptsYet": "No team prompts have been published yet.",
-    "filterLikedByTeam": "Liked by Team",
-    "filterBookmarkedByTeam": "Bookmarked by Team",
-    "filterCreatedByTeam": "Created by Team"
+    "noAdminPromptsYet": "チームのプロンプトはまだ公開されていません。",
+    "filterLikedByTeam": "チームがいいね",
+    "filterBookmarkedByTeam": "チームがブックマーク",
+    "filterCreatedByTeam": "チームが作成"
   },
   "workflows": {
     "title": "ワークフロー",
