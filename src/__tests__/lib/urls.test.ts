@@ -1,5 +1,40 @@
-import { describe, it, expect } from "vitest";
-import { getPromptUrl, getPromptEditUrl, getPromptChangesUrl } from "@/lib/urls";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { getPromptUrl, getPromptEditUrl, getPromptChangesUrl, getBaseUrl } from "@/lib/urls";
+
+describe("getBaseUrl", () => {
+  const originalAuthUrl = process.env.AUTH_URL;
+  const originalNextAuthUrl = process.env.NEXTAUTH_URL;
+
+  afterEach(() => {
+    // Restore original env vars
+    process.env.AUTH_URL = originalAuthUrl;
+    process.env.NEXTAUTH_URL = originalNextAuthUrl;
+  });
+
+  it("should return AUTH_URL when set", () => {
+    process.env.AUTH_URL = "https://example.com";
+    process.env.NEXTAUTH_URL = undefined;
+    expect(getBaseUrl()).toBe("https://example.com");
+  });
+
+  it("should return NEXTAUTH_URL when AUTH_URL is not set", () => {
+    process.env.AUTH_URL = undefined;
+    process.env.NEXTAUTH_URL = "https://nextauth.example.com";
+    expect(getBaseUrl()).toBe("https://nextauth.example.com");
+  });
+
+  it("should return default prompts.chat URL when no env vars are set", () => {
+    process.env.AUTH_URL = undefined;
+    process.env.NEXTAUTH_URL = undefined;
+    expect(getBaseUrl()).toBe("https://prompts.chat");
+  });
+
+  it("should prefer AUTH_URL over NEXTAUTH_URL when both are set", () => {
+    process.env.AUTH_URL = "https://auth.example.com";
+    process.env.NEXTAUTH_URL = "https://nextauth.example.com";
+    expect(getBaseUrl()).toBe("https://auth.example.com");
+  });
+});
 
 describe("getPromptUrl", () => {
   it("should return URL with just ID when no slug provided", () => {

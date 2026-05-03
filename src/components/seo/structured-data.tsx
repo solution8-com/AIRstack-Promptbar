@@ -1,4 +1,5 @@
 import { getConfig } from "@/lib/config";
+import { getBaseUrl } from "@/lib/urls";
 
 interface StructuredDataProps {
   type: "website" | "organization" | "breadcrumb" | "prompt" | "softwareApp" | "itemList";
@@ -28,7 +29,7 @@ interface StructuredDataProps {
 
 export async function StructuredData({ type, data }: StructuredDataProps) {
   const config = await getConfig();
-  const baseUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://prompts.chat";
+  const baseUrl = getBaseUrl();
 
   const schemas: Record<string, object | null> = {
     organization: {

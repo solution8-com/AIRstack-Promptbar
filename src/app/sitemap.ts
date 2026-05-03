@@ -1,12 +1,13 @@
 import { MetadataRoute } from "next";
 import { db } from "@/lib/db";
 import { getAllChapters } from "@/lib/book/chapters";
+import { getBaseUrl } from "@/lib/urls";
 
 // Revalidate sitemap every hour (3600 seconds)
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://prompts.chat";
+  const baseUrl = getBaseUrl();
 
   // Static pages - always included
   const staticPages: MetadataRoute.Sitemap = [

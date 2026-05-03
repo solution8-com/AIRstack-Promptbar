@@ -1,4 +1,12 @@
 /**
+ * Gets the canonical base URL for the application
+ * Falls back to https://prompts.chat if environment variables are not set
+ */
+export function getBaseUrl(): string {
+  return process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://prompts.chat";
+}
+
+/**
  * Generates a URL path for a prompt, including the slug if available
  * Format: /prompts/{id} or /prompts/{id}_{slug}
  */

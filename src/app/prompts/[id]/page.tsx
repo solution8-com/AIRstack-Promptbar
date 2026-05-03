@@ -18,6 +18,7 @@ import { SkillViewer } from "@/components/prompts/skill-viewer";
 import { UpvoteButton } from "@/components/prompts/upvote-button";
 import { AddVersionForm } from "@/components/prompts/add-version-form";
 import { DeleteVersionButton } from "@/components/prompts/delete-version-button";
+import { getBaseUrl } from "@/lib/urls";
 import { VersionCompareModal } from "@/components/prompts/version-compare-modal";
 import { VersionCompareButton } from "@/components/prompts/version-compare-button";
 import { FeaturePromptButton } from "@/components/prompts/feature-prompt-button";
@@ -312,7 +313,7 @@ export default async function PromptPage({ params }: PromptPageProps) {
             description: prompt.description || `AI prompt: ${prompt.title}`,
             content: prompt.content,
             author: prompt.author.name || prompt.author.username,
-             authorUrl: `${process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://prompts.chat"}/@${prompt.author.username}`,
+            authorUrl: `${getBaseUrl()}/@${prompt.author.username}`,
             datePublished: prompt.createdAt.toISOString(),
             dateModified: prompt.updatedAt.toISOString(),
             category: prompt.category?.name,
