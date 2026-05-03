@@ -9,6 +9,13 @@ import { PromptList } from "@/components/prompts/prompt-list";
 import { annotatePromptsWithUserVotes } from "@/lib/prompt-votes";
 import { cn } from "@/lib/utils";
 
+/**
+ * Renders the user's feed page showing recent admin-authored prompts with header and filter controls.
+ *
+ * Loads feed translations, enforces authentication (redirecting to /login when unauthenticated), fetches recent public prompts authored by admins, annotates them with the current user's vote state, and renders the header, filter controls, and either a prompt list or an empty-state card.
+ *
+ * @returns The React element for the feed page containing the header, filter controls, and prompt list or an empty-state message.
+ */
 export default async function FeedPage() {
   const t = await getTranslations("feed");
   const session = await auth();

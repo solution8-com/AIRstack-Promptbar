@@ -96,6 +96,24 @@ function autoLinkText(text: string): React.ReactNode[] {
   });
 }
 
+/**
+ * Renders a single comment with author header, content (auto-linked URLs), voting controls,
+ * reply UI (nested up to a depth limit), flag/delete actions, and recursive rendering of replies.
+ *
+ * @param comment - The comment to render.
+ * @param promptId - ID of the prompt the comment belongs to; used for API requests (vote/flag/delete).
+ * @param currentUserId - ID of the current user; used to determine authorship and available actions.
+ * @param isAdmin - Whether the current user has admin privileges (enables flag/unflag and some menu actions).
+ * @param isLoggedIn - Whether the current user is logged in (enables replying and voting).
+ * @param locale - Locale string used to format relative timestamps.
+ * @param replies - Unused placeholder prop preserved for API/compatibility.
+ * @param allComments - Array of all comments used to compute nested replies (children where parentId === comment.id).
+ * @param onCommentAdded - Callback invoked with a newly created Comment when a reply is posted.
+ * @param onCommentDeleted - Callback invoked with the ID of a comment after successful deletion.
+ * @param onCommentUpdated - Callback invoked with an updated Comment object after voting or flagging changes.
+ * @param depth - Current nesting depth for this comment (defaults to 0); controls indentation and maximum reply depth.
+ * @returns The rendered comment item element.
+ */
 export function CommentItem({
   comment,
   promptId,

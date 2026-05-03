@@ -75,6 +75,17 @@ export async function generateMetadata({ params }: PromptPageProps): Promise<Met
   };
 }
 
+/**
+ * Render the prompt detail page: fetches prompt data, computes user permissions/state,
+ * and returns the complete server-side JSX for the prompt detail view.
+ *
+ * Performs permission checks and will call `notFound()` to terminate rendering when
+ * the prompt does not exist or the current session is not allowed to view a private prompt.
+ *
+ * @param params - Route params as a promise resolving to an object containing `id`
+ *                 (URL `id` parameter which will be normalized).
+ * @returns The rendered JSX element for the prompt detail page.
+ */
 export default async function PromptPage({ params }: PromptPageProps) {
   const { id: idParam } = await params;
   const id = extractPromptId(idParam);
