@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { getPromptUrl, getPromptEditUrl, getPromptChangesUrl, getBaseUrl } from "@/lib/urls";
 
 describe("getBaseUrl", () => {
