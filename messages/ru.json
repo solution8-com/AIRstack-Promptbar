@@ -901,10 +901,10 @@
     "noPromptsInFeed": "В вашей ленте нет промптов",
     "subscribeToCategories": "Подпишитесь на категории, чтобы видеть промпты здесь",
     "viewAllCategories": "Все категории",
-    "noAdminPromptsYet": "No team prompts have been published yet.",
-    "filterLikedByTeam": "Liked by Team",
-    "filterBookmarkedByTeam": "Bookmarked by Team",
-    "filterCreatedByTeam": "Created by Team"
+    "noAdminPromptsYet": "Пока ещё не опубликовано ни одного командного промпта.",
+    "filterLikedByTeam": "Понравившиеся команде",
+    "filterBookmarkedByTeam": "Сохранённые командой",
+    "filterCreatedByTeam": "Созданные командой"
   },
   "workflows": {
     "title": "Рабочие процессы",
