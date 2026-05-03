@@ -6,13 +6,13 @@ Access promptbar directly in [Claude Code](https://code.claude.com) with our off
 
 Add the promptbar marketplace to Claude Code:
 
-```
+```text
 /plugin marketplace add f/promptbar
 ```
 
 Then install the plugin:
 
-```
+```text
 /plugin install promptbar@promptbar
 ```
 
@@ -29,7 +29,7 @@ Then install the plugin:
 
 ### Search Prompts
 
-```
+```text
 /promptbar:prompts <query>
 /promptbar:prompts <query> --type IMAGE
 /promptbar:prompts <query> --category coding
@@ -37,7 +37,7 @@ Then install the plugin:
 ```
 
 **Examples:**
-```
+```text
 /promptbar:prompts code review
 /promptbar:prompts writing assistant --category writing
 /promptbar:prompts midjourney --type IMAGE
@@ -46,14 +46,14 @@ Then install the plugin:
 
 ### Search Skills
 
-```
+```text
 /promptbar:skills <query>
 /promptbar:skills <query> --category coding
 /promptbar:skills <query> --tag automation
 ```
 
 **Examples:**
-```
+```text
 /promptbar:skills testing automation
 /promptbar:skills documentation --category coding
 /promptbar:skills api integration
@@ -135,13 +135,13 @@ export PROMPTS_API_KEY=your_api_key_here
 
 Add the header when connecting to the MCP server:
 
-```
+```text
 PROMPTS_API_KEY: your_api_key_here
 ```
 
 ## Plugin Structure
 
-```
+```text
 plugins/claude/promptbar/
 ├── .claude-plugin/
 │   └── plugin.json          # Plugin manifest
