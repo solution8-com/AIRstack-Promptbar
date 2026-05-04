@@ -115,7 +115,7 @@ export default async function FeedPage() {
                 variant="outline"
                 size="sm"
                 disabled={!filter.active}
-                aria-current={filter.active ? "page" : undefined}
+                aria-pressed={filter.active}
                 className={cn(
                   "h-8 px-3 text-xs transition-all",
                   filter.active
