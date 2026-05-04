@@ -13,6 +13,7 @@ import { AppBanner } from "@/components/layout/app-banner";
 import { LocaleDetector } from "@/components/providers/locale-detector";
 import { getConfig } from "@/lib/config";
 import { isRtlLocale } from "@/lib/i18n/config";
+import { getBaseUrl } from "@/lib/urls";
 import "./globals.css";
 
 const inter = Inter({
@@ -32,7 +33,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.AUTH_URL || process.env.NEXTAUTH_URL || "http://localhost:3000"),
+  metadataBase: new URL(getBaseUrl()),
   title: {
     default: "Solution8 PromptBar - AI Prompts Platform",
     template: "%s | Solution8 PromptBar",
@@ -104,7 +105,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: process.env.AUTH_URL || process.env.NEXTAUTH_URL || "http://localhost:3000",
+    canonical: getBaseUrl(),
   },
 };
 

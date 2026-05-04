@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
@@ -597,6 +597,16 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
   const bestWithModels = form.watch("bestWithModels") || [];
   const modelsByProvider = getModelsByProvider();
 
+  const handleAddMcp = () => {
+    if (!newMcpCommand.trim()) return;
+    const tools = newMcpTools.trim()
+      ? newMcpTools.split(",").map((t) => t.trim()).filter(Boolean)
+      : undefined;
+    form.setValue("bestWithMCP", [...bestWithMCP, { command: newMcpCommand.trim(), tools }]);
+    setNewMcpCommand("");
+    setNewMcpTools("");
+  };
+
   const selectedTags = form.watch("tagIds");
   const promptType = form.watch("type");
   const structuredFormat = form.watch("structuredFormat");
@@ -609,6 +619,21 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const codeEditorRef = useRef<CodeEditorHandle>(null);
   const previewSectionRef = useRef<HTMLDivElement>(null);
+
+  // Memoized sorted categories to avoid re-sorting on every render
+  const { parentCategories, childrenByParent } = useMemo(() => {
+    const collator = { sensitivity: "base" } as const;
+    const parents = categories
+      .filter((c) => c.id && !c.parentId)
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, collator));
+    const children: Record<string, typeof categories> = {};
+    for (const parent of parents) {
+      children[parent.id] = categories
+        .filter((c) => c.parentId === parent.id)
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, collator));
+    }
+    return { parentCategories: parents, childrenByParent: children };
+  }, [categories]);
 
   // Warn user before leaving page with unsaved changes
   const isDirty = form.formState.isDirty;
@@ -1196,24 +1221,18 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                     </FormControl>
                       <SelectContent>
                         <SelectItem value="__none__">{t("noCategory")}</SelectItem>
-                        {categories
-                          .filter((c) => c.id && !c.parentId)
-                          .sort((a, b) => a.name.localeCompare(b.name))
-                          .map((parent) => (
-                            <div key={parent.id}>
-                              <SelectItem value={parent.id} className="font-medium">
-                                {parent.name}
+                        {parentCategories.map((parent) => (
+                          <div key={parent.id}>
+                            <SelectItem value={parent.id} className="font-medium">
+                              {parent.name}
+                            </SelectItem>
+                            {(childrenByParent[parent.id] ?? []).map((child) => (
+                              <SelectItem key={child.id} value={child.id} className="pl-6 text-muted-foreground">
+                                ↳ {child.name}
                               </SelectItem>
-                              {categories
-                                .filter((c) => c.parentId === parent.id)
-                                .sort((a, b) => a.name.localeCompare(b.name))
-                                .map((child) => (
-                                  <SelectItem key={child.id} value={child.id} className="pl-6 text-muted-foreground">
-                                    ↳ {child.name}
-                                  </SelectItem>
-                                ))}
-                            </div>
-                          ))}
+                            ))}
+                          </div>
+                        ))}
                       </SelectContent>
                   </Select>
                   <FormMessage />
@@ -1468,6 +1487,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                          onKeyDown={(e) => {
                            if (e.key === "Enter") {
                              e.preventDefault();
+                             handleAddMcp();
                            }
                          }}
                          className="flex-1 text-xs h-8"
@@ -1479,6 +1499,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                          onKeyDown={(e) => {
                            if (e.key === "Enter") {
                              e.preventDefault();
+                             handleAddMcp();
                            }
                          }}
                          className="w-28 text-xs h-8"
@@ -1489,14 +1510,7 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                         size="sm"
                         className="h-8 px-2 text-xs"
                         disabled={!newMcpCommand.trim()}
-                        onClick={() => {
-                          if (newMcpCommand.trim()) {
-                            const tools = newMcpTools.trim() ? newMcpTools.split(",").map(t => t.trim()).filter(Boolean) : undefined;
-                            form.setValue("bestWithMCP", [...bestWithMCP, { command: newMcpCommand.trim(), tools }]);
-                            setNewMcpCommand("");
-                            setNewMcpTools("");
-                          }
-                        }}
+                        onClick={handleAddMcp}
                       >
                         {t("add")}
                       </Button>
