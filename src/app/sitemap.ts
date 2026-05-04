@@ -55,14 +55,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Dynamic pages - skip if database is unavailable (e.g., during build)
   try {
     const [categories, prompts, tags] = await Promise.all([
-      db.category.findMany({ select: { slug: true } }),
+      db.category.findMany({ select: { slug: true }, take: 1000 }),
       db.prompt.findMany({
         where: { isPrivate: false, deletedAt: null, isUnlisted: false },
         select: { id: true, slug: true, updatedAt: true },
         orderBy: { updatedAt: "desc" },
         take: 1000,
       }),
-      db.tag.findMany({ select: { slug: true } }),
+      db.tag.findMany({ select: { slug: true }, take: 1000 }),
     ]);
 
     const categoryPages: MetadataRoute.Sitemap = categories.map((category) => ({
@@ -87,8 +87,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
     return [...staticPages, ...bookPages, ...categoryPages, ...promptPages, ...tagPages];
-  } catch {
-    // Database unavailable (build time) - return static and book pages only
+  } catch (err) {
+    console.error("[sitemap] DB error, falling back to static pages:", err);
     return [...staticPages, ...bookPages];
   }
 }

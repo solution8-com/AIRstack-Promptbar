@@ -26,7 +26,7 @@ export default async function FeedPage() {
     redirect("/login");
   }
 
-  // Fetch ALL prompts from admin users only, chronologically sorted
+  // Prompts authored by admins that have been liked by at least one admin
   const promptsRaw = await db.prompt.findMany({
     where: {
       isPrivate: false,
@@ -34,6 +34,11 @@ export default async function FeedPage() {
       deletedAt: null,
       author: {
         role: "ADMIN"
+      },
+      votes: {
+        some: {
+          user: { role: "ADMIN" }
+        }
       }
     },
     orderBy: { createdAt: "desc" },
