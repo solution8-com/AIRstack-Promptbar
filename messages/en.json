@@ -934,9 +934,13 @@
   "feed": {
     "yourFeed": "Your Feed",
     "feedDescription": "Prompts from your subscribed categories",
+    "filterLikedByTeam": "Liked by Team",
+    "filterBookmarkedByTeam": "Bookmarked by Team",
+    "filterCreatedByTeam": "Created by Team",
     "browseAll": "Browse All",
     "discover": "Discover",
     "noPromptsInFeed": "No prompts in your feed",
+    "noPromptsMatchingFilter": "No prompts match this filter",
     "subscribeToCategories": "Subscribe to categories to see prompts here",
     "viewAllCategories": "View All Categories"
   },

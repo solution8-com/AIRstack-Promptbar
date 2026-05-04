@@ -47,6 +47,7 @@ export async function GET(
 
   const examples = await db.userPromptExample.findMany({
     where: { promptId },
+    take: 50,
     orderBy: { createdAt: "desc" },
     include: {
       user: {

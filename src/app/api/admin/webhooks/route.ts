@@ -85,6 +85,7 @@ export async function GET() {
     }
 
     const webhooks = await db.webhookConfig.findMany({
+      take: 50,
       orderBy: { createdAt: "desc" },
     });
 

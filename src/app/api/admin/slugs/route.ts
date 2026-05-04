@@ -24,6 +24,7 @@ export async function POST(request: Request) {
 
     const prompts = await db.prompt.findMany({
       where: whereClause,
+      take: 50,
       select: { id: true, title: true },
     });
 

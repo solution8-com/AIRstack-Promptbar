@@ -16,6 +16,7 @@ export async function GET() {
 
   const collections = await db.collection.findMany({
     where: { userId: session.user.id },
+    take: 50,
     orderBy: { createdAt: "desc" },
     include: {
       prompt: {

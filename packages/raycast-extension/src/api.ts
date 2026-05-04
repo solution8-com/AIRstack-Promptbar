@@ -7,7 +7,7 @@ interface PromptsChatPreferences {
 
 function getBaseUrl(): string {
   const { baseUrl } = getPreferenceValues<PromptsChatPreferences>();
-  return baseUrl?.replace(/\/$/, "") || "https://prompts.chat";
+  return baseUrl?.replace(/\/$/, "") || "https://promptbar.chat";
 }
 
 export async function fetchPrompts(options: {

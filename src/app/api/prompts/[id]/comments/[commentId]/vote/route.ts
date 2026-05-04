@@ -105,6 +105,7 @@ export async function POST(
     // Calculate and update cached score
     const votes = await db.commentVote.findMany({
       where: { commentId },
+      take: 50,
       select: { value: true },
     });
     const score = votes.reduce((sum: number, vote: { value: number }) => sum + vote.value, 0);
@@ -174,6 +175,7 @@ export async function DELETE(
     // Calculate and update cached score
     const votes = await db.commentVote.findMany({
       where: { commentId },
+      take: 50,
       select: { value: true },
     });
     const score = votes.reduce((sum: number, vote: { value: number }) => sum + vote.value, 0);

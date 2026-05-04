@@ -5,15 +5,14 @@ describe("OAuth 2.0 Auth Plugin", () => {
     const originalEnv = process.env;
 
     beforeEach(() => {
-        process.env = { ...originalEnv };
-        process.env.AUTH_OAUTH_ID = "test-client-id";
-        process.env.AUTH_OAUTH_SECRET = "test-client-secret";
-        process.env.AUTH_OAUTH_ISSUER = "https://sso.test.com";
-        process.env.AUTH_OAUTH_NAME = "Test OAuth";
+        vi.stubEnv("AUTH_OAUTH_ID", "test-client-id");
+        vi.stubEnv("AUTH_OAUTH_SECRET", "test-client-secret");
+        vi.stubEnv("AUTH_OAUTH_ISSUER", "https://sso.test.com");
+        vi.stubEnv("AUTH_OAUTH_NAME", "Test OAuth");
     });
 
     afterEach(() => {
-        process.env = originalEnv;
+        vi.unstubAllEnvs();
     });
 
     it("should have correct plugin id and name", () => {
@@ -27,15 +26,15 @@ describe("OAuth 2.0 Auth Plugin", () => {
     });
 
     it("should allow disabling PKCE explicitly", () => {
-        process.env.AUTH_OAUTH_ENABLE_PKCE = "false";
+        vi.stubEnv("AUTH_OAUTH_ENABLE_PKCE", "false");
         const provider: any = oauthPlugin.getProvider();
         expect(provider.checks).toEqual(["state"]);
     });
 
     it("should configure standard OAuth provider dynamically from env", () => {
-        process.env.AUTH_OAUTH_ID = "test-client-id";
-        process.env.AUTH_OAUTH_SECRET = "test-client-secret";
-        process.env.AUTH_OAUTH_ISSUER = "https://sso.test.com";
+        vi.stubEnv("AUTH_OAUTH_ID", "test-client-id");
+        vi.stubEnv("AUTH_OAUTH_SECRET", "test-client-secret");
+        vi.stubEnv("AUTH_OAUTH_ISSUER", "https://sso.test.com");
 
         const provider: any = oauthPlugin.getProvider();
 
@@ -55,13 +54,13 @@ describe("OAuth 2.0 Auth Plugin", () => {
     });
 
     it("should use explicit URL overrides when provided", () => {
-        process.env.AUTH_OAUTH_ID = "test-client-id";
-        process.env.AUTH_OAUTH_SECRET = "test-client-secret";
-        process.env.AUTH_OAUTH_ISSUER = "https://sso.test.com";
+        vi.stubEnv("AUTH_OAUTH_ID", "test-client-id");
+        vi.stubEnv("AUTH_OAUTH_SECRET", "test-client-secret");
+        vi.stubEnv("AUTH_OAUTH_ISSUER", "https://sso.test.com");
 
-        process.env.AUTH_OAUTH_AUTHORIZATION_URL = "https://custom.test.com/auth";
-        process.env.AUTH_OAUTH_TOKEN_URL = "https://custom.test.com/token";
-        process.env.AUTH_OAUTH_USERINFO_URL = "https://custom.test.com/me";
+        vi.stubEnv("AUTH_OAUTH_AUTHORIZATION_URL", "https://custom.test.com/auth");
+        vi.stubEnv("AUTH_OAUTH_TOKEN_URL", "https://custom.test.com/token");
+        vi.stubEnv("AUTH_OAUTH_USERINFO_URL", "https://custom.test.com/me");
 
         const provider: any = oauthPlugin.getProvider();
 
@@ -71,10 +70,10 @@ describe("OAuth 2.0 Auth Plugin", () => {
     });
 
     it("should handle wellknown discovery correctly", () => {
-        process.env.AUTH_OAUTH_ID = "test-client-id";
-        process.env.AUTH_OAUTH_SECRET = "test-client-secret";
-        process.env.AUTH_OAUTH_ISSUER = "https://sso.test.com";
-        process.env.AUTH_OAUTH_WELLKNOWN = "https://sso.test.com/.well-known";
+        vi.stubEnv("AUTH_OAUTH_ID", "test-client-id");
+        vi.stubEnv("AUTH_OAUTH_SECRET", "test-client-secret");
+        vi.stubEnv("AUTH_OAUTH_ISSUER", "https://sso.test.com");
+        vi.stubEnv("AUTH_OAUTH_WELLKNOWN", "https://sso.test.com/.well-known");
 
         const provider: any = oauthPlugin.getProvider();
 
@@ -85,7 +84,7 @@ describe("OAuth 2.0 Auth Plugin", () => {
     });
 
     it("should handle custom style logo", () => {
-        process.env.AUTH_OAUTH_LOGO = "https://logo.com/image.png";
+        vi.stubEnv("AUTH_OAUTH_LOGO", "https://logo.com/image.png");
         const provider: any = oauthPlugin.getProvider();
 
         expect(provider.style?.logo).toBe("https://logo.com/image.png");

@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 
 const updateChangeRequestSchema = z.object({
   status: z.enum(["APPROVED", "REJECTED", "PENDING"]),
-  reviewNote: z.string().optional(),
+  reviewNote: z.string().max(1000).optional(),
 });
 
 export async function PATCH(
@@ -179,6 +179,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string; changeId: string }> }
 ) {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: "unauthorized", message: "You must be logged in" },
+        { status: 401 }
+      );
+    }
+
     const { id: promptId, changeId } = await params;
 
     const changeRequest = await db.changeRequest.findUnique({

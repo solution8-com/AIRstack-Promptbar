@@ -19,7 +19,9 @@ afterAll(() => {
 // Mock environment variables
 process.env.NEXTAUTH_SECRET = "test-secret";
 process.env.AUTH_SECRET = "test-secret";
-process.env.NEXTAUTH_URL = "http://localhost:3000";
+import { vi } from "vitest";
+
+vi.stubEnv("NEXTAUTH_URL", "http://localhost:3000");
 process.env.AUTH_URL = "http://localhost:3000";
 process.env.DATABASE_URL = "postgresql://test:test@localhost:5432/test";
 

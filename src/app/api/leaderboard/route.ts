@@ -36,6 +36,7 @@ const getLeaderboard = unstable_cache(
         isPrivate: false,
         deletedAt: null,
       },
+      take: 50,
       select: {
         id: true,
         authorId: true,
@@ -62,6 +63,7 @@ const getLeaderboard = unstable_cache(
     // Fetch user details and prompt counts for top users
     const topUsers = await db.user.findMany({
       where: { id: { in: topAuthorIds } },
+      take: 50,
       select: {
         id: true,
         name: true,

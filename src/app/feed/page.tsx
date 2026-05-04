@@ -1,35 +1,64 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { ArrowRight, FolderOpen, Sparkles } from "lucide-react";
+import { ArrowRight, FolderOpen, Sparkles, Heart, Bookmark, UserPlus } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { PromptList } from "@/components/prompts/prompt-list";
 import { annotatePromptsWithUserVotes } from "@/lib/prompt-votes";
+import { cn } from "@/lib/utils";
 
-export default async function FeedPage() {
+export default async function FeedPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>;
+}) {
   const t = await getTranslations("feed");
   const session = await auth();
-  const isAdmin = session?.user?.role === "ADMIN";
 
   // Redirect to login if not authenticated
   if (!session?.user) {
     redirect("/login");
   }
 
-  // Fetch ALL prompts from admin users only, chronologically sorted
-  const promptsRaw = await db.prompt.findMany({
-    where: {
-      isPrivate: false,
-      isUnlisted: false,
-      deletedAt: null,
-      author: {
-        role: "ADMIN"
-      }
+  const { filter = "created" } = await searchParams;
+  const isAdmin = session.user.role === "ADMIN";
+
+  const filters = [
+    { id: "liked", label: t("filterLikedByTeam"), icon: Heart },
+    { id: "bookmarked", label: t("filterBookmarkedByTeam"), icon: Bookmark },
+    { id: "created", label: t("filterCreatedByTeam"), icon: UserPlus },
+  ];
+
+  const whereClause: any = {
+    isPrivate: false,
+    isUnlisted: false,
+    deletedAt: null,
+    author: {
+      role: "ADMIN",
     },
+  };
+
+  if (filter === "liked") {
+    whereClause.votes = {
+      some: {
+        userId: session.user.id,
+      },
+    };
+  } else if (filter === "bookmarked") {
+    whereClause.collectedBy = {
+      some: {
+        userId: session.user.id,
+      },
+    };
+  }
+
+  // Fetch prompts based on filter
+  const promptsRaw = await db.prompt.findMany({
+    where: whereClause,
     orderBy: { createdAt: "desc" },
-    take: 30,
+    take: 50,
     include: {
       author: {
         select: {
@@ -95,6 +124,28 @@ export default async function FeedPage() {
         </div>
       </div>
 
+      {/* Filters */}
+      <div className="flex flex-wrap gap-2 mb-8">
+        {filters.map((f) => {
+          const Icon = f.icon;
+          const isActive = filter === f.id;
+          return (
+            <Button
+              key={f.id}
+              variant={isActive ? "default" : "outline"}
+              size="sm"
+              className={cn("h-8 rounded-full", isActive && "shadow-sm")}
+              asChild
+            >
+              <Link href={`?filter=${f.id}`}>
+                <Icon className={cn("mr-2 h-4 w-4", isActive ? "text-primary-foreground" : "text-muted-foreground")} />
+                {f.label}
+              </Link>
+            </Button>
+          );
+        })}
+      </div>
+
       {/* Feed */}
       {prompts.length > 0 ? (
         <PromptList prompts={promptsWithVotes} currentPage={1} totalPages={1} isAdmin={isAdmin} isLoggedIn={!!session?.user} />
@@ -103,7 +154,7 @@ export default async function FeedPage() {
           <FolderOpen className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
           <h2 className="font-medium mb-1">{t("noPromptsInFeed")}</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            {t("noAdminPromptsYet")}
+            {filter === "created" ? t("noAdminPromptsYet") : t("noPromptsMatchingFilter")}
           </p>
         </div>
       )}
