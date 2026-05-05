@@ -205,24 +205,31 @@ function createServer(options: ServerOptions = {}) {
     const promptSlug = request.params.name;
     const args = request.params.arguments || {};
 
-    // Fetch all matching prompts and find by slug
-    const prompts = await db.prompt.findMany({
-      where: promptFilter,
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        description: true,
-        content: true,
-      },
+    // Attempt direct lookup by slug or id to avoid loading all prompts into memory.
+    // Fall back to a bounded title-search only when neither matches.
+    const selectFields = {
+      id: true,
+      slug: true,
+      title: true,
+      description: true,
+      content: true,
+    } as const;
+
+    let prompt = await db.prompt.findFirst({
+      where: { ...promptFilter, OR: [{ slug: promptSlug }, { id: promptSlug }] },
+      select: selectFields,
     });
 
-    // Find by slug field first, then by slugified title, then by id
-    const prompt = prompts.find((p) => 
-      p.slug === promptSlug || 
-      slugify(p.title) === promptSlug || 
-      p.id === promptSlug
-    );
+    if (!prompt) {
+      // Bounded fallback: scan up to 500 rows for a title-derived slug match
+      const candidates = await db.prompt.findMany({
+        where: promptFilter,
+        take: 500,
+        orderBy: { createdAt: "desc" },
+        select: selectFields,
+      });
+      prompt = candidates.find((p) => slugify(p.title) === promptSlug) ?? null;
+    }
 
     if (!prompt) {
       throw new Error(`Prompt not found: ${promptSlug}`);
@@ -1460,10 +1467,20 @@ function createServer(options: ServerOptions = {}) {
   return server;
 }
 
+const MAX_BODY_BYTES = 1_048_576; // 1 MB
+
 async function parseBody(req: NextApiRequest): Promise<unknown> {
   return new Promise((resolve, reject) => {
     let body = "";
-    req.on("data", (chunk) => (body += chunk));
+    let byteCount = 0;
+    req.on("data", (chunk: Buffer | string) => {
+      byteCount += Buffer.byteLength(chunk);
+      if (byteCount > MAX_BODY_BYTES) {
+        reject(new Error("Request body too large"));
+        return;
+      }
+      body += chunk;
+    });
     req.on("end", () => {
       try {
         resolve(JSON.parse(body));

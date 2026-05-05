@@ -104,6 +104,10 @@ export async function POST(request: Request) {
     const { notificationIds } = body;
 
     if (notificationIds && Array.isArray(notificationIds)) {
+      // Limit batch size to prevent mass-update abuse
+      if (notificationIds.length > 100) {
+        return NextResponse.json({ error: "Too many notification IDs (max 100)" }, { status: 400 });
+      }
       // Mark specific notifications as read
       await db.notification.updateMany({
         where: {
