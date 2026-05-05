@@ -83,6 +83,10 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Content-Security-Policy",
+            // 'unsafe-inline' is required by Next.js App Router for React hydration
+            // inline style/script tags. 'unsafe-eval' is needed by some third-party
+            // libraries (Sentry, React compiler). TODO: migrate to nonce-based CSP once
+            // Next.js nonce support stabilises (see https://nextjs.org/docs/app/building-your-application/configuring/content-security-policy).
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel-insights.com https://*.sentry.io",

@@ -206,7 +206,7 @@ function createServer(options: ServerOptions = {}) {
     const args = request.params.arguments || {};
 
     // Attempt direct lookup by slug or id to avoid loading all prompts into memory.
-    // Fall back to a bounded title-search only when neither matches.
+    // Try slug first (most common, uses unique index), then id, then bounded title fallback.
     const selectFields = {
       id: true,
       slug: true,
@@ -216,9 +216,16 @@ function createServer(options: ServerOptions = {}) {
     } as const;
 
     let prompt = await db.prompt.findFirst({
-      where: { ...promptFilter, OR: [{ slug: promptSlug }, { id: promptSlug }] },
+      where: { ...promptFilter, slug: promptSlug },
       select: selectFields,
     });
+
+    if (!prompt) {
+      prompt = await db.prompt.findFirst({
+        where: { ...promptFilter, id: promptSlug },
+        select: selectFields,
+      });
+    }
 
     if (!prompt) {
       // Bounded fallback: scan up to 500 rows for a title-derived slug match
@@ -1476,6 +1483,8 @@ async function parseBody(req: NextApiRequest): Promise<unknown> {
     req.on("data", (chunk: Buffer | string) => {
       byteCount += Buffer.byteLength(chunk);
       if (byteCount > MAX_BODY_BYTES) {
+        // Stop reading and destroy the stream to free memory immediately
+        req.destroy(new Error("Request body too large"));
         reject(new Error("Request body too large"));
         return;
       }
