@@ -99,7 +99,7 @@ export default async function FeedPage({
   }));
   const promptsWithVotes = await annotatePromptsWithUserVotes(prompts, session?.user?.id);
 
-  const filters = [
+  const filterCards = [
     { label: t("filterLikedByTeam"), icon: Heart, active: true },
     { label: t("filterBookmarkedByTeam"), icon: Bookmark, active: false },
     { label: t("filterCreatedByTeam"), icon: UserPlus, active: false },
