@@ -180,6 +180,7 @@ export async function POST(request: Request) {
     const slug = await generatePromptSlug(title);
     const existingTagIds = await db.tag.findMany({
       where: { id: { in: tagIds } },
+      take: 50,
       select: { id: true },
     });
     const validTagIdSet = new Set(existingTagIds.map((tag) => tag.id));

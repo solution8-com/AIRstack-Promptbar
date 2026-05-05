@@ -54,6 +54,7 @@ const getFlowData = unstable_cache(
             label: { not: "related" },
             target: { deletedAt: null }
           },
+          take: 50,
           select: {
             sourceId: true,
             targetId: true,
@@ -67,6 +68,7 @@ const getFlowData = unstable_cache(
             label: { not: "related" },
             source: { deletedAt: null }
           },
+          take: 50,
           select: {
             sourceId: true,
             targetId: true,

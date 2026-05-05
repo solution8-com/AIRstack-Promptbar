@@ -1,10 +1,23 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
 const PUBLIC_PATHS = ["/login", "/register", "/api/auth", "/unauthorized", "/monitoring"];
 const REQUIRED_ORG = process.env.S8_REQUIRED_ORG || "solution8-com";
 const ENFORCE_GITHUB_ORG = process.env.S8_ENFORCE_GITHUB_ORG !== "false";
+
+// Rate limiter for API mutations
+const ratelimit =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Ratelimit({
+        redis: Redis.fromEnv(),
+        limiter: Ratelimit.slidingWindow(30, "10 s"),
+        analytics: true,
+        prefix: "@upstash/ratelimit",
+      })
+    : null;
 
 function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
@@ -59,6 +72,19 @@ export async function middleware(request: NextRequest) {
   }
 
   const token = await getAuthToken(request);
+
+  // Rate limiting for non-GET API routes
+  if (ratelimit && pathname.startsWith("/api/") && request.method !== "GET") {
+    const identifier = token?.email || request.ip || "anonymous";
+    const { success } = await ratelimit.limit(identifier);
+
+    if (!success) {
+      return NextResponse.json(
+        { error: "rate_limited", message: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+  }
 
   if (!token) {
     if (wantsJson(request)) {

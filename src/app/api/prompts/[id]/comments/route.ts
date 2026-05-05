@@ -56,6 +56,7 @@ export async function GET(
         promptId,
         deletedAt: null,
       },
+      take: 50,
       include: {
         author: {
           select: {

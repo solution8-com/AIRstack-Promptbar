@@ -396,6 +396,7 @@
     "switchToStructured": "Wisselen naar {format}",
     "createTag": "Create \"{name}\"",
     "creatingTag": "Creating...",
+    "saveGuide": "Gids Opslaan",
     "guideNotFound": "Gids Niet Gevonden",
     "readTheGuide": "Lees de gids: {title}",
     "selectExampleToPreview": "Select an example to preview."

@@ -302,6 +302,7 @@ export async function PATCH(
         where: {
           label: { not: "related" },
         },
+        take: 50,
         select: {
           sourceId: true,
           targetId: true,

@@ -401,6 +401,7 @@
     "modeToggleTooltip": "Click this toggle to switch to Solution8 Internal Hack mode",
     "createTag": "Create \"{name}\"",
     "creatingTag": "Creating...",
+    "saveGuide": "Enregistrer le Guide",
     "guideNotFound": "Guide Non Trouvé",
     "readTheGuide": "Lire le guide: {title}",
     "selectExampleToPreview": "Select an example to preview."

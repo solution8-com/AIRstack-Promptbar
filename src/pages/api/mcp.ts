@@ -1317,6 +1317,146 @@ function createServer(options: ServerOptions = {}) {
     }
   );
 
+  // Create skill comment tool - post improvement feedback to a skill
+  server.registerTool(
+    "create_skill_comment",
+    {
+      title: "Create Skill Comment",
+      description:
+        "Create a comment on an Agent Skill to provide improvement suggestions, usage feedback, or implementation guidance. Requires API key authentication. Use this after using a skill to post back observations and recommended changes.",
+      inputSchema: {
+        skillId: z.string().describe("The ID of the skill to comment on"),
+        content: z
+          .string()
+          .min(1)
+          .max(10000)
+          .describe("Comment content. Should include improvement suggestions, rationale, and optionally a copy-ready implementation block."),
+      },
+    },
+    async ({ skillId, content }) => {
+      if (!authenticatedUser) {
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify({ error: "Authentication required. Please provide an API key." }),
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      try {
+        // Trim content
+        const trimmedContent = content.trim();
+        if (!trimmedContent) {
+          return {
+            content: [{ type: "text" as const, text: JSON.stringify({ error: "Comment content cannot be empty" }) }],
+            isError: true,
+          };
+        }
+
+        // Build visibility filter - user can comment on public skills or their own private skills
+        const visibilityFilter = {
+          OR: [
+            { isPrivate: false },
+            { isPrivate: true, authorId: authenticatedUser.id },
+          ],
+        };
+
+        // Verify skill exists and user can access it
+        const skill = await db.prompt.findFirst({
+          where: {
+            id: skillId,
+            type: "SKILL",
+            isUnlisted: false,
+            deletedAt: null,
+            ...visibilityFilter,
+          },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            authorId: true,
+            isPrivate: true,
+          },
+        });
+
+        if (!skill) {
+          return {
+            content: [{ type: "text" as const, text: JSON.stringify({ error: "Skill not found or you don't have permission to comment on it" }) }],
+            isError: true,
+          };
+        }
+
+        // Create the comment
+        const comment = await db.comment.create({
+          data: {
+            content: trimmedContent,
+            promptId: skillId,
+            authorId: authenticatedUser.id,
+          },
+          select: {
+            id: true,
+            content: true,
+            createdAt: true,
+            author: {
+              select: {
+                id: true,
+                username: true,
+                name: true,
+              },
+            },
+          },
+        });
+
+        // Create notification for skill owner (if not commenting on own skill)
+        if (skill.authorId !== authenticatedUser.id) {
+          await db.notification.create({
+            data: {
+              type: "COMMENT",
+              userId: skill.authorId,
+              actorId: authenticatedUser.id,
+              promptId: skillId,
+              commentId: comment.id,
+            },
+          });
+        }
+
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify(
+                {
+                  success: true,
+                  id: comment.id,
+                  skillId,
+                  content: comment.content,
+                  createdAt: comment.createdAt.toISOString(),
+                  author: {
+                    id: comment.author.id,
+                    username: comment.author.username,
+                    name: comment.author.name,
+                  },
+                  link: skill.isPrivate ? null : `https://prompts.chat/prompts/${skill.id}_${getPromptName(skill)}`,
+                },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      } catch (error) {
+        console.error("MCP create_skill_comment error:", error);
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify({ error: "Failed to create comment on skill" }) }],
+          isError: true,
+        };
+      }
+    }
+  );
+
   return server;
 }
 
@@ -1386,6 +1526,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         {
           name: "search_skills",
           description: "Search for Agent Skills by keyword.",
+        },
+        {
+          name: "create_skill_comment",
+          description: "Create a comment on an Agent Skill to provide improvement suggestions (requires API key authentication).",
         },
       ],
       prompts: {

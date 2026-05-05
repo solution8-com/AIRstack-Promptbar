@@ -396,6 +396,7 @@
     "switchToStructured": "Переключить на {format}",
     "createTag": "Create \"{name}\"",
     "creatingTag": "Creating...",
+    "saveGuide": "Сохранить Руководство",
     "guideNotFound": "Руководство Не Найдено",
     "readTheGuide": "Прочитать руководство: {title}",
     "selectExampleToPreview": "Select an example to preview."
