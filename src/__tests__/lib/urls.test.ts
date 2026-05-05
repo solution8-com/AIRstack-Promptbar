@@ -18,10 +18,10 @@ describe("getBaseUrl", () => {
     expect(getBaseUrl()).toBe("https://nextauth.example.com");
   });
 
-  it("should return default s8promptbar.vercel.com URL when no env vars are set", () => {
+  it("should return default s8promptbar.vercel.app URL when no env vars are set", () => {
     vi.stubEnv("AUTH_URL", undefined);
     vi.stubEnv("NEXTAUTH_URL", undefined);
-    expect(getBaseUrl()).toBe("https://s8promptbar.vercel.com");
+    expect(getBaseUrl()).toBe("https://s8promptbar.vercel.app");
   });
 
   it("should prefer AUTH_URL over NEXTAUTH_URL when both are set", () => {
