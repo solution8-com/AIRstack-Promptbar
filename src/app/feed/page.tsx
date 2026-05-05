@@ -134,7 +134,8 @@ export default async function FeedPage({
               <span
                 key={filterCard.label}
                 className={cn(
-                  "inline-flex items-center h-8 px-3 text-xs rounded-md border-2 border-[#33bcff] bg-background text-foreground font-medium"
+                  "h-8 px-3 text-xs transition-all inline-flex items-center rounded-md border font-medium",
+                  "border-2 border-primary bg-background text-foreground"
                 )}
               >
                 {filterCard.icon && <filterCard.icon className="mr-1.5 h-3.5 w-3.5" />}

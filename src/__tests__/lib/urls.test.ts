@@ -8,19 +8,19 @@ describe("getBaseUrl", () => {
 
   it("should return AUTH_URL when set", () => {
     vi.stubEnv("AUTH_URL", "https://example.com");
-    vi.stubEnv("NEXTAUTH_URL", undefined);
+    vi.stubEnv("NEXTAUTH_URL", "");
     expect(getBaseUrl()).toBe("https://example.com");
   });
 
   it("should return NEXTAUTH_URL when AUTH_URL is not set", () => {
-    vi.stubEnv("AUTH_URL", undefined);
+    vi.stubEnv("AUTH_URL", "");
     vi.stubEnv("NEXTAUTH_URL", "https://nextauth.example.com");
     expect(getBaseUrl()).toBe("https://nextauth.example.com");
   });
 
   it("should return default s8promptbar.vercel.app URL when no env vars are set", () => {
-    vi.stubEnv("AUTH_URL", undefined);
-    vi.stubEnv("NEXTAUTH_URL", undefined);
+    vi.stubEnv("AUTH_URL", "");
+    vi.stubEnv("NEXTAUTH_URL", "");
     expect(getBaseUrl()).toBe("https://s8promptbar.vercel.app");
   });
 
