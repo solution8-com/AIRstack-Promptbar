@@ -25,7 +25,7 @@ export default async function FeedPage({
   const { filter = "created" } = await searchParams;
   const isAdmin = session.user.role === "ADMIN";
 
-  const filters = [
+  const filterOptions = [
     { id: "liked", label: t("filterLikedByTeam"), icon: Heart },
     { id: "bookmarked", label: t("filterBookmarkedByTeam"), icon: Bookmark },
     { id: "created", label: t("filterCreatedByTeam"), icon: UserPlus },
@@ -100,9 +100,9 @@ export default async function FeedPage({
   const promptsWithVotes = await annotatePromptsWithUserVotes(prompts, session?.user?.id);
 
   const filterCards = [
-    { label: t("filterLikedByTeam"), icon: Heart, active: true },
-    { label: t("filterBookmarkedByTeam"), icon: Bookmark, active: false },
-    { label: t("filterCreatedByTeam"), icon: UserPlus, active: false },
+    { label: t("filterLikedByTeam"), icon: Heart, active: filter === "liked" },
+    { label: t("filterBookmarkedByTeam"), icon: Bookmark, active: filter === "bookmarked" },
+    { label: t("filterCreatedByTeam"), icon: UserPlus, active: filter === "created" },
     { label: t("browseAll"), icon: ArrowRight, active: false, href: "/prompts" },
   ];
 
@@ -116,37 +116,37 @@ export default async function FeedPage({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {filters.map((filter) =>
-            filter.href ? (
+          {filterCards.map((filterCard) =>
+            filterCard.href ? (
               <Button
-                key={filter.label}
+                key={filterCard.label}
                 variant="outline"
                 size="sm"
                 asChild
                 className="h-8 px-3 text-xs transition-all"
               >
-                <Link href={filter.href}>
-                  {filter.icon && <filter.icon className="mr-1.5 h-3.5 w-3.5" />}
-                  {filter.label}
+                <Link href={filterCard.href}>
+                  {filterCard.icon && <filterCard.icon className="mr-1.5 h-3.5 w-3.5" />}
+                  {filterCard.label}
                 </Link>
               </Button>
-            ) : filter.active ? (
+            ) : filterCard.active ? (
               <span
-                key={filter.label}
+                key={filterCard.label}
                 className={cn(
                   "inline-flex items-center h-8 px-3 text-xs rounded-md border-2 border-[#33bcff] bg-background text-foreground font-medium"
                 )}
               >
-                {filter.icon && <filter.icon className="mr-1.5 h-3.5 w-3.5" />}
-                {filter.label}
+                {filterCard.icon && <filterCard.icon className="mr-1.5 h-3.5 w-3.5" />}
+                {filterCard.label}
               </span>
             ) : (
               <span
-                key={filter.label}
+                key={filterCard.label}
                 className="inline-flex items-center h-8 px-3 text-xs rounded-md border border-border bg-background text-muted-foreground font-medium opacity-50"
               >
-                {filter.icon && <filter.icon className="mr-1.5 h-3.5 w-3.5" />}
-                {filter.label}
+                {filterCard.icon && <filterCard.icon className="mr-1.5 h-3.5 w-3.5" />}
+                {filterCard.label}
               </span>
             )
           )}
@@ -155,7 +155,7 @@ export default async function FeedPage({
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2 mb-8">
-        {filters.map((f) => {
+        {filterOptions.map((f) => {
           const Icon = f.icon;
           const isActive = filter === f.id;
           return (

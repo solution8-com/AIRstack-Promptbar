@@ -1468,6 +1468,14 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                          onKeyDown={(e) => {
                            if (e.key === "Enter") {
                              e.preventDefault();
+                             if (newMcpCommand.trim()) {
+                               const tools = newMcpTools.trim()
+                                 ? newMcpTools.split(",").map((s) => s.trim()).filter(Boolean)
+                                 : undefined;
+                               form.setValue("bestWithMCP", [...bestWithMCP, { command: newMcpCommand.trim(), tools }]);
+                               setNewMcpCommand("");
+                               setNewMcpTools("");
+                             }
                            }
                          }}
                          className="flex-1 text-xs h-8"
@@ -1479,6 +1487,14 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                          onKeyDown={(e) => {
                            if (e.key === "Enter") {
                              e.preventDefault();
+                             if (newMcpCommand.trim()) {
+                               const tools = newMcpTools.trim()
+                                 ? newMcpTools.split(",").map((s) => s.trim()).filter(Boolean)
+                                 : undefined;
+                               form.setValue("bestWithMCP", [...bestWithMCP, { command: newMcpCommand.trim(), tools }]);
+                               setNewMcpCommand("");
+                               setNewMcpTools("");
+                             }
                            }
                          }}
                          className="w-28 text-xs h-8"
