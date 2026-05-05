@@ -99,13 +99,6 @@ export default async function FeedPage({
   }));
   const promptsWithVotes = await annotatePromptsWithUserVotes(prompts, session?.user?.id);
 
-  const filterCards = [
-    { label: t("filterLikedByTeam"), icon: Heart, active: true },
-    { label: t("filterBookmarkedByTeam"), icon: Bookmark, active: false },
-    { label: t("filterCreatedByTeam"), icon: UserPlus, active: false },
-    { label: t("browseAll"), icon: ArrowRight, active: false, href: "/prompts" },
-  ];
-
   return (
     <div className="container py-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
