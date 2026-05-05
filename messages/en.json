@@ -433,6 +433,7 @@
     "createGuideTitle": "Create AIR Guide",
     "createGuideDescription": "Write a new guide in Markdown format",
     "editGuide": "Edit",
+    "saveGuide": "Save Guide",
     "guideNotFound": "Guide Not Found",
     "readTheGuide": "Read the guide: {title}",
     "selectExampleToPreview": "Select an example to preview."
@@ -933,10 +934,14 @@
   "feed": {
     "yourFeed": "Your Feed",
     "feedDescription": "Prompts from your subscribed categories",
+    "filterLikedByTeam": "Liked by Team",
+    "filterBookmarkedByTeam": "Bookmarked by Team",
+    "filterCreatedByTeam": "Created by Team",
     "browseAll": "Browse All",
     "discover": "Discover",
     "noPromptsInFeed": "No prompts in your feed",
     "noAdminPromptsYet": "No team prompts have been published yet.",
+    "noPromptsMatchingFilter": "No prompts match this filter",
     "subscribeToCategories": "Subscribe to categories to see prompts here",
     "viewAllCategories": "View All Categories",
     "filterLikedByTeam": "Liked by Team",

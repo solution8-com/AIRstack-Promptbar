@@ -118,6 +118,7 @@ export async function GET(
 
     const versions = await db.promptVersion.findMany({
       where: { promptId },
+      take: 50,
       orderBy: { version: "desc" },
       include: {
         author: {

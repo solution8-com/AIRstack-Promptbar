@@ -396,6 +396,7 @@
     "switchToStructured": "{format}으로 전환",
     "createTag": "Create \"{name}\"",
     "creatingTag": "Creating...",
+    "saveGuide": "가이드 저장",
     "guideNotFound": "가이드를 찾을 수 없습니다",
     "readTheGuide": "가이드 읽기: {title}",
     "selectExampleToPreview": "Select an example to preview."

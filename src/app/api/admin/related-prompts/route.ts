@@ -40,6 +40,7 @@ export async function POST() {
         deletedAt: null,
         embedding: { not: Prisma.DbNull },
       },
+      take: 50,
       select: { id: true },
       orderBy: { createdAt: "desc" },
     });

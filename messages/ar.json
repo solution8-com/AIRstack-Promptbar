@@ -396,6 +396,7 @@
     "switchToStructured": "التبديل إلى {format}",
     "createTag": "Create \"{name}\"",
     "creatingTag": "Creating...",
+    "saveGuide": "حفظ الدليل",
     "guideNotFound": "الدليل غير موجود",
     "readTheGuide": "اقرأ الدليل: {title}",
     "selectExampleToPreview": "Select an example to preview."

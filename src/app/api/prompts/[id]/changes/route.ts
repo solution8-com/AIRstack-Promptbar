@@ -4,9 +4,9 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 const createChangeRequestSchema = z.object({
-  proposedContent: z.string().min(1),
-  proposedTitle: z.string().optional(),
-  reason: z.string().optional(),
+  proposedContent: z.string().min(1).max(50000),
+  proposedTitle: z.string().max(200).optional(),
+  reason: z.string().max(1000).optional(),
 });
 
 export async function POST(
@@ -92,11 +92,20 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: "unauthorized", message: "You must be logged in" },
+        { status: 401 }
+      );
+    }
+
     const { id: promptId } = await params;
 
     const changeRequests = await db.changeRequest.findMany({
       where: { promptId },
       orderBy: { createdAt: "desc" },
+      take: 50,
       include: {
         author: {
           select: {

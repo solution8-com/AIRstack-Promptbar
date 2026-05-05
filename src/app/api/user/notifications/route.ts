@@ -57,6 +57,7 @@ export async function GET() {
     const promptIds = [...new Set(commentNotifications.map(n => n.promptId).filter(Boolean))] as string[];
     const prompts = await db.prompt.findMany({
       where: { id: { in: promptIds } },
+      take: 50,
       select: { id: true, title: true },
     });
     const promptMap = new Map(prompts.map(p => [p.id, p.title]));

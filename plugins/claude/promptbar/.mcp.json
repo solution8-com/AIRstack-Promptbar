@@ -1,0 +1,6 @@
+{
+  "promptbar": {
+    "type": "http",
+    "url": "https://promptbar/api/mcp"
+  }
+}

@@ -1,6 +1,6 @@
 # Prompts.chat
 
-Search, browse, and run AI prompts from [prompts.chat](https://prompts.chat) — the open-source community platform for ChatGPT and AI prompts.
+Search, browse, and run AI prompts from [promptbar](https://promptbar) — the open-source community platform for ChatGPT and AI prompts.
 
 ![Search Prompts](metadata/prompts-chat-1.png)
 ![Browse Prompts](metadata/prompts-chat-2.png)
@@ -46,11 +46,11 @@ If a prompt contains variables (e.g., `${topic}`), you'll be prompted to fill th
 
 | Preference | Description | Default |
 |------------|-------------|---------|
-| Base URL | The base URL of the prompts.chat instance | `https://prompts.chat` |
+| Base URL | The base URL of the promptbar instance | `https://promptbar` |
 
-You can use this extension with self-hosted instances of prompts.chat by changing the Base URL.
+You can use this extension with self-hosted instances of promptbar by changing the Base URL.
 
 ## Links
 
-- [prompts.chat](https://prompts.chat) — Browse prompts on the web
-- [GitHub Repository](https://github.com/f/prompts.chat) — Source code and contributions
+- [promptbar](https://promptbar) — Browse prompts on the web
+- [GitHub Repository](https://github.com/f/promptbar) — Source code and contributions

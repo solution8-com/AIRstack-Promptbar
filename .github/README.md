@@ -5,7 +5,7 @@
       <img height="60" alt="s8promptbar.vercel.com" src="https://prompts.chat/logo.svg">
     </picture>
     <br>
-    Solution8 promptBar
+    The AIRStack PromptBar
   </a>
 </h1>
 

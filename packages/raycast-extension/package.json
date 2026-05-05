@@ -2,7 +2,7 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "prompts-chat",
   "title": "Prompts.chat",
-  "description": "Search, browse, and copy AI prompts from prompts.chat - the community platform for ChatGPT and AI prompts",
+  "description": "Search, browse, and copy AI prompts from promptbar - the community platform for ChatGPT and AI prompts",
   "icon": "icon.png",
   "author": "fka",
   "categories": [
@@ -17,35 +17,35 @@
     {
       "name": "search-prompts",
       "title": "Search Prompts",
-      "subtitle": "prompts.chat",
+      "subtitle": "promptbar",
       "description": "Search for AI prompts from the community",
       "mode": "view"
     },
     {
       "name": "browse-prompts",
       "title": "Browse Prompts",
-      "subtitle": "prompts.chat",
+      "subtitle": "promptbar",
       "description": "Browse and filter latest AI prompts",
       "mode": "view"
     },
     {
       "name": "random-prompt",
       "title": "Random Prompt",
-      "subtitle": "prompts.chat",
+      "subtitle": "promptbar",
       "description": "Get a random AI prompt for inspiration",
       "mode": "view"
     },
     {
       "name": "download-prompts",
       "title": "Download All Prompts",
-      "subtitle": "prompts.chat",
+      "subtitle": "promptbar",
       "description": "Download and cache all prompts for offline use",
       "mode": "view"
     },
     {
       "name": "browse-categories",
       "title": "Browse Categories",
-      "subtitle": "prompts.chat",
+      "subtitle": "promptbar",
       "description": "Browse prompts by category",
       "mode": "view"
     }
@@ -54,9 +54,9 @@
     {
       "name": "baseUrl",
       "title": "Base URL",
-      "description": "The base URL of the prompts.chat instance",
+      "description": "The base URL of the promptbar instance",
       "type": "textfield",
-      "default": "https://prompts.chat",
+      "default": "https://promptbar",
       "required": false
     }
   ],

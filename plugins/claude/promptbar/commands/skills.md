@@ -1,18 +1,18 @@
 ---
-description: Search and discover Agent Skills from prompts.chat
+description: Search and discover Agent Skills from promptbar
 argument-hint: <query> [--category CATEGORY] [--tag TAG]
 ---
 
-# /prompts.chat:skills
+# /promptbar:skills
 
-Search for Agent Skills on prompts.chat to extend Claude's capabilities.
+Search for Agent Skills on promptbar to extend Claude's capabilities.
 
 ## Usage
 
 ```
-/prompts.chat:skills <query>
-/prompts.chat:skills <query> --category coding
-/prompts.chat:skills <query> --tag automation
+/promptbar:skills <query>
+/promptbar:skills <query> --category coding
+/promptbar:skills <query> --tag automation
 ```
 
 - **query**: Keywords to search for (required)
@@ -22,25 +22,25 @@ Search for Agent Skills on prompts.chat to extend Claude's capabilities.
 ## Examples
 
 ```
-/prompts.chat:skills code review
-/prompts.chat:skills documentation --category coding
-/prompts.chat:skills testing --tag automation
-/prompts.chat:skills api integration
-/prompts.chat:skills data analysis
+/promptbar:skills code review
+/promptbar:skills documentation --category coding
+/promptbar:skills testing --tag automation
+/promptbar:skills api integration
+/promptbar:skills data analysis
 ```
 
 ## How It Works
 
 1. Calls `search_skills` with your query and optional filters
 2. Returns matching skills with title, description, author, files, and tags
-3. Each result includes a link to view the skill on prompts.chat
+3. Each result includes a link to view the skill on promptbar
 
 ## Getting a Specific Skill
 
 After finding a skill you want, use its ID to get all files:
 
 ```
-/prompts.chat:skills get <skill-id>
+/promptbar:skills get <skill-id>
 ```
 
 This retrieves the skill with all its files (SKILL.md, reference docs, scripts, etc.)
@@ -50,17 +50,17 @@ This retrieves the skill with all its files (SKILL.md, reference docs, scripts, 
 To download and install a skill to your workspace:
 
 ```
-/prompts.chat:skills install <skill-id>
+/promptbar:skills install <skill-id>
 ```
 
-This saves the skill files to `.claude/prompts.chat:skills/{slug}/` structure.
+This saves the skill files to `.claude/promptbar:skills/{slug}/` structure.
 
 ## Creating a Skill
 
-To create a new skill on prompts.chat (requires API key):
+To create a new skill on promptbar (requires API key):
 
 ```
-/prompts.chat:skills create "My Skill Title" --description "What this skill does"
+/promptbar:skills create "My Skill Title" --description "What this skill does"
 ```
 
 You'll be prompted to provide the SKILL.md content and any additional files.
