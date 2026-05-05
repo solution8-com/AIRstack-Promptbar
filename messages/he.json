@@ -901,7 +901,11 @@
     "discover": "גלה",
     "noPromptsInFeed": "אין פרומפטים בפיד שלך",
     "subscribeToCategories": "הירשם לקטגוריות כדי לראות פרומפטים כאן",
-    "viewAllCategories": "צפה בכל הקטגוריות"
+    "viewAllCategories": "צפה בכל הקטגוריות",
+    "noAdminPromptsYet": "No team prompts have been published yet.",
+    "filterLikedByTeam": "Liked by Team",
+    "filterBookmarkedByTeam": "Bookmarked by Team",
+    "filterCreatedByTeam": "Created by Team"
   },
   "workflows": {
     "title": "תהליכי עבודה",

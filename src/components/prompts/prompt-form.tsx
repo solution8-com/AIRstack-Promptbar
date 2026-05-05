@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
@@ -521,6 +521,28 @@ function getBuilderData(): { content?: string; type?: string; format?: string } 
   }
 }
 
+/**
+ * Renders the prompt creation/edit form UI and manages its state, validation, and submission.
+ *
+ * This component provides the full prompt builder experience: title/description/category/tags/contributors metadata,
+ * editable prompt content (plain text, structured JSON/YAML, or SKILL/TASTE editors), optional media attachment
+ * (URL, upload, or AI generation), advanced "works best with" settings (models and MCP), and output-type preview.
+ * It integrates react-hook-form with a Zod schema, supports create and edit modes, optionally integrates an AI
+ * PromptBuilder, and includes an "internal hack mode" variant that changes UI behavior and paste handling.
+ *
+ * @param categories - List of category objects used for the category selector
+ * @param tags - List of tag objects used for tag suggestions and selection
+ * @param initialData - Optional initial prompt values used to populate the form when editing
+ * @param initialContributors - Optional initial contributor list (defaults to empty array)
+ * @param promptId - Optional prompt identifier used when editing an existing prompt
+ * @param mode - Either `"create"` or `"edit"`, controls submission behavior and some UI variants (defaults to `"create"`)
+ * @param aiGenerationEnabled - When true, enables the embedded AI PromptBuilder UI and generation buttons (defaults to `false`)
+ * @param aiModelName - Optional AI model name passed to the PromptBuilder when AI generation is enabled
+ * @param initialPromptRequest - Optional initial prompt request forwarded to the PromptBuilder
+ * @param isInternalHackMode - When true, toggles the internal hack UI/behavior (paste conversion, previews, simplified metadata) (defaults to `false`)
+ *
+ * @returns A React element that renders the prompt form UI.
+ */
 export function PromptForm({ categories, tags, initialData, initialContributors = [], promptId, mode = "create", aiGenerationEnabled = false, aiModelName, initialPromptRequest, isInternalHackMode = false }: PromptFormProps) {
   const router = useRouter();
   const t = useTranslations("prompts");
@@ -575,6 +597,16 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
   const bestWithModels = form.watch("bestWithModels") || [];
   const modelsByProvider = getModelsByProvider();
 
+  const handleAddMcp = () => {
+    if (!newMcpCommand.trim()) return;
+    const tools = newMcpTools.trim()
+      ? newMcpTools.split(",").map((t) => t.trim()).filter(Boolean)
+      : undefined;
+    form.setValue("bestWithMCP", [...bestWithMCP, { command: newMcpCommand.trim(), tools }]);
+    setNewMcpCommand("");
+    setNewMcpTools("");
+  };
+
   const selectedTags = form.watch("tagIds");
   const promptType = form.watch("type");
   const structuredFormat = form.watch("structuredFormat");
@@ -587,6 +619,21 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const codeEditorRef = useRef<CodeEditorHandle>(null);
   const previewSectionRef = useRef<HTMLDivElement>(null);
+
+  // Memoized sorted categories to avoid re-sorting on every render
+  const { parentCategories, childrenByParent } = useMemo(() => {
+    const collator = { sensitivity: "base" } as const;
+    const parents = categories
+      .filter((c) => c.id && !c.parentId)
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, collator));
+    const children: Record<string, typeof categories> = {};
+    for (const parent of parents) {
+      children[parent.id] = categories
+        .filter((c) => c.parentId === parent.id)
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, collator));
+    }
+    return { parentCategories: parents, childrenByParent: children };
+  }, [categories]);
 
   // Warn user before leaving page with unsaved changes
   const isDirty = form.formState.isDirty;
@@ -1172,25 +1219,21 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                         <SelectValue placeholder={t("selectCategory")} />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="__none__">{t("noCategory")}</SelectItem>
-                      {categories
-                        .filter((c) => c.id && !c.parentId)
-                        .map((parent) => (
+                      <SelectContent>
+                        <SelectItem value="__none__">{t("noCategory")}</SelectItem>
+                        {parentCategories.map((parent) => (
                           <div key={parent.id}>
                             <SelectItem value={parent.id} className="font-medium">
                               {parent.name}
                             </SelectItem>
-                            {categories
-                              .filter((c) => c.parentId === parent.id)
-                              .map((child) => (
-                                <SelectItem key={child.id} value={child.id} className="pl-6 text-muted-foreground">
-                                  ↳ {child.name}
-                                </SelectItem>
-                              ))}
+                            {(childrenByParent[parent.id] ?? []).map((child) => (
+                              <SelectItem key={child.id} value={child.id} className="pl-6 text-muted-foreground">
+                                ↳ {child.name}
+                              </SelectItem>
+                            ))}
                           </div>
                         ))}
-                    </SelectContent>
+                      </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
@@ -1437,32 +1480,37 @@ export function PromptForm({ categories, tags, initialData, initialContributors 
                       </div>
                     )}
                     <div className="flex gap-2">
-                      <Input
-                        placeholder={t("mcpCommandPlaceholder")}
-                        value={newMcpCommand}
-                        onChange={(e) => setNewMcpCommand(e.target.value)}
-                        className="flex-1 text-xs h-8"
-                      />
-                      <Input
-                        placeholder={t("mcpToolsPlaceholder")}
-                        value={newMcpTools}
-                        onChange={(e) => setNewMcpTools(e.target.value)}
-                        className="w-28 text-xs h-8"
-                      />
+                       <Input
+                         placeholder={t("mcpCommandPlaceholder")}
+                         value={newMcpCommand}
+                         onChange={(e) => setNewMcpCommand(e.target.value)}
+                         onKeyDown={(e) => {
+                           if (e.key === "Enter") {
+                             e.preventDefault();
+                             handleAddMcp();
+                           }
+                         }}
+                         className="flex-1 text-xs h-8"
+                       />
+                       <Input
+                         placeholder={t("mcpToolsPlaceholder")}
+                         value={newMcpTools}
+                         onChange={(e) => setNewMcpTools(e.target.value)}
+                         onKeyDown={(e) => {
+                           if (e.key === "Enter") {
+                             e.preventDefault();
+                             handleAddMcp();
+                           }
+                         }}
+                         className="w-28 text-xs h-8"
+                       />
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
                         className="h-8 px-2 text-xs"
                         disabled={!newMcpCommand.trim()}
-                        onClick={() => {
-                          if (newMcpCommand.trim()) {
-                            const tools = newMcpTools.trim() ? newMcpTools.split(",").map(t => t.trim()).filter(Boolean) : undefined;
-                            form.setValue("bestWithMCP", [...bestWithMCP, { command: newMcpCommand.trim(), tools }]);
-                            setNewMcpCommand("");
-                            setNewMcpTools("");
-                          }
-                        }}
+                        onClick={handleAddMcp}
                       >
                         {t("add")}
                       </Button>

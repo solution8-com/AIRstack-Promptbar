@@ -906,7 +906,11 @@
     "discover": "发现",
     "noPromptsInFeed": "您的订阅中暂无提示词",
     "subscribeToCategories": "订阅分类以在此查看提示词",
-    "viewAllCategories": "查看所有分类"
+    "viewAllCategories": "查看所有分类",
+    "noAdminPromptsYet": "暂无团队提示词",
+    "filterLikedByTeam": "团队点赞",
+    "filterBookmarkedByTeam": "团队收藏",
+    "filterCreatedByTeam": "团队创建"
   },
   "workflows": {
     "title": "工作流程",

@@ -102,25 +102,46 @@ export default async function FeedPage({
   return (
     <div className="container py-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
+        <div className="flex-1">
           <h1 className="text-lg font-semibold">{t("yourFeed")}</h1>
           <p className="text-sm text-muted-foreground">
             {t("feedDescription")}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/prompts">
-              {t("browseAll")}
-              <ArrowRight className="ml-1.5 h-4 w-4" />
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/discover">
-              <Sparkles className="mr-1.5 h-4 w-4" />
-              {t("discover")}
-            </Link>
-          </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {filters.map((filter) =>
+            filter.href ? (
+              <Button
+                key={filter.label}
+                variant="outline"
+                size="sm"
+                asChild
+                className="h-8 px-3 text-xs transition-all"
+              >
+                <Link href={filter.href}>
+                  {filter.icon && <filter.icon className="mr-1.5 h-3.5 w-3.5" />}
+                  {filter.label}
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                key={filter.label}
+                variant="outline"
+                size="sm"
+                disabled={!filter.active}
+                aria-pressed={filter.active}
+                className={cn(
+                  "h-8 px-3 text-xs transition-all",
+                  filter.active
+                    ? "border-2 border-primary bg-background text-foreground"
+                    : "opacity-50"
+                )}
+              >
+                {filter.icon && <filter.icon className="mr-1.5 h-3.5 w-3.5" />}
+                {filter.label}
+              </Button>
+            )
+          )}
         </div>
       </div>
 

@@ -901,7 +901,11 @@
     "discover": "Ανακάλυψη",
     "noPromptsInFeed": "Δεν υπάρχουν prompts στο feed σας",
     "subscribeToCategories": "Εγγραφείτε σε κατηγορίες για να δείτε prompts εδώ",
-    "viewAllCategories": "Προβολή όλων των κατηγοριών"
+    "viewAllCategories": "Προβολή όλων των κατηγοριών",
+    "noAdminPromptsYet": "No team prompts have been published yet.",
+    "filterLikedByTeam": "Liked by Team",
+    "filterBookmarkedByTeam": "Bookmarked by Team",
+    "filterCreatedByTeam": "Created by Team"
   },
   "workflows": {
     "title": "Ροές εργασίας",

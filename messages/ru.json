@@ -901,7 +901,11 @@
     "discover": "Обзор",
     "noPromptsInFeed": "В вашей ленте нет промптов",
     "subscribeToCategories": "Подпишитесь на категории, чтобы видеть промпты здесь",
-    "viewAllCategories": "Все категории"
+    "viewAllCategories": "Все категории",
+    "noAdminPromptsYet": "Пока ещё не опубликовано ни одного командного промпта.",
+    "filterLikedByTeam": "Понравившиеся команде",
+    "filterBookmarkedByTeam": "Сохранённые командой",
+    "filterCreatedByTeam": "Созданные командой"
   },
   "workflows": {
     "title": "Рабочие процессы",

@@ -8,6 +8,19 @@ const updateChangeRequestSchema = z.object({
   reviewNote: z.string().max(1000).optional(),
 });
 
+/**
+ * Handle PATCH requests to review and update a change request for a prompt.
+ *
+ * Accepts a JSON body validated by `updateChangeRequestSchema` to set a change
+ * request's `status` and optional `reviewNote`. When approving, applies the
+ * proposed content (and optional title) to the prompt, creates a new prompt
+ * version, and records the contributor; when reopening or rejecting, updates
+ * only the change request record.
+ *
+ * @param request - Incoming request whose JSON body must conform to `updateChangeRequestSchema`.
+ * @param params - Promise resolving to route parameters where `id` is the prompt ID and `changeId` is the change request ID.
+ * @returns On success: an object `{ success: true, status }` where `status` is `"APPROVED" | "REJECTED" | "PENDING"`. On error: an object `{ error: string, message: string }`; validation errors include a `details` array with issues.
+ */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; changeId: string }> }
@@ -36,9 +49,9 @@ export async function PATCH(
       );
     }
 
-    if (prompt.authorId !== session.user.id) {
+    if (prompt.authorId !== session.user.id && session.user.role !== "ADMIN") {
       return NextResponse.json(
-        { error: "forbidden", message: "Only the prompt owner can review change requests" },
+        { error: "forbidden", message: "Only the prompt owner or an administrator can review change requests" },
         { status: 403 }
       );
     }

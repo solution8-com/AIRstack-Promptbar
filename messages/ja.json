@@ -906,7 +906,11 @@
     "discover": "発見",
     "noPromptsInFeed": "フィードにプロンプトがありません",
     "subscribeToCategories": "カテゴリーを購読してプロンプトを表示",
-    "viewAllCategories": "すべてのカテゴリーを見る"
+    "viewAllCategories": "すべてのカテゴリーを見る",
+    "noAdminPromptsYet": "チームのプロンプトはまだ公開されていません。",
+    "filterLikedByTeam": "チームがいいね",
+    "filterBookmarkedByTeam": "チームがブックマーク",
+    "filterCreatedByTeam": "チームが作成"
   },
   "workflows": {
     "title": "ワークフロー",

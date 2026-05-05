@@ -1,7 +1,8 @@
 import { MetadataRoute } from "next";
+import { getBaseUrl } from "@/lib/urls";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://prompts.chat";
+  const baseUrl = getBaseUrl();
 
   return {
     rules: [
