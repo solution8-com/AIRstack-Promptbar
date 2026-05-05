@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { ArrowRight, FolderOpen, Sparkles, Heart, Bookmark, UserPlus } from "lucide-react";
+import { ArrowRight, FolderOpen, Heart, Bookmark, UserPlus } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ export default async function FeedPage({
   const { filter = "created" } = await searchParams;
   const isAdmin = session.user.role === "ADMIN";
 
-  const filters = [
+  const filterOptions = [
     { id: "liked", label: t("filterLikedByTeam"), icon: Heart },
     { id: "bookmarked", label: t("filterBookmarkedByTeam"), icon: Bookmark },
     { id: "created", label: t("filterCreatedByTeam"), icon: UserPlus },
@@ -99,6 +99,13 @@ export default async function FeedPage({
   }));
   const promptsWithVotes = await annotatePromptsWithUserVotes(prompts, session?.user?.id);
 
+  const filterCards = [
+    { label: t("filterLikedByTeam"), icon: Heart, active: filter === "liked" },
+    { label: t("filterBookmarkedByTeam"), icon: Bookmark, active: filter === "bookmarked" },
+    { label: t("filterCreatedByTeam"), icon: UserPlus, active: filter === "created" },
+    { label: t("browseAll"), icon: ArrowRight, active: false, href: "/prompts" },
+  ];
+
   return (
     <div className="container py-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -109,37 +116,39 @@ export default async function FeedPage({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {filters.map((filter) =>
-            filter.href ? (
+          {filterCards.map((filterCard) =>
+            filterCard.href ? (
               <Button
-                key={filter.label}
+                key={filterCard.label}
                 variant="outline"
                 size="sm"
                 asChild
                 className="h-8 px-3 text-xs transition-all"
               >
-                <Link href={filter.href}>
-                  {filter.icon && <filter.icon className="mr-1.5 h-3.5 w-3.5" />}
-                  {filter.label}
+                <Link href={filterCard.href}>
+                  {filterCard.icon && <filterCard.icon className="mr-1.5 h-3.5 w-3.5" />}
+                  {filterCard.label}
                 </Link>
               </Button>
-            ) : (
-              <Button
-                key={filter.label}
-                variant="outline"
-                size="sm"
-                disabled={!filter.active}
-                aria-pressed={filter.active}
+            ) : filterCard.active ? (
+              <span
+                key={filterCard.label}
                 className={cn(
-                  "h-8 px-3 text-xs transition-all",
-                  filter.active
-                    ? "border-2 border-primary bg-background text-foreground"
-                    : "opacity-50"
+                  "h-8 px-3 text-xs transition-all inline-flex items-center rounded-md border font-medium",
+                  "border-2 border-primary bg-background text-foreground"
                 )}
               >
-                {filter.icon && <filter.icon className="mr-1.5 h-3.5 w-3.5" />}
-                {filter.label}
-              </Button>
+                {filterCard.icon && <filterCard.icon className="mr-1.5 h-3.5 w-3.5" />}
+                {filterCard.label}
+              </span>
+            ) : (
+              <span
+                key={filterCard.label}
+                className="inline-flex items-center h-8 px-3 text-xs rounded-md border border-border bg-background text-muted-foreground font-medium opacity-50"
+              >
+                {filterCard.icon && <filterCard.icon className="mr-1.5 h-3.5 w-3.5" />}
+                {filterCard.label}
+              </span>
             )
           )}
         </div>
@@ -147,7 +156,7 @@ export default async function FeedPage({
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2 mb-8">
-        {filters.map((f) => {
+        {filterOptions.map((f) => {
           const Icon = f.icon;
           const isActive = filter === f.id;
           return (

@@ -66,6 +66,43 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Security headers (OWASP recommendations)
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-DNS-Prefetch-Control", value: "on" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+          {
+            key: "Content-Security-Policy",
+            // 'unsafe-inline' is required by Next.js App Router for React hydration
+            // inline style/script tags. 'unsafe-eval' is needed by some third-party
+            // libraries (Sentry, React compiler). TODO: migrate to nonce-based CSP once
+            // Next.js nonce support stabilises (see https://nextjs.org/docs/app/building-your-application/configuring/content-security-policy).
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel-insights.com https://*.sentry.io",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: blob: https:",
+              "font-src 'self' data:",
+              "connect-src 'self' https://*.vercel-insights.com https://*.sentry.io https://upstash.io https://*.upstash.io wss:",
+              "frame-ancestors 'self'",
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join("; "),
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default withSentryConfig(withMDX(withNextIntl(nextConfig)), {

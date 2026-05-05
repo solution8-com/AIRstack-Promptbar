@@ -1,9 +1,9 @@
 /**
  * Gets the canonical base URL for the application
- * Falls back to https://prompts.chat if environment variables are not set
+ * Falls back to https://s8promptbar.vercel.app if environment variables are not set
  */
 export function getBaseUrl(): string {
-  return process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://prompts.chat";
+  return process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://s8promptbar.vercel.app";
 }
 
 /**
