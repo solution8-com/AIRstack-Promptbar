@@ -9,7 +9,7 @@ import JSZip from "jszip";
  */
 function parseIdParam(idParam: string): string {
   let param = idParam;
-  
+   
   // Remove .skill extension if present
   if (param.endsWith(".skill")) {
     param = param.slice(0, -".skill".length);
@@ -23,6 +23,24 @@ function parseIdParam(idParam: string): string {
 
   return param;
 }
+
+// MIME types mapping for common file extensions
+const mimeTypes: Record<string, string> = {
+  '.txt': 'text/plain',
+  '.html': 'text/html',
+  '.htm': 'text/html',
+  '.css': 'text/css',
+  '.js': 'application/javascript',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.md': 'text/markdown',
+  '.pdf': 'application/pdf',
+  '.zip': 'application/zip',
+};
 
 export async function GET(
   request: NextRequest,
@@ -50,7 +68,21 @@ export async function GET(
   // Parse the skill files
   const files = parseSkillFiles(prompt.content);
 
-  // Create a zip file
+    // If exactly one file, serve it directly with appropriate Content-Type
+  if (files.length === 1) {
+    const file = files[0];
+    const ext = file.filename.substring(file.filename.lastIndexOf('.')).toLowerCase();
+    const contentType = mimeTypes[ext] || 'application/octet-stream';
+    
+    return new Response(file.content, {
+      headers: {
+        "Content-Type": contentType,
+        "Content-Disposition": `attachment; filename="${file.filename}"`,
+      },
+    });
+  }
+
+  // Create a zip file for multiple files
   const zip = new JSZip();
 
   // Add each file to the zip

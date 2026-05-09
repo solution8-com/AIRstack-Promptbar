@@ -92,6 +92,92 @@ interface CollectedFile {
 }
 
 /**
+ * Process dropped items (files or folders) and return skill files.
+ * @param items - DataTransferItem array from drop event
+ * @param t - Translation function for error messages
+ * @returns Promise resolving to processed skill files
+ * @throws Error if processing fails (handled by caller)
+ */
+export async function processDroppedItems(items: DataTransferItemList, t: (key: string) => string): Promise<SkillFile[]> {
+  // Collect all valid files from dropped items
+  const collected: CollectedFile[] = [];
+  const counters = { files: 0, bytes: 0 };
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item.kind !== "file") continue;
+    
+    const entry = item.webkitGetAsEntry?.();
+    if (!entry) continue;
+
+    try {
+      await collectEntries(entry, collected, counters);
+    } catch (err) {
+      if (err instanceof Error && err.message === "LIMIT_EXCEEDED") {
+        throw new Error(t("dropErrorTooLarge"));
+      }
+      throw err;
+    }
+  }
+
+  // Check if we have any valid files
+  if (collected.length === 0) {
+    throw new Error(t("dropErrorNoValidFiles"));
+  }
+
+  // Filter by allowed extensions.
+  const validFiles = collected.filter(({ file }) => {
+    const ext = getExtension(file.name);
+    // For dotfiles like ".env" getExtension returns ""; fall back to
+    // checking the whole filename (lowercased) against the allowed set.
+    return ext !== "" ? ALLOWED_DROP_EXTENSIONS.has(ext) : ALLOWED_DROP_EXTENSIONS.has(file.name.toLowerCase());
+  });
+
+  if (validFiles.length === 0) {
+    throw new Error(t("dropErrorNoValidFiles"));
+  }
+
+  // Read contents in parallel.
+  const skillFiles: SkillFile[] = await Promise.all(
+    validFiles.map(async ({ file, relativePath }) => {
+      // Determine filename - for single files, use the filename directly
+      // For folder items, strip the root folder name
+      let filename = file.name;
+      
+      // Check if this came from a folder structure (relativePath starts with /)
+      if (relativePath.startsWith("/")) {
+        // Try to extract a meaningful filename from the path
+        // For now, we'll use the basename, but we could preserve folder structure
+        const pathParts = relativePath.split("/").filter(part => part !== "");
+        if (pathParts.length > 0) {
+          // Use the last part as filename (basename)
+          filename = pathParts[pathParts.length - 1];
+        }
+      }
+
+      // Map SKILL.md (if present) → DEFAULT_SKILL_FILE constant.
+      const normalizedFilename =
+        filename.toLowerCase() === DEFAULT_SKILL_FILE.toLowerCase()
+          ? DEFAULT_SKILL_FILE
+          : filename;
+
+      const content = await file.text();
+      return { filename: normalizedFilename, content };
+    })
+  );
+
+  // Ensure SKILL.md is always present (add empty one if not dropped).
+  const hasSkillMd = skillFiles.some(
+    (f) => f.filename === DEFAULT_SKILL_FILE
+  );
+  if (!hasSkillMd) {
+    skillFiles.unshift({ filename: DEFAULT_SKILL_FILE, content: "" });
+  }
+
+  return skillFiles;
+}
+
+/**
  * Recursively collect all File objects from a FileSystemDirectoryEntry.
  * Mutates `result`, `totalFiles`, and `totalBytes` counters and throws a
  * `"LIMIT_EXCEEDED"` string-error as soon as a limit is breached so we can
@@ -454,22 +540,22 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
     setFileToDelete(null);
   }, [fileToDelete, files, updateFiles, closeTab]);
 
-  // Re-parse when external value changes significantly
-  useEffect(() => {
-    const parsed = parseSkillFiles(value);
-    const currentSerialized = serializeSkillFiles(files);
+   // Re-parse when external value changes significantly
+   useEffect(() => {
+     const parsed = parseSkillFiles(value);
+     const currentSerialized = serializeSkillFiles(files);
 
-    // Only update if the value changed externally
-    if (value !== currentSerialized) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional sync from external prop
-      setFiles(parsed);
-      // Ensure active file exists
-      if (!parsed.some((f) => f.filename === activeFile)) {
-        setActiveFile(DEFAULT_SKILL_FILE);
-        setOpenTabs([DEFAULT_SKILL_FILE]);
-      }
-    }
-  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
+     // Only update if the value changed externally
+     if (value !== currentSerialized) {
+       // Intentional sync from external prop
+       setFiles(parsed);
+       // Ensure active file exists
+       if (!parsed.some((f) => f.filename === activeFile)) {
+         setActiveFile(DEFAULT_SKILL_FILE);
+         setOpenTabs([DEFAULT_SKILL_FILE]);
+       }
+     }
+   }, [value, activeFile, files]);
 
   const handleEditorMount: OnMount = useCallback((editor) => {
     editorRef.current = editor;
@@ -501,125 +587,60 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
     }
   }, []);
 
-  const handleDrop = useCallback(
-    async (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      dragCounterRef.current = 0;
-      setIsDragOver(false);
-      setDropError(null);
+    const handleDrop = useCallback(
+      async (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current = 0;
+        setIsDragOver(false);
+        setDropError(null);
 
-      const items = Array.from(e.dataTransfer.items);
-      if (items.length === 0) return;
+        const items = e.dataTransfer.items;
+        if (items.length === 0) return;
 
-      // Expect exactly one dropped item which must be a directory.
-      const rootItem = items[0];
-      if (!rootItem || rootItem.kind !== "file") return;
-
-      const rootEntry = rootItem.webkitGetAsEntry?.();
-      if (!rootEntry) return;
-
-      if (!rootEntry.isDirectory) {
-        setDropError(t("dropErrorNotFolder"));
-        return;
-      }
-
-      setIsProcessingDrop(true);
-      try {
-        // Pre-flight: recursively collect all entries, aborting on limit.
-        const collected: CollectedFile[] = [];
-        const counters = { files: 0, bytes: 0 };
-
+        // Process dropped items (files or folders)
+        setIsProcessingDrop(true);
         try {
-          await collectEntries(rootEntry, collected, counters);
+          const skillFiles = await processDroppedItems(items, t);
+          
+          // Replace all existing files.
+          updateFiles(skillFiles);
+          // Reset tab state to SKILL.md.
+          setActiveFile(DEFAULT_SKILL_FILE);
+          setOpenTabs([DEFAULT_SKILL_FILE]);
+          // Expand top-level folders automatically (if we have folder structure)
+          const topLevelFolders = new Set(
+            skillFiles
+              .map((f) => {
+                const parts = f.filename.split("/");
+                return parts.length > 1 ? parts[0] : null;
+              })
+              .filter((p): p is string => p !== null)
+          );
+          setExpandedFolders(topLevelFolders);
         } catch (err) {
-          if (err instanceof Error && err.message === "LIMIT_EXCEEDED") {
-            setDropError(t("dropErrorTooLarge"));
-            return;
+          // Handle specific error messages from processDroppedItems
+          if (err instanceof Error && err.message === t("dropErrorTooLarge")) {
+            setDropError(err.message);
+          } else if (err instanceof Error && err.message === t("dropErrorNoValidFiles")) {
+            setDropError(err.message);
+          } else {
+            setDropError(t("dropErrorGeneric"));
           }
-          throw err;
+        } finally {
+          setIsProcessingDrop(false);
         }
+      },
+      [t, updateFiles]
+    );
 
-        // The root folder name is the first path segment (e.g. "my-skill").
-        const rootFolderName = rootEntry.name;
-
-        // Validate: skill.nd.json must exist directly in the root folder.
-        const hasSkillManifest = collected.some(
-          ({ relativePath }) =>
-            relativePath === `/${rootFolderName}/skill.nd.json`
-        );
-        if (!hasSkillManifest) {
-          setDropError(t("dropErrorNoManifest"));
-          return;
-        }
-
-        // Filter by allowed extensions.
-        const validFiles = collected.filter(({ file }) => {
-          const ext = getExtension(file.name);
-          // For dotfiles like ".env" getExtension returns ""; fall back to
-          // checking the whole filename (lowercased) against the allowed set.
-          return ext !== "" ? ALLOWED_DROP_EXTENSIONS.has(ext) : ALLOWED_DROP_EXTENSIONS.has(file.name.toLowerCase());
-        });
-
-        // Read contents in parallel.
-        const rootPrefix = `/${rootFolderName}/`;
-        const skillFiles: SkillFile[] = await Promise.all(
-          validFiles.map(async ({ file, relativePath }) => {
-            // Strip leading "/" and root folder name to get relative path.
-            // e.g. "/my-skill/src/index.ts" → "src/index.ts"
-            const withoutRoot = relativePath.startsWith(rootPrefix)
-              ? relativePath.slice(rootPrefix.length)
-              : relativePath.replace(/^\//, "");
-
-            // Map SKILL.md (if present) → DEFAULT_SKILL_FILE constant.
-            const filename =
-              withoutRoot.toLowerCase() === DEFAULT_SKILL_FILE.toLowerCase()
-                ? DEFAULT_SKILL_FILE
-                : withoutRoot;
-
-            const content = await file.text();
-            return { filename, content };
-          })
-        );
-
-        // Ensure SKILL.md is always present (add empty one if not dropped).
-        const hasSkillMd = skillFiles.some(
-          (f) => f.filename === DEFAULT_SKILL_FILE
-        );
-        if (!hasSkillMd) {
-          skillFiles.unshift({ filename: DEFAULT_SKILL_FILE, content: "" });
-        }
-
-        // Replace all existing files.
-        updateFiles(skillFiles);
-        // Reset tab state to SKILL.md.
-        setActiveFile(DEFAULT_SKILL_FILE);
-        setOpenTabs([DEFAULT_SKILL_FILE]);
-        // Expand top-level folders automatically.
-        const topLevelFolders = new Set(
-          skillFiles
-            .map((f) => {
-              const parts = f.filename.split("/");
-              return parts.length > 1 ? parts[0] : null;
-            })
-            .filter((p): p is string => p !== null)
-        );
-        setExpandedFolders(topLevelFolders);
-      } catch {
-        setDropError(t("dropErrorGeneric"));
-      } finally {
-        setIsProcessingDrop(false);
-      }
-    },
-    [t, updateFiles]
-  );
-
-  // File icon based on extension
-  const getFileIcon = (filename: string) => {
-    const _ext = filename.split(".").pop()?.toLowerCase();
-    // Could add more specific icons here
-    return <File className="h-4 w-4 text-muted-foreground" />;
-  };
+   // File icon based on extension
+   const getFileIcon = (filename: string) => {
+     // Could add more specific icons here
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     const _ = filename;
+     return <File className="h-4 w-4 text-muted-foreground" />;
+   };
 
   return (
     <div
