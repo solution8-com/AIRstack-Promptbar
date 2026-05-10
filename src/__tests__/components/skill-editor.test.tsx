@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { SkillEditor } from "../../components/prompts/skill-editor";
 
 // Mock next-intl
@@ -112,23 +112,23 @@ describe("SkillEditor", () => {
     
     // Check that the component renders
     expect(screen.getByText("Skill Files")).toBeInTheDocument();
-    expect(screen.getByText("Drop folder here")).toBeInTheDocument();
+    expect(screen.queryByText("Drop folder here")).not.toBeInTheDocument();
   });
 
   // Note: Full drag-and-drop testing requires complex mocking of the File System Access API
   // which is beyond the scope of a simple unit test. The core drag-and-drop logic
   // is tested through integration tests or manual testing.
   
-  // However, we can test that the component has the correct event handlers attached
-  it("should have drag and drop event handlers", () => {
+  // Verify observable drag/drop behavior instead of internal DOM attributes.
+  it("should show and hide drag overlay during drag events", () => {
     const onChange = vi.fn();
     const { container } = render(<SkillEditor value="" onChange={onChange} />);
-    
-    // Check that the main container has the expected event handlers
-    const dropZone = container.firstChild;
-    expect(dropZone).toHaveAttribute("ondragenter");
-    expect(dropZone).toHaveAttribute("ondragover");
-    expect(dropZone).toHaveAttribute("ondragleave");
-    expect(dropZone).toHaveAttribute("ondrop");
+
+    const dropZone = container.firstChild as HTMLElement;
+    fireEvent.dragEnter(dropZone);
+    expect(screen.getByText("Drop folder here")).toBeInTheDocument();
+
+    fireEvent.dragLeave(dropZone);
+    expect(screen.queryByText("Drop folder here")).not.toBeInTheDocument();
   });
 });
