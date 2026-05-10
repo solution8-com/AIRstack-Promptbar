@@ -42,6 +42,38 @@ const mimeTypes: Record<string, string> = {
   '.zip': 'application/zip',
 };
 
+const UTF8_MIME_TYPES = new Set([
+  "application/javascript",
+  "application/json",
+  "application/xml",
+  "image/svg+xml",
+]);
+
+function withUtf8Charset(contentType: string): string {
+  if (contentType.startsWith("text/") || UTF8_MIME_TYPES.has(contentType)) {
+    return `${contentType}; charset=utf-8`;
+  }
+  return contentType;
+}
+
+function sanitizeFilenameForHeader(filename: string): string {
+  // Remove control chars and header/path delimiters to prevent header injection
+  // and keep Content-Disposition values RFC-friendly.
+  const sanitized = filename
+    .replace(/[\x00-\x1F\x7F]/g, "")
+    .replace(/[\\/]/g, "-")
+    .replace(/;/g, "")
+    .trim();
+
+  return sanitized || "download";
+}
+
+function buildAttachmentContentDisposition(filename: string): string {
+  const sanitized = sanitizeFilenameForHeader(filename);
+  const quotedFilename = sanitized.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  return `attachment; filename="${quotedFilename}"; filename*=UTF-8''${encodeURIComponent(sanitized)}`;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -72,12 +104,12 @@ export async function GET(
   if (files.length === 1) {
     const file = files[0];
     const ext = file.filename.substring(file.filename.lastIndexOf('.')).toLowerCase();
-    const contentType = mimeTypes[ext] || 'application/octet-stream';
+    const contentType = withUtf8Charset(mimeTypes[ext] || "application/octet-stream");
     
     return new Response(file.content, {
       headers: {
         "Content-Type": contentType,
-        "Content-Disposition": `attachment; filename="${file.filename}"`,
+        "Content-Disposition": buildAttachmentContentDisposition(file.filename),
       },
     });
   }
@@ -104,7 +136,7 @@ export async function GET(
   return new Response(zipContent, {
     headers: {
       "Content-Type": "application/octet-stream",
-      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Disposition": buildAttachmentContentDisposition(filename),
     },
   });
 }

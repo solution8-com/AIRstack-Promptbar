@@ -91,14 +91,29 @@ interface CollectedFile {
   relativePath: string;
 }
 
+type DropProcessingErrorCode = "LIMIT_EXCEEDED" | "NO_VALID_FILES";
+
+class DropProcessingError extends Error {
+  constructor(public readonly code: DropProcessingErrorCode) {
+    super(code);
+    this.name = "DropProcessingError";
+  }
+}
+
+function isRootSkillFile(filename: string): boolean {
+  return (
+    !filename.includes("/") &&
+    filename.toLowerCase() === DEFAULT_SKILL_FILE.toLowerCase()
+  );
+}
+
 /**
  * Process dropped items (files or folders) and return skill files.
  * @param items - DataTransferItem array from drop event
- * @param t - Translation function for error messages
  * @returns Promise resolving to processed skill files
  * @throws Error if processing fails (handled by caller)
  */
-export async function processDroppedItems(items: DataTransferItemList, t: (key: string) => string): Promise<SkillFile[]> {
+export async function processDroppedItems(items: DataTransferItemList): Promise<SkillFile[]> {
   // Collect all valid files from dropped items
   const collected: CollectedFile[] = [];
   const counters = { files: 0, bytes: 0 };
@@ -113,8 +128,8 @@ export async function processDroppedItems(items: DataTransferItemList, t: (key: 
     try {
       await collectEntries(entry, collected, counters);
     } catch (err) {
-      if (err instanceof Error && err.message === "LIMIT_EXCEEDED") {
-        throw new Error(t("dropErrorTooLarge"));
+      if (err instanceof DropProcessingError) {
+        throw err;
       }
       throw err;
     }
@@ -122,7 +137,7 @@ export async function processDroppedItems(items: DataTransferItemList, t: (key: 
 
   // Check if we have any valid files
   if (collected.length === 0) {
-    throw new Error(t("dropErrorNoValidFiles"));
+    throw new DropProcessingError("NO_VALID_FILES");
   }
 
   // Filter by allowed extensions.
@@ -134,30 +149,25 @@ export async function processDroppedItems(items: DataTransferItemList, t: (key: 
   });
 
   if (validFiles.length === 0) {
-    throw new Error(t("dropErrorNoValidFiles"));
+    throw new DropProcessingError("NO_VALID_FILES");
   }
 
   // Read contents in parallel.
   const skillFiles: SkillFile[] = await Promise.all(
     validFiles.map(async ({ file, relativePath }) => {
       // Determine filename - for single files, use the filename directly
-      // For folder items, strip the root folder name
+      // For folder items, strip only the root folder name and preserve nesting
       let filename = file.name;
-      
-      // Check if this came from a folder structure (relativePath starts with /)
+
       if (relativePath.startsWith("/")) {
-        // Try to extract a meaningful filename from the path
-        // For now, we'll use the basename, but we could preserve folder structure
-        const pathParts = relativePath.split("/").filter(part => part !== "");
-        if (pathParts.length > 0) {
-          // Use the last part as filename (basename)
-          filename = pathParts[pathParts.length - 1];
-        }
+        const pathParts = relativePath.split("/").filter((part) => part !== "");
+        const withoutRoot = pathParts.slice(1).join("/");
+        filename = withoutRoot || pathParts[0] || file.name;
       }
 
       // Map SKILL.md (if present) → DEFAULT_SKILL_FILE constant.
       const normalizedFilename =
-        filename.toLowerCase() === DEFAULT_SKILL_FILE.toLowerCase()
+        isRootSkillFile(filename)
           ? DEFAULT_SKILL_FILE
           : filename;
 
@@ -180,7 +190,7 @@ export async function processDroppedItems(items: DataTransferItemList, t: (key: 
 /**
  * Recursively collect all File objects from a FileSystemDirectoryEntry.
  * Mutates `result`, `totalFiles`, and `totalBytes` counters and throws a
- * `"LIMIT_EXCEEDED"` string-error as soon as a limit is breached so we can
+ * `LIMIT_EXCEEDED` as soon as a limit is breached so we can
  * bail out of the recursion early without reading any file contents.
  */
 async function collectEntries(
@@ -198,7 +208,7 @@ async function collectEntries(
     counters.bytes += file.size;
 
     if (counters.files > DROP_MAX_FILES || counters.bytes > DROP_MAX_BYTES) {
-      throw new Error("LIMIT_EXCEEDED");
+      throw new DropProcessingError("LIMIT_EXCEEDED");
     }
 
     result.push({ file, relativePath: entry.fullPath });
@@ -402,6 +412,7 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
   const [isProcessingDrop, setIsProcessingDrop] = useState(false);
   // Track nested drag events so dragLeave doesn't fire on child elements
   const dragCounterRef = useRef(0);
+  const lastEmittedValueRef = useRef(value);
 
   // Build tree structure from files
   const fileTree = useMemo(() => buildFileTree(files), [files]);
@@ -437,7 +448,9 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
         clearTimeout(debounceTimerRef.current);
       }
       debounceTimerRef.current = setTimeout(() => {
-        onChange(serializeSkillFiles(newFiles));
+        const serialized = serializeSkillFiles(newFiles);
+        lastEmittedValueRef.current = serialized;
+        onChange(serialized);
       }, 300);
     },
     [onChange]
@@ -540,22 +553,25 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
     setFileToDelete(null);
   }, [fileToDelete, files, updateFiles, closeTab]);
 
-   // Re-parse when external value changes significantly
-   useEffect(() => {
-     const parsed = parseSkillFiles(value);
-     const currentSerialized = serializeSkillFiles(files);
+  // Re-parse only on external value changes.
+  useEffect(() => {
+    if (value === lastEmittedValueRef.current) {
+      return;
+    }
 
-     // Only update if the value changed externally
-     if (value !== currentSerialized) {
-       // Intentional sync from external prop
-       setFiles(parsed);
-       // Ensure active file exists
-       if (!parsed.some((f) => f.filename === activeFile)) {
-         setActiveFile(DEFAULT_SKILL_FILE);
-         setOpenTabs([DEFAULT_SKILL_FILE]);
-       }
-     }
-   }, [value, activeFile, files]);
+    const parsed = parseSkillFiles(value);
+    const parsedFilenames = new Set(parsed.map((file) => file.filename));
+
+    setFiles(parsed);
+    setActiveFile((current) =>
+      parsedFilenames.has(current) ? current : DEFAULT_SKILL_FILE
+    );
+    setOpenTabs((currentTabs) => {
+      const nextTabs = currentTabs.filter((tab) => parsedFilenames.has(tab));
+      return nextTabs.length > 0 ? nextTabs : [DEFAULT_SKILL_FILE];
+    });
+    lastEmittedValueRef.current = value;
+  }, [value]);
 
   const handleEditorMount: OnMount = useCallback((editor) => {
     editorRef.current = editor;
@@ -601,7 +617,7 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
         // Process dropped items (files or folders)
         setIsProcessingDrop(true);
         try {
-          const skillFiles = await processDroppedItems(items, t);
+          const skillFiles = await processDroppedItems(items);
           
           // Replace all existing files.
           updateFiles(skillFiles);
@@ -619,11 +635,12 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
           );
           setExpandedFolders(topLevelFolders);
         } catch (err) {
-          // Handle specific error messages from processDroppedItems
-          if (err instanceof Error && err.message === t("dropErrorTooLarge")) {
-            setDropError(err.message);
-          } else if (err instanceof Error && err.message === t("dropErrorNoValidFiles")) {
-            setDropError(err.message);
+          if (err instanceof DropProcessingError) {
+            if (err.code === "LIMIT_EXCEEDED") {
+              setDropError(t("dropErrorTooLarge"));
+            } else if (err.code === "NO_VALID_FILES") {
+              setDropError(t("dropErrorNoValidFiles"));
+            }
           } else {
             setDropError(t("dropErrorGeneric"));
           }
@@ -633,14 +650,6 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
       },
       [t, updateFiles]
     );
-
-   // File icon based on extension
-   const getFileIcon = (filename: string) => {
-     // Could add more specific icons here
-     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-     const _ = filename;
-     return <File className="h-4 w-4 text-muted-foreground" />;
-   };
 
   return (
     <div
@@ -762,7 +771,7 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
               )}
               onClick={() => setActiveFile(filename)}
             >
-              {getFileIcon(filename)}
+              <File className="h-4 w-4 text-muted-foreground" />
               <span className="max-w-[120px] truncate">{filename}</span>
               {filename !== DEFAULT_SKILL_FILE && (
                 <button

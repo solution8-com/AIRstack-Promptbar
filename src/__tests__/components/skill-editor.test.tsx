@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
+import type { ChangeEvent, HTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
 import { SkillEditor } from "../../components/prompts/skill-editor";
 
 // Mock next-intl
@@ -60,8 +61,12 @@ vi.mock("lucide-react", () => ({
 }));
 
 // Mock shadcn/ui components
+type ButtonProps = HTMLAttributes<HTMLButtonElement> & {
+  children?: ReactNode;
+};
+
 vi.mock("@/components/ui/button", () => ({
-  Button: ({ children, ...props }: any) => {
+  Button: ({ children, ...props }: ButtonProps) => {
     return (
       <button
         type="button"
@@ -78,8 +83,12 @@ vi.mock("@/components/ui/button", () => ({
   },
 }));
 
+type InputProps = InputHTMLAttributes<HTMLInputElement> & {
+  onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+};
+
 vi.mock("@/components/ui/input", () => ({
-  Input: ({ value, onChange, ...props }: any) => {
+  Input: ({ value, onChange, ...props }: InputProps) => {
     return (
       <input
         type="text"
@@ -91,18 +100,27 @@ vi.mock("@/components/ui/input", () => ({
   },
 }));
 
+type DialogProps = {
+  open?: boolean;
+  children?: ReactNode;
+};
+
+type DialogSectionProps = {
+  children?: ReactNode;
+};
+
 vi.mock("@/components/ui/dialog", () => ({
-  Dialog: ({ open, onOpenChange, children }: any) => {
+  Dialog: ({ open, children }: DialogProps) => {
     if (open) {
       return <div>{children}</div>;
     }
     return null;
   },
-  DialogContent: ({ children }: any) => <div>{children}</div>,
-  DialogHeader: ({ children }: any) => <div>{children}</div>,
-  DialogTitle: ({ children }: any) => <div>{children}</div>,
-  DialogDescription: ({ children }: any) => <div>{children}</div>,
-  DialogFooter: ({ children }: any) => <div>{children}</div>,
+  DialogContent: ({ children }: DialogSectionProps) => <div>{children}</div>,
+  DialogHeader: ({ children }: DialogSectionProps) => <div>{children}</div>,
+  DialogTitle: ({ children }: DialogSectionProps) => <div>{children}</div>,
+  DialogDescription: ({ children }: DialogSectionProps) => <div>{children}</div>,
+  DialogFooter: ({ children }: DialogSectionProps) => <div>{children}</div>,
 }));
 
 describe("SkillEditor", () => {
@@ -112,23 +130,23 @@ describe("SkillEditor", () => {
     
     // Check that the component renders
     expect(screen.getByText("Skill Files")).toBeInTheDocument();
-    expect(screen.getByText("Drop folder here")).toBeInTheDocument();
+    expect(screen.queryByText("Drop folder here")).not.toBeInTheDocument();
   });
 
   // Note: Full drag-and-drop testing requires complex mocking of the File System Access API
   // which is beyond the scope of a simple unit test. The core drag-and-drop logic
   // is tested through integration tests or manual testing.
   
-  // However, we can test that the component has the correct event handlers attached
-  it("should have drag and drop event handlers", () => {
+  // Verify observable drag/drop behavior instead of internal DOM attributes.
+  it("should show and hide drag overlay during drag events", () => {
     const onChange = vi.fn();
     const { container } = render(<SkillEditor value="" onChange={onChange} />);
-    
-    // Check that the main container has the expected event handlers
-    const dropZone = container.firstChild;
-    expect(dropZone).toHaveAttribute("ondragenter");
-    expect(dropZone).toHaveAttribute("ondragover");
-    expect(dropZone).toHaveAttribute("ondragleave");
-    expect(dropZone).toHaveAttribute("ondrop");
+
+    const dropZone = container.firstChild as HTMLElement;
+    fireEvent.dragEnter(dropZone);
+    expect(screen.getByText("Drop folder here")).toBeInTheDocument();
+
+    fireEvent.dragLeave(dropZone);
+    expect(screen.queryByText("Drop folder here")).not.toBeInTheDocument();
   });
 });
