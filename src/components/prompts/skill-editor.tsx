@@ -100,6 +100,13 @@ class DropProcessingError extends Error {
   }
 }
 
+function shouldNormalizeToDefaultSkillFile(filename: string): boolean {
+  return (
+    !filename.includes("/") &&
+    filename.toLowerCase() === DEFAULT_SKILL_FILE.toLowerCase()
+  );
+}
+
 /**
  * Process dropped items (files or folders) and return skill files.
  * @param items - DataTransferItem array from drop event
@@ -163,8 +170,7 @@ export async function processDroppedItems(items: DataTransferItemList): Promise<
 
       // Map SKILL.md (if present) → DEFAULT_SKILL_FILE constant.
       const normalizedFilename =
-        !filename.includes("/") &&
-        filename.toLowerCase() === DEFAULT_SKILL_FILE.toLowerCase()
+        shouldNormalizeToDefaultSkillFile(filename)
           ? DEFAULT_SKILL_FILE
           : filename;
 

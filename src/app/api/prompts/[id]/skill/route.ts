@@ -58,9 +58,9 @@ function withUtf8Charset(contentType: string): string {
 
 function sanitizeFilenameForHeader(filename: string): string {
   const sanitized = filename
-    .replace(/[\r\n]/g, "")
+    .replace(/[\x00-\x1F\x7F]/g, "")
     .replace(/[\\/]/g, "-")
-    .replace(/[";]/g, "")
+    .replace(/;/g, "")
     .trim();
 
   return sanitized || "download";
@@ -68,7 +68,8 @@ function sanitizeFilenameForHeader(filename: string): string {
 
 function buildAttachmentContentDisposition(filename: string): string {
   const sanitized = sanitizeFilenameForHeader(filename);
-  return `attachment; filename="${sanitized}"; filename*=UTF-8''${encodeURIComponent(sanitized)}`;
+  const quotedFilename = sanitized.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  return `attachment; filename="${quotedFilename}"; filename*=UTF-8''${encodeURIComponent(sanitized)}`;
 }
 
 export async function GET(
