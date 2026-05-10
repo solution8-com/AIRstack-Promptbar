@@ -285,6 +285,9 @@
     "dropErrorNoManifest": "The folder must contain a \"skill.nd.json\" file directly inside the root folder.",
     "dropErrorNoValidFiles": "No valid files found in the dropped items. Please ensure you drop files with supported extensions.",
     "dropErrorGeneric": "An error occurred while reading the folder. Please try again.",
+    "dropReplaceConfirmTitle": "Replace existing files?",
+    "dropReplaceConfirmDescription": "Dropping these files will replace all current editor content. This cannot be undone.",
+    "dropReplaceConfirm": "Replace",
     "validation": {
       "filenameEmpty": "Filename cannot be empty",
       "filenameInvalidChars": "Filename contains invalid characters",

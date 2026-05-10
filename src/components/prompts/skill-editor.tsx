@@ -153,28 +153,45 @@ export async function processDroppedItems(items: DataTransferItemList): Promise<
   }
 
   // Read contents in parallel.
-  const skillFiles: SkillFile[] = await Promise.all(
-    validFiles.map(async ({ file, relativePath }) => {
-      // Determine filename - for single files, use the filename directly
-      // For folder items, strip only the root folder name and preserve nesting
-      let filename = file.name;
+  const rawSkillFiles: Array<{ filename: string; content: string; rootPrefix: string }> =
+    await Promise.all(
+      validFiles.map(async ({ file, relativePath }) => {
+        // Determine filename - for single files, use the filename directly.
+        // For folder items, strip only the root folder name and preserve nesting.
+        let filename = file.name;
+        let rootPrefix = "";
 
-      if (relativePath.startsWith("/")) {
-        const pathParts = relativePath.split("/").filter((part) => part !== "");
-        const withoutRoot = pathParts.slice(1).join("/");
-        filename = withoutRoot || pathParts[0] || file.name;
-      }
+        if (relativePath.startsWith("/")) {
+          const pathParts = relativePath.split("/").filter((part) => part !== "");
+          rootPrefix = pathParts[0] || "";
+          const withoutRoot = pathParts.slice(1).join("/");
+          filename = withoutRoot || pathParts[0] || file.name;
+        }
 
-      // Map SKILL.md (if present) → DEFAULT_SKILL_FILE constant.
-      const normalizedFilename =
-        isRootSkillFile(filename)
+        // Map SKILL.md (if present) → DEFAULT_SKILL_FILE constant.
+        const normalizedFilename = isRootSkillFile(filename)
           ? DEFAULT_SKILL_FILE
           : filename;
 
-      const content = await file.text();
-      return { filename: normalizedFilename, content };
-    })
-  );
+        const content = await file.text();
+        return { filename: normalizedFilename, content, rootPrefix };
+      })
+    );
+
+  // Detect and resolve filename collisions across multiple dropped roots by
+  // prepending the root folder prefix when two entries share the same filename.
+  const seenFilenames = new Map<string, number>(); // filename → count of first-seen entries
+  for (const f of rawSkillFiles) {
+    seenFilenames.set(f.filename, (seenFilenames.get(f.filename) ?? 0) + 1);
+  }
+  const skillFiles: SkillFile[] = rawSkillFiles.map(({ filename, content, rootPrefix }) => {
+    const collisionCount = seenFilenames.get(filename) ?? 1;
+    const resolvedFilename =
+      collisionCount > 1 && rootPrefix
+        ? `${rootPrefix}/${filename}`
+        : filename;
+    return { filename: resolvedFilename, content };
+  });
 
   // Ensure SKILL.md is always present (add empty one if not dropped).
   const hasSkillMd = skillFiles.some(
@@ -402,6 +419,8 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
   const [newFilename, setNewFilename] = useState("");
   const [filenameError, setFilenameError] = useState<string | null>(null);
   const [fileToDelete, setFileToDelete] = useState<string | null>(null);
+  // Pending drop replacement confirmation
+  const [pendingDropFiles, setPendingDropFiles] = useState<SkillFile[] | null>(null);
 
   // Expanded folders state
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
@@ -603,6 +622,25 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
     }
   }, []);
 
+  /** Apply processed skill files to the editor, replacing all existing content. */
+  const applyDropFiles = useCallback((skillFiles: SkillFile[]) => {
+    // Replace all existing files.
+    updateFiles(skillFiles);
+    // Reset tab state to SKILL.md.
+    setActiveFile(DEFAULT_SKILL_FILE);
+    setOpenTabs([DEFAULT_SKILL_FILE]);
+    // Expand top-level folders automatically (if we have folder structure).
+    const topLevelFolders = new Set(
+      skillFiles
+        .map((f) => {
+          const parts = f.filename.split("/");
+          return parts.length > 1 ? parts[0] : null;
+        })
+        .filter((p): p is string => p !== null)
+    );
+    setExpandedFolders(topLevelFolders);
+  }, [updateFiles]);
+
     const handleDrop = useCallback(
       async (e: React.DragEvent) => {
         e.preventDefault();
@@ -618,22 +656,15 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
         setIsProcessingDrop(true);
         try {
           const skillFiles = await processDroppedItems(items);
-          
-          // Replace all existing files.
-          updateFiles(skillFiles);
-          // Reset tab state to SKILL.md.
-          setActiveFile(DEFAULT_SKILL_FILE);
-          setOpenTabs([DEFAULT_SKILL_FILE]);
-          // Expand top-level folders automatically (if we have folder structure)
-          const topLevelFolders = new Set(
-            skillFiles
-              .map((f) => {
-                const parts = f.filename.split("/");
-                return parts.length > 1 ? parts[0] : null;
-              })
-              .filter((p): p is string => p !== null)
-          );
-          setExpandedFolders(topLevelFolders);
+
+          // If editor already has non-empty content, ask user to confirm the
+          // replacement rather than silently overwriting their work.
+          const hasExistingContent = files.some((f) => f.content.trim() !== "");
+          if (hasExistingContent) {
+            setPendingDropFiles(skillFiles);
+          } else {
+            applyDropFiles(skillFiles);
+          }
         } catch (err) {
           if (err instanceof DropProcessingError) {
             if (err.code === "LIMIT_EXCEEDED") {
@@ -648,7 +679,7 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
           setIsProcessingDrop(false);
         }
       },
-      [t, updateFiles]
+      [t, applyDropFiles, files]
     );
 
   return (
@@ -875,6 +906,37 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
             </Button>
             <Button variant="destructive" onClick={confirmDeleteFile}>
               {tCommon("delete")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Drop Replace Confirmation Dialog */}
+      <Dialog
+        open={!!pendingDropFiles}
+        onOpenChange={(open) => !open && setPendingDropFiles(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("dropReplaceConfirmTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("dropReplaceConfirmDescription")}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingDropFiles(null)}>
+              {tCommon("cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (pendingDropFiles) {
+                  applyDropFiles(pendingDropFiles);
+                  setPendingDropFiles(null);
+                }
+              }}
+            >
+              {t("dropReplaceConfirm")}
             </Button>
           </DialogFooter>
         </DialogContent>
