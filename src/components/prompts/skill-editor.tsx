@@ -91,10 +91,123 @@ interface CollectedFile {
   relativePath: string;
 }
 
+type DropProcessingErrorCode = "LIMIT_EXCEEDED" | "NO_VALID_FILES";
+
+class DropProcessingError extends Error {
+  constructor(public readonly code: DropProcessingErrorCode) {
+    super(code);
+    this.name = "DropProcessingError";
+  }
+}
+
+function isRootSkillFile(filename: string): boolean {
+  return (
+    !filename.includes("/") &&
+    filename.toLowerCase() === DEFAULT_SKILL_FILE.toLowerCase()
+  );
+}
+
+/**
+ * Process dropped items (files or folders) and return skill files.
+ * @param items - DataTransferItem array from drop event
+ * @returns Promise resolving to processed skill files
+ * @throws Error if processing fails (handled by caller)
+ */
+export async function processDroppedItems(items: DataTransferItemList): Promise<SkillFile[]> {
+  // Collect all valid files from dropped items
+  const collected: CollectedFile[] = [];
+  const counters = { files: 0, bytes: 0 };
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item.kind !== "file") continue;
+    
+    const entry = item.webkitGetAsEntry?.();
+    if (!entry) continue;
+
+    try {
+      await collectEntries(entry, collected, counters);
+    } catch (err) {
+      if (err instanceof DropProcessingError) {
+        throw err;
+      }
+      throw err;
+    }
+  }
+
+  // Check if we have any valid files
+  if (collected.length === 0) {
+    throw new DropProcessingError("NO_VALID_FILES");
+  }
+
+  // Filter by allowed extensions.
+  const validFiles = collected.filter(({ file }) => {
+    const ext = getExtension(file.name);
+    // For dotfiles like ".env" getExtension returns ""; fall back to
+    // checking the whole filename (lowercased) against the allowed set.
+    return ext !== "" ? ALLOWED_DROP_EXTENSIONS.has(ext) : ALLOWED_DROP_EXTENSIONS.has(file.name.toLowerCase());
+  });
+
+  if (validFiles.length === 0) {
+    throw new DropProcessingError("NO_VALID_FILES");
+  }
+
+  // Read contents in parallel.
+  const rawSkillFiles: Array<{ filename: string; content: string; rootPrefix: string }> =
+    await Promise.all(
+      validFiles.map(async ({ file, relativePath }) => {
+        // Determine filename - for single files, use the filename directly.
+        // For folder items, strip only the root folder name and preserve nesting.
+        let filename = file.name;
+        let rootPrefix = "";
+
+        if (relativePath.startsWith("/")) {
+          const pathParts = relativePath.split("/").filter((part) => part !== "");
+          rootPrefix = pathParts[0] || "";
+          const withoutRoot = pathParts.slice(1).join("/");
+          filename = withoutRoot || pathParts[0] || file.name;
+        }
+
+        // Map SKILL.md (if present) → DEFAULT_SKILL_FILE constant.
+        const normalizedFilename = isRootSkillFile(filename)
+          ? DEFAULT_SKILL_FILE
+          : filename;
+
+        const content = await file.text();
+        return { filename: normalizedFilename, content, rootPrefix };
+      })
+    );
+
+  // Detect and resolve filename collisions across multiple dropped roots by
+  // prepending the root folder prefix when two entries share the same filename.
+  const seenFilenames = new Map<string, number>(); // filename → count of first-seen entries
+  for (const f of rawSkillFiles) {
+    seenFilenames.set(f.filename, (seenFilenames.get(f.filename) ?? 0) + 1);
+  }
+  const skillFiles: SkillFile[] = rawSkillFiles.map(({ filename, content, rootPrefix }) => {
+    const collisionCount = seenFilenames.get(filename) ?? 1;
+    const resolvedFilename =
+      collisionCount > 1 && rootPrefix
+        ? `${rootPrefix}/${filename}`
+        : filename;
+    return { filename: resolvedFilename, content };
+  });
+
+  // Ensure SKILL.md is always present (add empty one if not dropped).
+  const hasSkillMd = skillFiles.some(
+    (f) => f.filename === DEFAULT_SKILL_FILE
+  );
+  if (!hasSkillMd) {
+    skillFiles.unshift({ filename: DEFAULT_SKILL_FILE, content: "" });
+  }
+
+  return skillFiles;
+}
+
 /**
  * Recursively collect all File objects from a FileSystemDirectoryEntry.
  * Mutates `result`, `totalFiles`, and `totalBytes` counters and throws a
- * `"LIMIT_EXCEEDED"` string-error as soon as a limit is breached so we can
+ * `LIMIT_EXCEEDED` as soon as a limit is breached so we can
  * bail out of the recursion early without reading any file contents.
  */
 async function collectEntries(
@@ -112,7 +225,7 @@ async function collectEntries(
     counters.bytes += file.size;
 
     if (counters.files > DROP_MAX_FILES || counters.bytes > DROP_MAX_BYTES) {
-      throw new Error("LIMIT_EXCEEDED");
+      throw new DropProcessingError("LIMIT_EXCEEDED");
     }
 
     result.push({ file, relativePath: entry.fullPath });
@@ -306,6 +419,8 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
   const [newFilename, setNewFilename] = useState("");
   const [filenameError, setFilenameError] = useState<string | null>(null);
   const [fileToDelete, setFileToDelete] = useState<string | null>(null);
+  // Pending drop replacement confirmation
+  const [pendingDropFiles, setPendingDropFiles] = useState<SkillFile[] | null>(null);
 
   // Expanded folders state
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
@@ -316,6 +431,7 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
   const [isProcessingDrop, setIsProcessingDrop] = useState(false);
   // Track nested drag events so dragLeave doesn't fire on child elements
   const dragCounterRef = useRef(0);
+  const lastEmittedValueRef = useRef(value);
 
   // Build tree structure from files
   const fileTree = useMemo(() => buildFileTree(files), [files]);
@@ -351,7 +467,9 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
         clearTimeout(debounceTimerRef.current);
       }
       debounceTimerRef.current = setTimeout(() => {
-        onChange(serializeSkillFiles(newFiles));
+        const serialized = serializeSkillFiles(newFiles);
+        lastEmittedValueRef.current = serialized;
+        onChange(serialized);
       }, 300);
     },
     [onChange]
@@ -454,22 +572,25 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
     setFileToDelete(null);
   }, [fileToDelete, files, updateFiles, closeTab]);
 
-  // Re-parse when external value changes significantly
+  // Re-parse only on external value changes.
   useEffect(() => {
-    const parsed = parseSkillFiles(value);
-    const currentSerialized = serializeSkillFiles(files);
-
-    // Only update if the value changed externally
-    if (value !== currentSerialized) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional sync from external prop
-      setFiles(parsed);
-      // Ensure active file exists
-      if (!parsed.some((f) => f.filename === activeFile)) {
-        setActiveFile(DEFAULT_SKILL_FILE);
-        setOpenTabs([DEFAULT_SKILL_FILE]);
-      }
+    if (value === lastEmittedValueRef.current) {
+      return;
     }
-  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const parsed = parseSkillFiles(value);
+    const parsedFilenames = new Set(parsed.map((file) => file.filename));
+
+    setFiles(parsed);
+    setActiveFile((current) =>
+      parsedFilenames.has(current) ? current : DEFAULT_SKILL_FILE
+    );
+    setOpenTabs((currentTabs) => {
+      const nextTabs = currentTabs.filter((tab) => parsedFilenames.has(tab));
+      return nextTabs.length > 0 ? nextTabs : [DEFAULT_SKILL_FILE];
+    });
+    lastEmittedValueRef.current = value;
+  }, [value]);
 
   const handleEditorMount: OnMount = useCallback((editor) => {
     editorRef.current = editor;
@@ -501,125 +622,65 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
     }
   }, []);
 
-  const handleDrop = useCallback(
-    async (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      dragCounterRef.current = 0;
-      setIsDragOver(false);
-      setDropError(null);
+  /** Apply processed skill files to the editor, replacing all existing content. */
+  const applyDropFiles = useCallback((skillFiles: SkillFile[]) => {
+    // Replace all existing files.
+    updateFiles(skillFiles);
+    // Reset tab state to SKILL.md.
+    setActiveFile(DEFAULT_SKILL_FILE);
+    setOpenTabs([DEFAULT_SKILL_FILE]);
+    // Expand top-level folders automatically (if we have folder structure).
+    const topLevelFolders = new Set(
+      skillFiles
+        .map((f) => {
+          const parts = f.filename.split("/");
+          return parts.length > 1 ? parts[0] : null;
+        })
+        .filter((p): p is string => p !== null)
+    );
+    setExpandedFolders(topLevelFolders);
+  }, [updateFiles]);
 
-      const items = Array.from(e.dataTransfer.items);
-      if (items.length === 0) return;
+    const handleDrop = useCallback(
+      async (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current = 0;
+        setIsDragOver(false);
+        setDropError(null);
 
-      // Expect exactly one dropped item which must be a directory.
-      const rootItem = items[0];
-      if (!rootItem || rootItem.kind !== "file") return;
+        const items = e.dataTransfer.items;
+        if (items.length === 0) return;
 
-      const rootEntry = rootItem.webkitGetAsEntry?.();
-      if (!rootEntry) return;
-
-      if (!rootEntry.isDirectory) {
-        setDropError(t("dropErrorNotFolder"));
-        return;
-      }
-
-      setIsProcessingDrop(true);
-      try {
-        // Pre-flight: recursively collect all entries, aborting on limit.
-        const collected: CollectedFile[] = [];
-        const counters = { files: 0, bytes: 0 };
-
+        // Process dropped items (files or folders)
+        setIsProcessingDrop(true);
         try {
-          await collectEntries(rootEntry, collected, counters);
-        } catch (err) {
-          if (err instanceof Error && err.message === "LIMIT_EXCEEDED") {
-            setDropError(t("dropErrorTooLarge"));
-            return;
+          const skillFiles = await processDroppedItems(items);
+
+          // If editor already has non-empty content, ask user to confirm the
+          // replacement rather than silently overwriting their work.
+          const hasExistingContent = files.some((f) => f.content.trim() !== "");
+          if (hasExistingContent) {
+            setPendingDropFiles(skillFiles);
+          } else {
+            applyDropFiles(skillFiles);
           }
-          throw err;
+        } catch (err) {
+          if (err instanceof DropProcessingError) {
+            if (err.code === "LIMIT_EXCEEDED") {
+              setDropError(t("dropErrorTooLarge"));
+            } else if (err.code === "NO_VALID_FILES") {
+              setDropError(t("dropErrorNoValidFiles"));
+            }
+          } else {
+            setDropError(t("dropErrorGeneric"));
+          }
+        } finally {
+          setIsProcessingDrop(false);
         }
-
-        // The root folder name is the first path segment (e.g. "my-skill").
-        const rootFolderName = rootEntry.name;
-
-        // Validate: skill.nd.json must exist directly in the root folder.
-        const hasSkillManifest = collected.some(
-          ({ relativePath }) =>
-            relativePath === `/${rootFolderName}/skill.nd.json`
-        );
-        if (!hasSkillManifest) {
-          setDropError(t("dropErrorNoManifest"));
-          return;
-        }
-
-        // Filter by allowed extensions.
-        const validFiles = collected.filter(({ file }) => {
-          const ext = getExtension(file.name);
-          // For dotfiles like ".env" getExtension returns ""; fall back to
-          // checking the whole filename (lowercased) against the allowed set.
-          return ext !== "" ? ALLOWED_DROP_EXTENSIONS.has(ext) : ALLOWED_DROP_EXTENSIONS.has(file.name.toLowerCase());
-        });
-
-        // Read contents in parallel.
-        const rootPrefix = `/${rootFolderName}/`;
-        const skillFiles: SkillFile[] = await Promise.all(
-          validFiles.map(async ({ file, relativePath }) => {
-            // Strip leading "/" and root folder name to get relative path.
-            // e.g. "/my-skill/src/index.ts" → "src/index.ts"
-            const withoutRoot = relativePath.startsWith(rootPrefix)
-              ? relativePath.slice(rootPrefix.length)
-              : relativePath.replace(/^\//, "");
-
-            // Map SKILL.md (if present) → DEFAULT_SKILL_FILE constant.
-            const filename =
-              withoutRoot.toLowerCase() === DEFAULT_SKILL_FILE.toLowerCase()
-                ? DEFAULT_SKILL_FILE
-                : withoutRoot;
-
-            const content = await file.text();
-            return { filename, content };
-          })
-        );
-
-        // Ensure SKILL.md is always present (add empty one if not dropped).
-        const hasSkillMd = skillFiles.some(
-          (f) => f.filename === DEFAULT_SKILL_FILE
-        );
-        if (!hasSkillMd) {
-          skillFiles.unshift({ filename: DEFAULT_SKILL_FILE, content: "" });
-        }
-
-        // Replace all existing files.
-        updateFiles(skillFiles);
-        // Reset tab state to SKILL.md.
-        setActiveFile(DEFAULT_SKILL_FILE);
-        setOpenTabs([DEFAULT_SKILL_FILE]);
-        // Expand top-level folders automatically.
-        const topLevelFolders = new Set(
-          skillFiles
-            .map((f) => {
-              const parts = f.filename.split("/");
-              return parts.length > 1 ? parts[0] : null;
-            })
-            .filter((p): p is string => p !== null)
-        );
-        setExpandedFolders(topLevelFolders);
-      } catch {
-        setDropError(t("dropErrorGeneric"));
-      } finally {
-        setIsProcessingDrop(false);
-      }
-    },
-    [t, updateFiles]
-  );
-
-  // File icon based on extension
-  const getFileIcon = (filename: string) => {
-    const _ext = filename.split(".").pop()?.toLowerCase();
-    // Could add more specific icons here
-    return <File className="h-4 w-4 text-muted-foreground" />;
-  };
+      },
+      [t, applyDropFiles, files]
+    );
 
   return (
     <div
@@ -741,7 +802,7 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
               )}
               onClick={() => setActiveFile(filename)}
             >
-              {getFileIcon(filename)}
+              <File className="h-4 w-4 text-muted-foreground" />
               <span className="max-w-[120px] truncate">{filename}</span>
               {filename !== DEFAULT_SKILL_FILE && (
                 <button
@@ -845,6 +906,37 @@ export function SkillEditor({ value, onChange, className }: SkillEditorProps) {
             </Button>
             <Button variant="destructive" onClick={confirmDeleteFile}>
               {tCommon("delete")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Drop Replace Confirmation Dialog */}
+      <Dialog
+        open={!!pendingDropFiles}
+        onOpenChange={(open) => !open && setPendingDropFiles(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("dropReplaceConfirmTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("dropReplaceConfirmDescription")}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingDropFiles(null)}>
+              {tCommon("cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (pendingDropFiles) {
+                  applyDropFiles(pendingDropFiles);
+                  setPendingDropFiles(null);
+                }
+              }}
+            >
+              {t("dropReplaceConfirm")}
             </Button>
           </DialogFooter>
         </DialogContent>
