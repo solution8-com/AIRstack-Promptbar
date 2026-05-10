@@ -18,7 +18,7 @@ None of the 19 codex commits exist in `main`. The branches have diverged indepen
 
 ## Process Flow
 
-```
+```text
 Phase 0 — Pre-flight conflict map
   └─ git merge --no-commit --no-ff on a throwaway branch
   └─ Output: exact list of conflicting files
