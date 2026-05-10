@@ -100,7 +100,7 @@ class DropProcessingError extends Error {
   }
 }
 
-function shouldNormalizeToDefaultSkillFile(filename: string): boolean {
+function isRootSkillFile(filename: string): boolean {
   return (
     !filename.includes("/") &&
     filename.toLowerCase() === DEFAULT_SKILL_FILE.toLowerCase()
@@ -161,16 +161,13 @@ export async function processDroppedItems(items: DataTransferItemList): Promise<
 
       if (relativePath.startsWith("/")) {
         const pathParts = relativePath.split("/").filter((part) => part !== "");
-        if (pathParts.length > 1) {
-          filename = pathParts.slice(1).join("/");
-        } else if (pathParts.length === 1) {
-          filename = pathParts[0];
-        }
+        const withoutRoot = pathParts.slice(1).join("/");
+        filename = withoutRoot || pathParts[0] || file.name;
       }
 
       // Map SKILL.md (if present) → DEFAULT_SKILL_FILE constant.
       const normalizedFilename =
-        shouldNormalizeToDefaultSkillFile(filename)
+        isRootSkillFile(filename)
           ? DEFAULT_SKILL_FILE
           : filename;
 

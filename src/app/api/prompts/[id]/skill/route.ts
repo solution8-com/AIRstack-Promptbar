@@ -57,6 +57,8 @@ function withUtf8Charset(contentType: string): string {
 }
 
 function sanitizeFilenameForHeader(filename: string): string {
+  // Remove control chars and header/path delimiters to prevent header injection
+  // and keep Content-Disposition values RFC-friendly.
   const sanitized = filename
     .replace(/[\x00-\x1F\x7F]/g, "")
     .replace(/[\\/]/g, "-")

@@ -63,7 +63,6 @@ vi.mock("lucide-react", () => ({
 // Mock shadcn/ui components
 type ButtonProps = HTMLAttributes<HTMLButtonElement> & {
   children?: ReactNode;
-  onClick?: () => void;
 };
 
 vi.mock("@/components/ui/button", () => ({
