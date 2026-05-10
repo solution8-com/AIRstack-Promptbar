@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import type { ChangeEvent, HTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
 import { SkillEditor } from "../../components/prompts/skill-editor";
 
 // Mock next-intl
@@ -60,8 +61,13 @@ vi.mock("lucide-react", () => ({
 }));
 
 // Mock shadcn/ui components
+type ButtonProps = HTMLAttributes<HTMLButtonElement> & {
+  children?: ReactNode;
+  onClick?: () => void;
+};
+
 vi.mock("@/components/ui/button", () => ({
-  Button: ({ children, ...props }: any) => {
+  Button: ({ children, ...props }: ButtonProps) => {
     return (
       <button
         type="button"
@@ -78,8 +84,12 @@ vi.mock("@/components/ui/button", () => ({
   },
 }));
 
+type InputProps = InputHTMLAttributes<HTMLInputElement> & {
+  onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+};
+
 vi.mock("@/components/ui/input", () => ({
-  Input: ({ value, onChange, ...props }: any) => {
+  Input: ({ value, onChange, ...props }: InputProps) => {
     return (
       <input
         type="text"
@@ -91,18 +101,27 @@ vi.mock("@/components/ui/input", () => ({
   },
 }));
 
+type DialogProps = {
+  open?: boolean;
+  children?: ReactNode;
+};
+
+type DialogSectionProps = {
+  children?: ReactNode;
+};
+
 vi.mock("@/components/ui/dialog", () => ({
-  Dialog: ({ open, onOpenChange, children }: any) => {
+  Dialog: ({ open, children }: DialogProps) => {
     if (open) {
       return <div>{children}</div>;
     }
     return null;
   },
-  DialogContent: ({ children }: any) => <div>{children}</div>,
-  DialogHeader: ({ children }: any) => <div>{children}</div>,
-  DialogTitle: ({ children }: any) => <div>{children}</div>,
-  DialogDescription: ({ children }: any) => <div>{children}</div>,
-  DialogFooter: ({ children }: any) => <div>{children}</div>,
+  DialogContent: ({ children }: DialogSectionProps) => <div>{children}</div>,
+  DialogHeader: ({ children }: DialogSectionProps) => <div>{children}</div>,
+  DialogTitle: ({ children }: DialogSectionProps) => <div>{children}</div>,
+  DialogDescription: ({ children }: DialogSectionProps) => <div>{children}</div>,
+  DialogFooter: ({ children }: DialogSectionProps) => <div>{children}</div>,
 }));
 
 describe("SkillEditor", () => {
