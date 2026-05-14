@@ -70,7 +70,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "entire hooks claude-code user-prompt-submit"
+            "command": "entire hooks claude-code user-prompt-submit || true"
           }
         ]
       }

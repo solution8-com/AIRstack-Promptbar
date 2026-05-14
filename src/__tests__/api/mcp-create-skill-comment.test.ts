@@ -325,6 +325,14 @@ async function simulateToolCall(
       };
     }
 
+    // Validate content length (Zod schema limit)
+    if (trimmedContent.length > 10000) {
+      return {
+        content: [{ type: "text", text: JSON.stringify({ error: "Comment content must not exceed 10000 characters" }) }],
+        isError: true,
+      };
+    }
+
     // Build visibility filter
     const visibilityFilter = {
       OR: [
