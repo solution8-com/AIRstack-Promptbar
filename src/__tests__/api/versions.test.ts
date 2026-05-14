@@ -116,6 +116,7 @@ describe("GET /api/prompts/[id]/versions", () => {
     expect(db.promptVersion.findMany).toHaveBeenCalledWith({
       where: { promptId: "123" },
       orderBy: { version: "desc" },
+      take: 50,
       include: {
         author: {
           select: {

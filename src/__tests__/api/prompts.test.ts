@@ -303,6 +303,7 @@ describe("POST /api/prompts", () => {
     expect(db.tag.findMany).toHaveBeenCalledWith({
       where: { id: { in: ["tag-1", "tag-missing"] } },
       select: { id: true },
+      take: 50,
     });
     expect(db.prompt.create).toHaveBeenCalledWith(
       expect.objectContaining({
