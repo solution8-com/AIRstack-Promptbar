@@ -1,0 +1,26 @@
+/caveman:caveman-compress
+
+---
+
+/caveman:caveman-stats
+
+---
+
+explain this error `⏺ UserPromptSubmit operation blocked by hook:
+`
+
+---
+
+Will this affect entire functinlaity outside the first prompt of a session?
+
+---
+
+execute
+
+---
+
+ok what is the state of this proejct what did we do last few hrs
+
+---
+
+I want to make sure we are on the same page. Is there any PR that woudl be pushed to remote or something? I want to make sure nothign breaks with respect to what is built
