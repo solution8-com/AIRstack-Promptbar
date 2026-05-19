@@ -43,7 +43,12 @@ function buildLocalEnv(apiKey?: string | null, queryParams?: string): Record<str
   return Object.keys(env).length > 0 ? env : undefined;
 }
 
-/** Wrap a value in POSIX single quotes, escaping any embedded single quotes. */
+/**
+ * Wrap a value in POSIX single quotes so the shell treats it as a literal string,
+ * preventing expansion of `$`, backticks, `"`, spaces, and other special characters.
+ * Any embedded single quotes are replaced with the sequence `'\''`
+ * (end single-quote, escaped quote, re-open single-quote).
+ */
 function shellEscape(value: string): string {
   return `'${value.replace(/'/g, "'\\''")}'`;
 }
