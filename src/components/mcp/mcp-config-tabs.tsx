@@ -43,6 +43,11 @@ function buildLocalEnv(apiKey?: string | null, queryParams?: string): Record<str
   return Object.keys(env).length > 0 ? env : undefined;
 }
 
+/** Wrap a value in POSIX single quotes, escaping any embedded single quotes. */
+function shellEscape(value: string): string {
+  return `'${value.replace(/'/g, "'\\''")}'`;
+}
+
 function getConfig(client: Client, mode: Mode, mcpUrl: string, apiKey?: string | null, queryParams?: string): string {
   const packageName = NPM_PACKAGE;
   const localEnv = buildLocalEnv(apiKey, queryParams);
@@ -75,7 +80,7 @@ function getConfig(client: Client, mode: Mode, mcpUrl: string, apiKey?: string |
     case "claude-code":
       if (mode === "remote") {
         if (apiKey) {
-          return `claude mcp add --transport http prompts.chat "${mcpUrl}" --header "PROMPTS_API_KEY: ${apiKey}"`;
+          return `claude mcp add --transport http prompts.chat "${mcpUrl}" --header ${shellEscape(`PROMPTS_API_KEY: ${apiKey}`)}`;
         }
         return `claude mcp add --transport http prompts.chat "${mcpUrl}"`;
       } else {
@@ -166,7 +171,7 @@ args = ["-y", "${packageName}"]`;
     case "gemini":
       if (mode === "remote") {
         if (apiKey) {
-          return `PROMPTS_API_KEY=${apiKey} gemini mcp add prompts.chat --transport sse "${mcpUrl}"`;
+          return `PROMPTS_API_KEY=${shellEscape(apiKey)} gemini mcp add prompts.chat --transport sse "${mcpUrl}"`;
         }
         return `gemini mcp add prompts.chat --transport sse "${mcpUrl}"`;
       } else {
