@@ -1,0 +1,11 @@
+There is an issue I need you to deeply investigate, and that is the fact that when I go to my profile and try to install the MCP, according to how it should be done, it's not working. Please inspect the following failure and tell me what I should do better. ```thedawgctor@thes-Mac-mini tempfuk % claude mcp add --transport http prompts.chat https://s8promptbar.vercel.app/api/mcp?users=le-dawg --header "PROMPTS_API_KEY: pchat_6e9452641f5528ad61deb3bc1a713464f895eabcab20e7808b3be68690cea03f"
+zsh: no matches found: https://s8promptbar.vercel.app/api/mcp?users=le-dawg
+``` use the suerpowpowers brainstormignskill and subagents for researcht ofind a solution
+
+---
+
+can you run it please using shell mode
+
+---
+
+doe sit work
