@@ -75,9 +75,9 @@ function getConfig(client: Client, mode: Mode, mcpUrl: string, apiKey?: string |
     case "claude-code":
       if (mode === "remote") {
         if (apiKey) {
-          return `claude mcp add --transport http prompts.chat ${mcpUrl} --header "PROMPTS_API_KEY: ${apiKey}"`;
+          return `claude mcp add --transport http prompts.chat "${mcpUrl}" --header "PROMPTS_API_KEY: ${apiKey}"`;
         }
-        return `claude mcp add --transport http prompts.chat ${mcpUrl}`;
+        return `claude mcp add --transport http prompts.chat "${mcpUrl}"`;
       } else {
         const envPrefix = localEnv 
           ? Object.entries(localEnv).map(([k, v]) => `${k}="${v}"`).join(" ") + " "
@@ -166,9 +166,9 @@ args = ["-y", "${packageName}"]`;
     case "gemini":
       if (mode === "remote") {
         if (apiKey) {
-          return `PROMPTS_API_KEY=${apiKey} gemini mcp add prompts.chat --transport sse ${mcpUrl}`;
+          return `PROMPTS_API_KEY=${apiKey} gemini mcp add prompts.chat --transport sse "${mcpUrl}"`;
         }
-        return `gemini mcp add prompts.chat --transport sse ${mcpUrl}`;
+        return `gemini mcp add prompts.chat --transport sse "${mcpUrl}"`;
       } else {
         const envPrefix = localEnv 
           ? Object.entries(localEnv).map(([k, v]) => `${k}="${v}"`).join(" ") + " "
