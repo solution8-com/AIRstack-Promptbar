@@ -1,0 +1,104 @@
+bro, what the LIVING FUCK!!!!!!!!!!!! I filed a PR in upstream, not in the actual remote origin!!!!!!!!!! Undo that shit TURBO
+
+---
+
+are there any adr instructions inthis repo, or a changelog
+
+---
+
+switchback to main branch bro
+
+---
+
+bro it is still not working wtf check this ```thedawgctor@thes-Mac-mini localcrypt % claude mcp add --transport http prompts.chat https://s8promptbar.vercel.app/api/mcp?users=le-dawg --header "PROMPTS_API_KEY: pchat_6e9452641f5528ad61deb3bc1a713464f895eabcab20e7808b3be68690cea03f"
+zsh: no matches found: https://s8promptbar.vercel.app/api/mcp?users=le-dawg
+thedawgctor@thes-Mac-mini localcrypt % claude mcp add --transport http prompts.chat https://s8promptbar.vercel.app/api/mcp?users=le-dawg --header 'PROMPTS_API_KEY: pchat_6e9452641f5528ad61deb3bc1a713464f895eabcab20e7808b3be68690cea03f'
+zsh: no matches found: https://s8promptbar.vercel.app/api/mcp?users=le-dawg
+thedawgctor@thes-Mac-mini localcrypt % 
+```
+
+---
+
+ok cool, can ypuo like .... make that change so thecode doesnt produce bullshit copyable URLS for users?
+
+---
+
+I tried the cmd you generated and got this ```thedawgctor@thes-Mac-mini localcrypt % claude mcp add --transport http prompts-chat
+  "https://s8promptbar.vercel.app/api/mcp?users=le-dawg" --header "PROMPTS_API_KEY:
+  pchat_6e9452641f5528ad61deb3bc1a713464f895eabcab20e7808b3be68690cea03f"
+
+error: missing required argument 'commandOrUrl'
+zsh: no such file or directory: https://s8promptbar.vercel.app/api/mcp?users=le-dawg
+thedawgctor@thes-Mac-mini localcrypt % 
+```
+
+---
+
+are you trolling me? check here ```error: missing required argument 'commandOrUrl'
+zsh: no such file or directory: https://s8promptbar.vercel.app/api/mcp?users=le-dawg
+thedawgctor@thes-Mac-mini localcrypt % claude mcp add --transport http prompts-chat
+  "https://s8promptbar.vercel.app/api/mcp?users=le-dawg" --header "PROMPTS_API_KEY:
+  pchat_6e9452641f5528ad61deb3bc1a713464f895eabcab20e7808b3be68690cea03f"
+error: missing required argument 'commandOrUrl'
+zsh: no such file or directory: https://s8promptbar.vercel.app/api/mcp?users=le-dawg
+thedawgctor@thes-Mac-mini localcrypt % claude mcp add --transport http prompts-chat
+  "https://s8promptbar.vercel.app/api/mcp?users=le-dawg" --header "PROMPTS_API_KEY:
+  pchat_6e9452641f5528ad61deb3bc1a713464f895eabcab20e7808b3be68690cea03f"
+error: missing required argument 'commandOrUrl'
+zsh: no such file or directory: https://s8promptbar.vercel.app/api/mcp?users=le-dawg
+thedawgctor@thes-Mac-mini localcrypt % 
+``` FIX THISD ERROR MAKE A PLAN USE CAVECREW TO FIND A SOLUTION
+
+---
+
+Why is it OK to bypass the middleware? Was this an upstreeam bug? I am not sure i follow
+
+---
+
+Excellent work man. Thanks. time for us to add a new mcp feature. don't respond, just let me cook
+
+---
+
+please use the adr-kit mcp and analyse the project
+
+---
+
+please use the adr-kit mcp and analyse the project
+
+---
+
+restart
+
+---
+
+ok,i will, but tell me how to add mcp support to claude man i need this hist
+
+---
+
+no i mean the mcp acces to s8promptbar bro
+
+---
+
+we already tried this shit in the terminal you dumb motherfucker and it wasnt working. giv epermafix for installing it now
+
+---
+
+ok lets test your hypothesis punk
+
+---
+
+not just that, look at this bro ``` Status:           ✘ failed
+  Issue:            JSON Parse error: Unrecognized token '<'
+  Auth:             ✘ not authenticated
+  URL:              https://s8promptbar.vercel.app/api/mcp?users=le-dawg
+  Config location:  /Users/thedawgctor/.claude.json
+
+  SDK auth failed: Failed to parse JSON
+
+  ❯ 1. Authenticate
+    2. Reconnect
+    3. Disable
+
+  ↑/↓ to navigate · Enter to select · Esc to back
+
+``` this is inside the cladue code mcp enable and authenticate dialog
