@@ -43,6 +43,16 @@ function buildLocalEnv(apiKey?: string | null, queryParams?: string): Record<str
   return Object.keys(env).length > 0 ? env : undefined;
 }
 
+/**
+ * Wrap a value in POSIX single quotes so the shell treats it as a literal string,
+ * preventing expansion of `$`, backticks, `"`, spaces, and other special characters.
+ * Any embedded single quotes are replaced with the sequence `'\''`
+ * (end single-quote, escaped quote, re-open single-quote).
+ */
+function shellEscape(value: string): string {
+  return `'${value.replace(/'/g, "'\\''")}'`;
+}
+
 function getConfig(client: Client, mode: Mode, mcpUrl: string, apiKey?: string | null, queryParams?: string): string {
   const packageName = NPM_PACKAGE;
   const localEnv = buildLocalEnv(apiKey, queryParams);
@@ -75,9 +85,9 @@ function getConfig(client: Client, mode: Mode, mcpUrl: string, apiKey?: string |
     case "claude-code":
       if (mode === "remote") {
         if (apiKey) {
-          return `claude mcp add --transport http prompts.chat ${mcpUrl} --header "PROMPTS_API_KEY: ${apiKey}"`;
+          return `claude mcp add --transport http prompts.chat "${mcpUrl}" --header ${shellEscape(`PROMPTS_API_KEY: ${apiKey}`)}`;
         }
-        return `claude mcp add --transport http prompts.chat ${mcpUrl}`;
+        return `claude mcp add --transport http prompts.chat "${mcpUrl}"`;
       } else {
         const envPrefix = localEnv 
           ? Object.entries(localEnv).map(([k, v]) => `${k}="${v}"`).join(" ") + " "
@@ -166,9 +176,9 @@ args = ["-y", "${packageName}"]`;
     case "gemini":
       if (mode === "remote") {
         if (apiKey) {
-          return `PROMPTS_API_KEY=${apiKey} gemini mcp add prompts.chat --transport sse ${mcpUrl}`;
+          return `PROMPTS_API_KEY=${shellEscape(apiKey)} gemini mcp add prompts.chat --transport sse "${mcpUrl}"`;
         }
-        return `gemini mcp add prompts.chat --transport sse ${mcpUrl}`;
+        return `gemini mcp add prompts.chat --transport sse "${mcpUrl}"`;
       } else {
         const envPrefix = localEnv 
           ? Object.entries(localEnv).map(([k, v]) => `${k}="${v}"`).join(" ") + " "
