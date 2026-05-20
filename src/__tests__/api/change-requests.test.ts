@@ -207,3 +207,125 @@ describe("PATCH /api/prompts/[id]/changes/[changeId] – authorization", () => {
     expect(body.error).toBe("validation_error");
   });
 });
+
+describe("PATCH /api/prompts/[id]/changes/[changeId] – admin permissions", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("admin can approve a pending change request on any prompt", async () => {
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: ADMIN_ID, role: "ADMIN" },
+    } as never);
+    vi.mocked(db.prompt.findUnique).mockResolvedValue({
+      authorId: OWNER_ID,
+      content: "original",
+      title: "original title",
+    } as never);
+    vi.mocked(db.changeRequest.findUnique).mockResolvedValue(
+      pendingChangeRequest as never
+    );
+    vi.mocked(db.promptVersion.findFirst).mockResolvedValue({ version: 1 } as never);
+    vi.mocked(db.$transaction).mockResolvedValue([] as never);
+
+    const req = new Request(
+      `http://localhost/api/prompts/${PROMPT_ID}/changes/${CHANGE_ID}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ status: "APPROVED", reviewNote: "Admin approved" }),
+      }
+    );
+    const res = await PATCH(req, { params: baseParams });
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.status).toBe("APPROVED");
+  });
+
+  it("admin can reject a pending change request on any prompt", async () => {
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: ADMIN_ID, role: "ADMIN" },
+    } as never);
+    vi.mocked(db.prompt.findUnique).mockResolvedValue({
+      authorId: OWNER_ID,
+      content: "original",
+      title: "original title",
+    } as never);
+    vi.mocked(db.changeRequest.findUnique).mockResolvedValue(
+      pendingChangeRequest as never
+    );
+    vi.mocked(db.changeRequest.update).mockResolvedValue({} as never);
+
+    const req = new Request(
+      `http://localhost/api/prompts/${PROMPT_ID}/changes/${CHANGE_ID}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ status: "REJECTED", reviewNote: "Admin rejected" }),
+      }
+    );
+    const res = await PATCH(req, { params: baseParams });
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.status).toBe("REJECTED");
+  });
+
+  it("admin can reopen a rejected change request on any prompt", async () => {
+    const rejectedChangeRequest = {
+      ...pendingChangeRequest,
+      status: "REJECTED",
+    };
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: ADMIN_ID, role: "ADMIN" },
+    } as never);
+    vi.mocked(db.prompt.findUnique).mockResolvedValue({
+      authorId: OWNER_ID,
+      content: "original",
+      title: "original title",
+    } as never);
+    vi.mocked(db.changeRequest.findUnique).mockResolvedValue(
+      rejectedChangeRequest as never
+    );
+    vi.mocked(db.changeRequest.update).mockResolvedValue({} as never);
+
+    const req = new Request(
+      `http://localhost/api/prompts/${PROMPT_ID}/changes/${CHANGE_ID}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ status: "PENDING" }),
+      }
+    );
+    const res = await PATCH(req, { params: baseParams });
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.status).toBe("PENDING");
+  });
+
+  it("regular user cannot approve another owner's prompt change request", async () => {
+    vi.mocked(auth).mockResolvedValue({
+      user: { id: OTHER_ID, role: "USER" },
+    } as never);
+    vi.mocked(db.prompt.findUnique).mockResolvedValue({
+      authorId: OWNER_ID,
+      content: "original",
+      title: "original title",
+    } as never);
+
+    const req = new Request(
+      `http://localhost/api/prompts/${PROMPT_ID}/changes/${CHANGE_ID}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ status: "APPROVED" }),
+      }
+    );
+    const res = await PATCH(req, { params: baseParams });
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body.error).toBe("forbidden");
+  });
+});
