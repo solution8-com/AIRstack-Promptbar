@@ -285,7 +285,7 @@ export function McpConfigTabs({ baseUrl, queryParams, className, mode, onModeCha
           dir="ltr" 
           className={cn(
             "bg-muted rounded-md p-2 font-mono text-[11px] overflow-x-auto text-left",
-            showOfficialBranding && (selectedClient === "vscode" || selectedClient === "cursor") && "max-h-24 overflow-y-auto"
+            (selectedClient === "cursor" || (showOfficialBranding && selectedClient === "vscode")) && "max-h-24 overflow-y-auto"
           )}
         >
           <pre className="whitespace-pre">
@@ -324,8 +324,8 @@ export function McpConfigTabs({ baseUrl, queryParams, className, mode, onModeCha
         </Button>
       </div>
 
-      {/* Cursor Install Button - only for official branding */}
-      {showOfficialBranding && selectedClient === "cursor" && (
+      {/* Cursor Install Button - always available (deeplink is env-driven) */}
+      {selectedClient === "cursor" && (
         <div className="flex flex-col gap-2">
           <Button
             variant="outline"
