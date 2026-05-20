@@ -65,6 +65,7 @@ export default async function ChangeRequestPage({ params }: ChangeRequestPagePro
 
   const isPromptOwner = session?.user?.id === changeRequest.prompt.authorId;
   const isChangeRequestAuthor = session?.user?.id === changeRequest.author.id;
+  const isAdmin = session?.user?.role === "ADMIN";
 
   const statusConfig = {
     PENDING: { 
@@ -174,24 +175,22 @@ export default async function ChangeRequestPage({ params }: ChangeRequestPagePro
         </div>
       )}
 
-      {/* Actions for prompt owner */}
-      {isPromptOwner && changeRequest.status === "PENDING" && (
-        <div className="pt-4 border-t">
-          <ChangeRequestActions changeRequestId={changeRequest.id} promptId={promptId} />
+      {/* Pending actions — all in one section so buttons are visually grouped */}
+      {changeRequest.status === "PENDING" && (isPromptOwner || isAdmin || isChangeRequestAuthor) && (
+        <div className="pt-4 border-t space-y-3">
+          {(isPromptOwner || isAdmin) && (
+            <ChangeRequestActions changeRequestId={changeRequest.id} promptId={promptId} />
+          )}
+          {isChangeRequestAuthor && (
+            <DismissChangeRequestButton changeRequestId={changeRequest.id} promptId={promptId} />
+          )}
         </div>
       )}
 
       {/* Reopen button for rejected requests */}
-      {isPromptOwner && changeRequest.status === "REJECTED" && (
+      {(isPromptOwner || isAdmin) && changeRequest.status === "REJECTED" && (
         <div className="pt-4 border-t">
           <ReopenChangeRequestButton changeRequestId={changeRequest.id} promptId={promptId} />
-        </div>
-      )}
-
-      {/* Dismiss button for change request author (pending only) */}
-      {isChangeRequestAuthor && changeRequest.status === "PENDING" && (
-        <div className="pt-4 border-t">
-          <DismissChangeRequestButton changeRequestId={changeRequest.id} promptId={promptId} />
         </div>
       )}
     </div>

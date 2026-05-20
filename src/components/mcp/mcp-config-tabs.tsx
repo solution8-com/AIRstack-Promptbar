@@ -34,7 +34,11 @@ const CLIENT_LABELS: Record<Client, string> = {
   gemini: "Gemini",
 };
 
-const NPM_PACKAGE = "@fkadev/prompts.chat-mcp";
+const NPM_PACKAGE =
+  process.env.NEXT_PUBLIC_MCP_NPM_PACKAGE ?? "@fkadev/prompts.chat-mcp";
+const MCP_SERVER_NAME =
+  process.env.NEXT_PUBLIC_MCP_SERVER_NAME ?? "prompts.chat";
+const MCP_TOML_KEY = MCP_SERVER_NAME.replace(/[^a-zA-Z0-9]/g, "_");
 
 function buildLocalEnv(apiKey?: string | null, queryParams?: string): Record<string, string> | undefined {
   const env: Record<string, string> = {};
@@ -62,7 +66,7 @@ function getConfig(client: Client, mode: Mode, mcpUrl: string, apiKey?: string |
       if (mode === "remote") {
         const config: Record<string, unknown> = {
           mcpServers: {
-            "prompts.chat": {
+            [MCP_SERVER_NAME]: {
               url: mcpUrl,
               ...(apiKey && { headers: { "PROMPTS_API_KEY": apiKey } }),
             },
@@ -72,7 +76,7 @@ function getConfig(client: Client, mode: Mode, mcpUrl: string, apiKey?: string |
       } else {
         const config: Record<string, unknown> = {
           mcpServers: {
-            "prompts.chat": {
+            [MCP_SERVER_NAME]: {
               command: "npx",
               args: ["-y", packageName],
               ...(localEnv && { env: localEnv }),
@@ -85,14 +89,14 @@ function getConfig(client: Client, mode: Mode, mcpUrl: string, apiKey?: string |
     case "claude-code":
       if (mode === "remote") {
         if (apiKey) {
-          return `claude mcp add --transport http prompts.chat "${mcpUrl}" --header ${shellEscape(`PROMPTS_API_KEY: ${apiKey}`)}`;
+          return `claude mcp add --transport http ${MCP_SERVER_NAME} "${mcpUrl}" --header ${shellEscape(`PROMPTS_API_KEY: ${apiKey}`)}`;
         }
-        return `claude mcp add --transport http prompts.chat "${mcpUrl}"`;
+        return `claude mcp add --transport http ${MCP_SERVER_NAME} "${mcpUrl}"`;
       } else {
         const envPrefix = localEnv 
           ? Object.entries(localEnv).map(([k, v]) => `${k}="${v}"`).join(" ") + " "
           : "";
-        return `${envPrefix}claude mcp add prompts.chat -- npx -y ${packageName}`;
+        return `${envPrefix}claude mcp add ${MCP_SERVER_NAME} -- npx -y ${packageName}`;
       }
 
     case "vscode":
@@ -100,7 +104,7 @@ function getConfig(client: Client, mode: Mode, mcpUrl: string, apiKey?: string |
         const config: Record<string, unknown> = {
           mcp: {
             servers: {
-              "prompts.chat": {
+              [MCP_SERVER_NAME]: {
                 type: "http",
                 url: mcpUrl,
                 ...(apiKey && { headers: { "PROMPTS_API_KEY": apiKey } }),
@@ -113,7 +117,7 @@ function getConfig(client: Client, mode: Mode, mcpUrl: string, apiKey?: string |
         const config: Record<string, unknown> = {
           mcp: {
             servers: {
-              "prompts.chat": {
+              [MCP_SERVER_NAME]: {
                 type: "stdio",
                 command: "npx",
                 args: ["-y", packageName],
@@ -128,20 +132,20 @@ function getConfig(client: Client, mode: Mode, mcpUrl: string, apiKey?: string |
     case "codex":
       if (mode === "remote") {
         if (apiKey) {
-          return `[mcp_servers.prompts_chat]
+          return `[mcp_servers.${MCP_TOML_KEY}]
 url = "${mcpUrl}"
 
-[mcp_servers.prompts_chat.headers]
+[mcp_servers.${MCP_TOML_KEY}.headers]
 PROMPTS_API_KEY = "${apiKey}"`;
         }
-        return `[mcp_servers.prompts_chat]
+        return `[mcp_servers.${MCP_TOML_KEY}]
 url = "${mcpUrl}"`;
       } else {
-        let config = `[mcp_servers.prompts_chat]
+        let config = `[mcp_servers.${MCP_TOML_KEY}]
 command = "npx"
 args = ["-y", "${packageName}"]`;
         if (localEnv) {
-          config += "\n\n[mcp_servers.prompts_chat.env]";
+          config += `\n\n[mcp_servers.${MCP_TOML_KEY}.env]`;
           for (const [key, value] of Object.entries(localEnv)) {
             config += `\n${key} = "${value}"`;
           }
@@ -153,7 +157,7 @@ args = ["-y", "${packageName}"]`;
       if (mode === "remote") {
         const config: Record<string, unknown> = {
           mcpServers: {
-            "prompts.chat": {
+            [MCP_SERVER_NAME]: {
               serverUrl: mcpUrl,
               ...(apiKey && { headers: { "PROMPTS_API_KEY": apiKey } }),
             },
@@ -163,7 +167,7 @@ args = ["-y", "${packageName}"]`;
       } else {
         const config: Record<string, unknown> = {
           mcpServers: {
-            "prompts.chat": {
+            [MCP_SERVER_NAME]: {
               command: "npx",
               args: ["-y", packageName],
               ...(localEnv && { env: localEnv }),
@@ -176,14 +180,14 @@ args = ["-y", "${packageName}"]`;
     case "gemini":
       if (mode === "remote") {
         if (apiKey) {
-          return `PROMPTS_API_KEY=${shellEscape(apiKey)} gemini mcp add prompts.chat --transport sse "${mcpUrl}"`;
+          return `PROMPTS_API_KEY=${shellEscape(apiKey)} gemini mcp add ${MCP_SERVER_NAME} --transport sse "${mcpUrl}"`;
         }
-        return `gemini mcp add prompts.chat --transport sse "${mcpUrl}"`;
+        return `gemini mcp add ${MCP_SERVER_NAME} --transport sse "${mcpUrl}"`;
       } else {
         const envPrefix = localEnv 
           ? Object.entries(localEnv).map(([k, v]) => `${k}="${v}"`).join(" ") + " "
           : "";
-        return `${envPrefix}gemini mcp add prompts.chat -- npx -y ${packageName}`;
+        return `${envPrefix}gemini mcp add ${MCP_SERVER_NAME} -- npx -y ${packageName}`;
       }
 
     default:
@@ -335,7 +339,7 @@ export function McpConfigTabs({ baseUrl, queryParams, className, mode, onModeCha
               const localEnv = buildLocalEnv(apiKey, queryParams);
               if (localEnv) cursorConfig.env = localEnv;
               const configBase64 = btoa(JSON.stringify(cursorConfig));
-              window.open(`cursor://anysphere.cursor-deeplink/mcp/install?name=${encodeURIComponent("prompts.chat")}&config=${configBase64}`, "_self");
+              window.open(`cursor://anysphere.cursor-deeplink/mcp/install?name=${encodeURIComponent(MCP_SERVER_NAME)}&config=${configBase64}`, "_self");
             }}
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
